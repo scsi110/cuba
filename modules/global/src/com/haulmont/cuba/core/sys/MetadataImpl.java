@@ -204,6 +204,15 @@ public class MetadataImpl implements Metadata {
             clazz = clazz.getSuperclass();
         }
 
+        Arrays.stream(entity.getClass().getMethods())
+                .filter(method -> method.isAnnotationPresent(PostConstruct.class)
+                        && !methodNames.contains(method.getName())
+                        && method.isDefault())
+                .forEach(method -> {
+                    postConstructMethods.add(method);
+                    methodNames.add(method.getName());
+                });
+
         ListIterator<Method> iterator = postConstructMethods.listIterator(postConstructMethods.size());
         while (iterator.hasPrevious()) {
             Method method = iterator.previous();
