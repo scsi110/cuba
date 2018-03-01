@@ -19,6 +19,7 @@ package com.haulmont.cuba.web;
 import com.google.common.base.Strings;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.app.embedded.EmbedAppConfig;
 import com.haulmont.cuba.web.app.loginwindow.AppLoginWindow;
 import com.haulmont.cuba.web.security.AnonymousUserCredentials;
 import com.haulmont.cuba.web.security.events.AppLoggedInEvent;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -49,6 +51,9 @@ import static com.haulmont.cuba.web.security.ExternalUserCredentials.isLoggedInW
 public class DefaultApp extends App implements StateChangeListener, UserSubstitutionListener {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultApp.class);
+
+    @Inject
+    protected EmbedAppConfig embedAppConfig;
 
     public DefaultApp() {
     }
@@ -191,6 +196,9 @@ public class DefaultApp extends App implements StateChangeListener, UserSubstitu
 
     @Override
     protected String routeTopLevelWindowId() {
+        if (embedAppConfig.isGuestMode()) {
+            return "embeddedWindow";
+        }
         if (connection.isAuthenticated()) {
             return "mainWindow";
         } else {

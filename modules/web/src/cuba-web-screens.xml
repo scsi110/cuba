@@ -64,7 +64,7 @@
 
     <screen id="printDomain"
             class="com.haulmont.cuba.web.app.domain.DomainProvider"/>
-    
+
     <screen id="performanceStatistics"
             template="/com/haulmont/cuba/web/app/ui/statistics/statistics-window.xml" multipleOpen="true"/>
 
@@ -76,4 +76,10 @@
 
     <screen id="loginWindow"
             template="/com/haulmont/cuba/web/app/loginwindow/loginwindow.xml"/>
+
+    <screen id="embeddedWindow"
+            template="/com/haulmont/cuba/web/app/embedded/embeddedwindow.xml"/>
+
+    <screen id="embeddedLookup"
+            template="/com/haulmont/cuba/web/app/embedded/lookup/embedded-lookup.xml"/>
 </screen-config>

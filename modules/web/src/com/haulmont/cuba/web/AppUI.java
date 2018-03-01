@@ -28,6 +28,8 @@ import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.app.UserSettingsTools;
+import com.haulmont.cuba.web.app.embedded.EmbedAppConfig;
+import com.haulmont.cuba.web.app.embedded.transport.RemoteApp;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
 import com.haulmont.cuba.web.events.UIRefreshEvent;
 import com.haulmont.cuba.web.security.events.AppInitializedEvent;
@@ -103,6 +105,9 @@ public class AppUI extends UI implements ErrorHandler, CubaHistoryControl.Histor
     @Inject
     protected UiEventsMulticaster uiEventsMulticaster;
 
+    @Inject
+    protected EmbedAppConfig embedAppConfig;
+
     protected TestIdManager testIdManager = new TestIdManager();
 
     protected boolean testMode = false;
@@ -121,7 +126,16 @@ public class AppUI extends UI implements ErrorHandler, CubaHistoryControl.Histor
 
     protected TopLevelWindow topLevelWindow;
 
+    private String appId;
+
     public AppUI() {
+    }
+
+    /**
+     * @return current AppUI
+     */
+    public static AppUI getCurrent() {
+        return (AppUI) UI.getCurrent();
     }
 
     /**
@@ -155,6 +169,9 @@ public class AppUI extends UI implements ErrorHandler, CubaHistoryControl.Histor
      * If you want to include scripts to generated page statically see {@link com.haulmont.cuba.web.sys.CubaBootstrapListener}.
      */
     protected void initJsLibraries() {
+        if (appId != null) {
+            JavaScript.getCurrent().execute("   registerApp('" + appId + "');");
+        }
     }
 
     protected void initInternalComponents() {
@@ -189,6 +206,8 @@ public class AppUI extends UI implements ErrorHandler, CubaHistoryControl.Histor
 
             // do not grab focus
             setTabIndex(-1);
+
+            setAppId(request);
 
             initJsLibraries();
 
@@ -315,13 +334,6 @@ public class AppUI extends UI implements ErrorHandler, CubaHistoryControl.Histor
     public void handleRequest(VaadinRequest request) {
         // on refresh page call
         processExternalLink(request);
-    }
-
-    /**
-     * @return current AppUI
-     */
-    public static AppUI getCurrent() {
-        return (AppUI) UI.getCurrent();
     }
 
     /**
@@ -527,6 +539,27 @@ public class AppUI extends UI implements ErrorHandler, CubaHistoryControl.Histor
                     app.applyTheme(themeName);
                     setTheme(themeName);
                 }
+            }
+        }
+    }
+
+    public String getAppId() {
+        return appId;
+    }
+
+    private void setAppId(VaadinRequest request) {
+        if (embedAppConfig.isHostMode()) {
+            this.appId = RemoteApp.HOST_APP_NAME;
+        } else if (embedAppConfig.isGuestMode()) {
+
+            WrappedSession wrappedSession = request.getWrappedSession();
+            //noinspection unchecked
+            Map<String, String> params =
+                    (Map<String, String>) wrappedSession.getAttribute(LAST_REQUEST_PARAMS_ATTR);
+            params = params != null ? params : Collections.emptyMap();
+
+            if (params.containsKey("appId")) {
+                this.appId = params.get("appId");
             }
         }
     }
