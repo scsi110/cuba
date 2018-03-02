@@ -53,6 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static com.haulmont.cuba.core.sys.AppContext.withSecurityContext;
 import static com.haulmont.cuba.web.security.idp.IdpSessionPrincipal.*;
@@ -174,7 +175,7 @@ public abstract class BaseIdpSessionFilter implements Filter {
                 if (idpSession == null) {
                     log.warn("Used old IDP ticket {}, send redirect", idpTicket);
                     // used old ticket, send redirect
-                    httpResponse.sendRedirect(getIdpRedirectUrl());
+                    httpResponse.sendRedirect(getIdpRedirectUrl(request));
                     return;
                 }
 
@@ -187,14 +188,24 @@ public abstract class BaseIdpSessionFilter implements Filter {
                 log.debug("IDP session {} obtained, redirect to application", idpSession);
 
                 // redirect to application without parameters
-                httpResponse.sendRedirect(httpRequest.getRequestURL().toString());
+                String redirectUrl = httpRequest.getRequestURL().toString();
+                String queryString = httpRequest.getQueryString();
+                if (!Strings.isNullOrEmpty(queryString)) {
+                    queryString = Arrays.stream(queryString.split("&"))
+                            .map(s -> s.split("="))
+                            .filter(kvPair -> !kvPair[0].equals(IDP_TICKET_REQUEST_PARAM))
+                            .map(kvPair -> kvPair[0] + "=" + kvPair[1])
+                            .collect(Collectors.joining("&", "?", ""));
+                    redirectUrl += queryString;
+                }
+                httpResponse.sendRedirect(redirectUrl);
                 return;
             }
 
             if (session.getAttribute(IDP_SESSION_ATTRIBUTE) == null) {
                 if ("GET".equals(httpRequest.getMethod())
                         && !StringUtils.startsWith(httpRequest.getRequestURI(), httpRequest.getContextPath() + "/PUSH")) {
-                    httpResponse.sendRedirect(getIdpRedirectUrl());
+                    httpResponse.sendRedirect(getIdpRedirectUrl(request));
                 }
                 return;
             }
@@ -275,13 +286,26 @@ public abstract class BaseIdpSessionFilter implements Filter {
         return idpRedirectUrl;
     }
 
-    protected String getIdpRedirectUrl() {
+    protected String getIdpRedirectUrl(ServletRequest request) {
         String idpBaseURL = webIdpConfig.getIdpBaseURL();
         if (!idpBaseURL.endsWith("/")) {
             idpBaseURL += "/";
         }
+
+        String serviceProviderRedirectUrl;
+        if (request instanceof HttpServletRequest) {
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            String queryString = httpRequest.getQueryString();
+            serviceProviderRedirectUrl = httpRequest.getRequestURL().toString();
+            if (queryString != null) {
+                serviceProviderRedirectUrl += "?" + queryString;
+            }
+        } else {
+            serviceProviderRedirectUrl = getWebAppUrl();
+        }
+
         String idpRedirectUrl = idpBaseURL + "?sp=" +
-                URLEncodeUtils.encodeUtf8(getWebAppUrl());
+                URLEncodeUtils.encodeUtf8(serviceProviderRedirectUrl);
 
         return idpRedirectUrl;
     }

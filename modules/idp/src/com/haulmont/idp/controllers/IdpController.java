@@ -23,10 +23,13 @@ import com.haulmont.cuba.core.global.ClientType;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.core.global.MessageTools;
 import com.haulmont.cuba.core.global.PasswordEncryption;
-import com.haulmont.cuba.security.idp.IdpService;
 import com.haulmont.cuba.security.global.LoginException;
+import com.haulmont.cuba.security.idp.IdpService;
 import com.haulmont.idp.IdpConfig;
-import com.haulmont.idp.model.*;
+import com.haulmont.idp.model.AuthRequest;
+import com.haulmont.idp.model.AuthResponse;
+import com.haulmont.idp.model.IdpTicket;
+import com.haulmont.idp.model.LocalesInfo;
 import com.haulmont.idp.sys.IdpServiceLogoutCallbackInvoker;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
@@ -40,7 +43,10 @@ import javax.inject.Inject;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -79,7 +85,7 @@ public class IdpController {
                                   @CookieValue(value = CUBA_IDP_COOKIE_NAME, defaultValue = "") String idpSessionCookie,
                                   HttpServletResponse response) {
         if (!Strings.isNullOrEmpty(serviceProviderUrl)
-                && !idpConfig.getServiceProviderUrls().contains(serviceProviderUrl)) {
+                && isInvalidServiceProvider(serviceProviderUrl)) {
             log.warn("Incorrect serviceProviderUrl {} passed, will be used default", serviceProviderUrl);
             serviceProviderUrl = null;
         }
@@ -99,12 +105,14 @@ public class IdpController {
             if (serviceProviderTicket != null) {
                 String serviceProviderRedirectUrl;
                 try {
-                    URIBuilder uriBuilder = new URIBuilder(serviceProviderUrl);
+                    String requestUrl = deleteParameters(serviceProviderUrl);
+                    URIBuilder uriBuilder = new URIBuilder(requestUrl);
 
                     if (ResponseType.CLIENT_TICKET.getCode().equals(responseType)) {
                         uriBuilder.setFragment(CUBA_IDP_TICKET_PARAMETER + "=" + serviceProviderTicket);
                     } else {
                         uriBuilder.setParameter(CUBA_IDP_TICKET_PARAMETER, serviceProviderTicket);
+                        fillRedirectParameters(uriBuilder, serviceProviderUrl);
                     }
 
                     serviceProviderRedirectUrl = uriBuilder.build().toString();
@@ -144,13 +152,39 @@ public class IdpController {
         return "redirect:login.html?sp=" + URLEncodeUtils.encodeUtf8(serviceProviderUrl);
     }
 
+    private String deleteParameters(String serviceProviderUrl) {
+        boolean hasParameters = serviceProviderUrl.contains("?");
+        if(hasParameters) {
+            serviceProviderUrl = serviceProviderUrl.substring(0, serviceProviderUrl.indexOf('?'));
+        }
+        return serviceProviderUrl;
+    }
+
+    private void fillRedirectParameters(URIBuilder uriBuilder, String serviceProviderUrl) {
+        try {
+            URL url = new URL(serviceProviderUrl);
+            String query = url.getQuery();
+            Arrays.stream(query.split("&"))
+                    .map(s -> s.split("="))
+                    .forEach(kvPair -> uriBuilder.addParameter(kvPair[0], kvPair[1]));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean isInvalidServiceProvider(String serviceProviderUrl) {
+        return idpConfig.getServiceProviderUrls()
+                .stream()
+                .noneMatch(serviceProviderUrl::startsWith);
+    }
+
     @GetMapping(value = "/logout")
     public String logout(@RequestParam(value = "sp", defaultValue = "") String serviceProviderUrl,
                          @RequestParam(value = "response_type", defaultValue = "server-ticket") String responseType,
                          @CookieValue(value = CUBA_IDP_COOKIE_NAME, defaultValue = "") String idpSessionCookie,
                          HttpServletResponse response) {
         if (!Strings.isNullOrEmpty(serviceProviderUrl)
-                && !idpConfig.getServiceProviderUrls().contains(serviceProviderUrl)) {
+                && isInvalidServiceProvider(serviceProviderUrl)) {
             log.warn("Incorrect serviceProviderUrl {} passed, will be used default", serviceProviderUrl);
             serviceProviderUrl = null;
         }
@@ -209,7 +243,7 @@ public class IdpController {
         String serviceProviderUrl = auth.getServiceProviderUrl();
 
         if (!Strings.isNullOrEmpty(serviceProviderUrl)
-                && !idpConfig.getServiceProviderUrls().contains(serviceProviderUrl)) {
+                && isInvalidServiceProvider(serviceProviderUrl)) {
             log.warn("Incorrect serviceProviderUrl {} passed, will be used default", serviceProviderUrl);
             serviceProviderUrl = null;
         }

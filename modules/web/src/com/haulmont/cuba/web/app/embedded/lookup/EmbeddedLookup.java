@@ -7,10 +7,12 @@ import com.haulmont.cuba.gui.components.UrlResource;
 import com.haulmont.cuba.web.gui.components.WebUrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -53,12 +55,12 @@ public class EmbeddedLookup extends AbstractLookup {
     }
 
     private String getParams() {
-        if (paramsMap == null) {
+        if (CollectionUtils.isEmpty(paramsMap)) {
             return "";
         }
         return paramsMap.entrySet()
                 .stream()
                 .map(entry -> entry.getKey() + ':' + entry.getValue())
-                .collect(Collectors.joining(",", "&", ""));
+                .collect(Collectors.joining(",", "&params=", ""));
     }
 }

@@ -32,11 +32,11 @@ public class RemoteComponentsHelper {
     @Inject
     private DataManager dataManager;
 
-    public void addRemoteLookup(PickerField lookupField, String appName, String entityName) {
+    public void addRemoteLookupAction(PickerField lookupField, String appName, String entityName) {
         lookupField.addAction(new RemoteLookupAction(lookupField, appName, entityName));
     }
 
-    public void addRemoteOpen(PickerField lookupField, String appName, String entityName) {
+    public void addRemoteOpenAction(PickerField lookupField, String appName, String entityName) {
         lookupField.addAction(new RemoteOpenAction(lookupField, appName, entityName));
     }
 
