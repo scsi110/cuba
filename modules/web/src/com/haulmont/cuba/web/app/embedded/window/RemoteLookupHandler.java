@@ -1,4 +1,4 @@
-package com.haulmont.cuba.web.app.embedded.lookup;
+package com.haulmont.cuba.web.app.embedded.window;
 
 import com.haulmont.cuba.web.app.embedded.RemoteEntityInfo;
 

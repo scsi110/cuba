@@ -2,6 +2,7 @@ package com.haulmont.cuba.web.app.embedded;
 
 import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.bali.util.ParamsMap;
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.components.Action;
 import com.haulmont.cuba.gui.components.DialogAction;
 import com.haulmont.cuba.gui.components.Frame;
@@ -9,9 +10,9 @@ import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.web.WebWindowManager;
-import com.haulmont.cuba.web.app.embedded.lookup.EmbeddedLookup;
-import com.haulmont.cuba.web.app.embedded.lookup.RemoteLookupHandler;
 import com.haulmont.cuba.web.app.embedded.transport.RemoteApp;
+import com.haulmont.cuba.web.app.embedded.window.RemoteLookupHandler;
+import com.haulmont.cuba.web.app.embedded.window.RemoteWindowHolder;
 import com.haulmont.cuba.web.gui.WebWindow;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.haulmont.cuba.web.gui.components.mainwindow.WebAppWorkArea;
@@ -27,10 +28,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class HostAppWindowManager extends WebWindowManager implements RemoteWindowManager {
@@ -43,11 +41,22 @@ public class HostAppWindowManager extends WebWindowManager implements RemoteWind
     private int guestIdCounter = 0;
 
     @Override
-    public void openLookup(String appName, String entityName, RemoteLookupHandler handler, OpenMode openType, Map<String, Object> screenParams) {
-        RemoteWindowInfo windowInfo = (RemoteWindowInfo) windowConfig.getWindowInfo(appName + "/" + entityName + ".lookup");
-        windowInfo.setLookup(true);
+    public void openLookup(String appName, String screenAlias, RemoteLookupHandler handler, OpenMode openType, Map<String, Object> remoteScreenParams) {
+        RemoteWindowInfo windowInfo = (RemoteWindowInfo) windowConfig.getWindowInfo(appName + "/" + screenAlias);
+        windowInfo.setRemoteWindowMode(RemoteWindowInfo.RemoteWindowMode.LOOKUP);
 
-        EmbeddedLookup lookup = (EmbeddedLookup) openWindow(windowInfo, new OpenType(openType), screenParams);
+        RemoteWindowHolder lookup = (RemoteWindowHolder) openWindow(windowInfo, new OpenType(openType), remoteScreenParams);
+        RemoteApp remoteApp = remoteApps.get(lookup);
+        remoteApp.register(new ResendingLookupHandler(handler, lookup), RemoteLookupHandler.class);
+    }
+
+    @Override
+    public void openEditor(String appName, String screenAlias, String item, RemoteLookupHandler handler, WindowManager.OpenMode openType, Map<String, Object> remoteScreenParams) {
+        RemoteWindowInfo windowInfo = (RemoteWindowInfo) windowConfig.getWindowInfo(appName + "/" + screenAlias);
+        windowInfo.setRemoteWindowMode(RemoteWindowInfo.RemoteWindowMode.EDITOR);
+        windowInfo.setRemoteItem(item);
+
+        RemoteWindowHolder lookup = (RemoteWindowHolder) openWindow(windowInfo, new OpenType(openType), remoteScreenParams);
         RemoteApp remoteApp = remoteApps.get(lookup);
         remoteApp.register(new ResendingLookupHandler(handler, lookup), RemoteLookupHandler.class);
     }
@@ -73,15 +82,13 @@ public class HostAppWindowManager extends WebWindowManager implements RemoteWind
             String appOrigin = getAppUrl(appName);
 
             String appId = Integer.toString(guestIdCounter++);
-            params = new HashMap<>(ParamsMap.of(
+            params = ParamsMap.of(
                     "screenAlias", remoteWindowInfo.getRemoteScreenId(),
                     "appUrl", appOrigin,
                     "paramsMap", params,
-                    "appId", appId));
-
-            if (remoteWindowInfo.isLookup()) {
-                params.put("urlParams", "&asLookup=true");
-            }
+                    "item", remoteWindowInfo.getRemoteItem(),
+                    "appId", appId,
+                    "remoteWindowMode", remoteWindowInfo.getRemoteWindowMode());
 
             Window window = super.openWindow(windowInfo, openType, params);
             RemoteApp app = new RemoteApp(appId);
@@ -172,7 +179,7 @@ public class HostAppWindowManager extends WebWindowManager implements RemoteWind
         }
 
         RemoteApp remoteApp = remoteApps.get(window);
-        if(remoteApp != null) {
+        if (remoteApp != null) {
             remoteApp.destroy();
         }
 

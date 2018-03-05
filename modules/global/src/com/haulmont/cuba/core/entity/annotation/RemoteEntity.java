@@ -8,5 +8,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface RemoteEntity {
-    String title() default "";
+    String titleProperty() default "";
+
+    String app();
+
+    String remoteName();
+
+    String editor();
+
+    String lookup();
 }

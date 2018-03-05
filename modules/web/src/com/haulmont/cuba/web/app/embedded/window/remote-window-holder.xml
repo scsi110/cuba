@@ -15,7 +15,7 @@
   -->
 
 <window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
-        class="com.haulmont.cuba.web.app.embedded.lookup.EmbeddedLookup">
+        class="com.haulmont.cuba.web.app.embedded.window.RemoteWindowHolder">
     <layout spacing="true">
         <browserFrame id="embeddingTarget" width="100%" height="100%"/>
     </layout>

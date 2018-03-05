@@ -11,8 +11,8 @@ import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.web.WebWindowManager;
 import com.haulmont.cuba.web.app.embedded.RemoteWindowManager.RemoteDialogAction;
-import com.haulmont.cuba.web.app.embedded.lookup.RemoteLookupHandler;
 import com.haulmont.cuba.web.app.embedded.transport.RemoteApp;
+import com.haulmont.cuba.web.app.embedded.window.RemoteLookupHandler;
 import com.vaadin.ui.Component;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -86,13 +86,24 @@ public class GuestAppWindowManager extends WebWindowManager {
         return super.showWindowDialog(window, openType, forciblyDialog);
     }
 
-    public void openRemoteLookup(String appName, String entityName, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
-        remoteWindowManager.openLookup(appName, entityName, handler, openMode, screenParams);
+    public void openRemoteLookup(String appName, String screenAlias, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
+        remoteWindowManager.openLookup(appName, screenAlias, handler, openMode, screenParams);
     }
 
+    public void openRemoteEditor(String appName, String screenAlias, String item, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
+        remoteWindowManager.openEditor(appName, screenAlias, item, handler, openMode, screenParams);
+    }
 
     public void openLookupFromHost(WindowInfo windowInfo, OpenType openType, Map<String, Object> paramsMap) {
         openLookup(windowInfo, new ConvertingLookup(), openType, paramsMap);
+    }
+
+    public void openEditorFromHost(WindowInfo windowInfo, Entity entity, OpenType openType, Map<String, Object> paramsMap) {
+        Window.Editor editor = openEditor(windowInfo, entity, openType, paramsMap);
+        editor.addCloseWithCommitListener(() -> {
+            RemoteEntityInfo entityInfo = RemoteEntityInfo.from((BaseUuidEntity) editor.getItem());
+            hostApp.get(RemoteLookupHandler.class).handleLookup(new RemoteEntityInfo[] {entityInfo});
+        });
     }
 
     private class ConvertingLookup implements Window.Lookup.Handler {

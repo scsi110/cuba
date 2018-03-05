@@ -4,6 +4,7 @@ import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.EntityAccessException;
 import com.haulmont.cuba.core.global.EntityLoadInfo;
 import com.haulmont.cuba.gui.WindowManager;
+import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
@@ -38,7 +39,8 @@ public class GuestAppLinkHandler extends LinkHandler {
         String openTypeParam = requestParams.get("openType");
         WindowManager.OpenType openType = WindowManager.OpenType.NEW_TAB;
 
-        boolean asRemoteLookup = requestParams.get("asLookup") != null && Boolean.parseBoolean(requestParams.get("asLookup"));
+        String remoteWindowModeName = requestParams.get("remoteWindowMode");
+        RemoteWindowInfo.RemoteWindowMode remoteWindowMode = remoteWindowModeName != null ? RemoteWindowInfo.RemoteWindowMode.valueOf(remoteWindowModeName) : null;
 
         if (StringUtils.isNotEmpty(openTypeParam)) {
             try {
@@ -48,22 +50,42 @@ public class GuestAppLinkHandler extends LinkHandler {
             }
         }
 
-        if (itemStr == null) {
-            if (asRemoteLookup) {
-                ((GuestAppWindowManager) app.getWindowManager()).openLookupFromHost(windowInfo, openType, getParamsMap(requestParams));
-            } else {
-                app.getWindowManager().openWindow(windowInfo, openType, getParamsMap(requestParams));
-            }
-        } else {
+        Entity entity = null;
+        if (itemStr != null) {
             EntityLoadInfo info = EntityLoadInfo.parse(itemStr);
             if (info == null) {
                 log.warn("Invalid item definition: {}", itemStr);
             } else {
-                Entity entity = loadEntityInstance(info);
-                if (entity != null)
+                entity = loadEntityInstance(info);
+            }
+            if (entity == null) {
+                throw new EntityAccessException();
+            }
+        }
+
+        if (remoteWindowMode != null) {
+            GuestAppWindowManager windowManager = (GuestAppWindowManager) app.getWindowManager();
+            switch (remoteWindowMode) {
+                case LOOKUP:
+                    windowManager.openLookupFromHost(windowInfo, openType, getParamsMap(requestParams));
+                    break;
+                case EDITOR:
+                    windowManager.openEditorFromHost(windowInfo, entity, openType, getParamsMap(requestParams));
+                    break;
+                case DEFAULT:
+                    windowManager.openWindow(windowInfo, openType, getParamsMap(requestParams));
+                    break;
+            }
+        } else {
+            if (itemStr == null) {
+                app.getWindowManager().openWindow(windowInfo, openType, getParamsMap(requestParams));
+            } else {
+                EntityLoadInfo info = EntityLoadInfo.parse(itemStr);
+                if (info == null) {
+                    log.warn("Invalid item definition: {}", itemStr);
+                } else {
                     app.getWindowManager().openEditor(windowInfo, entity, openType, getParamsMap(requestParams));
-                else
-                    throw new EntityAccessException();
+                }
             }
         }
     }

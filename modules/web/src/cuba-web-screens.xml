@@ -80,6 +80,6 @@
     <screen id="embeddedWindow"
             template="/com/haulmont/cuba/web/app/embedded/embeddedwindow.xml"/>
 
-    <screen id="embeddedLookup"
-            template="/com/haulmont/cuba/web/app/embedded/lookup/embedded-lookup.xml"/>
+    <screen id="remote-window-holder"
+            template="/com/haulmont/cuba/web/app/embedded/window/remote-window-holder.xml"/>
 </screen-config>

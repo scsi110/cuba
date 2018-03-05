@@ -3,7 +3,7 @@ package com.haulmont.cuba.web.app.embedded;
 import com.haulmont.cuba.gui.config.DeviceInfo;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
-import com.haulmont.cuba.web.app.embedded.lookup.EmbeddedLookup;
+import com.haulmont.cuba.web.app.embedded.window.RemoteWindowHolder;
 
 import javax.annotation.Nullable;
 
@@ -17,7 +17,7 @@ public class HostAppWindowConfig extends WindowConfig {
             String appName = parts[0];
             String remoteScreenId = parts[1];
 
-            id = EmbeddedLookup.SCREEN_ID;
+            id = RemoteWindowHolder.SCREEN_ID;
 
             WindowInfo windowInfo = super.findWindowInfo(id, deviceInfo);
 

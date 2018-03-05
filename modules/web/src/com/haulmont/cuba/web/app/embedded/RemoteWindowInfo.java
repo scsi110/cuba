@@ -5,7 +5,9 @@ import com.haulmont.cuba.gui.config.WindowInfo;
 public class RemoteWindowInfo extends WindowInfo {
     private final String appName;
     private final String remoteScreenId;
-    private boolean isLookup = false;
+
+    private String remoteItem;
+    private RemoteWindowMode remoteWindowMode = RemoteWindowMode.DEFAULT;
 
     public RemoteWindowInfo(WindowInfo windowInfo, String appName, String remoteScreenId) {
         super(windowInfo.getId(), windowInfo.getDescriptor(), windowInfo.getScreenAgent());
@@ -21,11 +23,25 @@ public class RemoteWindowInfo extends WindowInfo {
         return remoteScreenId;
     }
 
-    public boolean isLookup() {
-        return isLookup;
+    public String getRemoteItem() {
+        return remoteItem;
     }
 
-    public void setLookup(boolean lookup) {
-        isLookup = lookup;
+    public void setRemoteItem(String remoteItem) {
+        this.remoteItem = remoteItem;
+    }
+
+    public RemoteWindowMode getRemoteWindowMode() {
+        return remoteWindowMode;
+    }
+
+    public void setRemoteWindowMode(RemoteWindowMode remoteWindowMode) {
+        this.remoteWindowMode = remoteWindowMode;
+    }
+
+    public enum RemoteWindowMode {
+        DEFAULT,
+        LOOKUP,
+        EDITOR
     }
 }
