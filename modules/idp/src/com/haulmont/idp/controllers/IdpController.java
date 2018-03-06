@@ -164,9 +164,11 @@ public class IdpController {
         try {
             URL url = new URL(serviceProviderUrl);
             String query = url.getQuery();
-            Arrays.stream(query.split("&"))
-                    .map(s -> s.split("="))
-                    .forEach(kvPair -> uriBuilder.addParameter(kvPair[0], kvPair[1]));
+            if(query != null) {
+                Arrays.stream(query.split("&"))
+                        .map(s -> s.split("="))
+                        .forEach(kvPair -> uriBuilder.addParameter(kvPair[0], kvPair[1]));
+            }
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

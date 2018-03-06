@@ -6,7 +6,9 @@ import com.haulmont.cuba.gui.components.BrowserFrame;
 import com.haulmont.cuba.gui.components.UrlResource;
 import com.haulmont.cuba.web.app.embedded.RemoteWindowInfo;
 import com.haulmont.cuba.web.gui.components.WebUrlResource;
-import org.apache.http.client.utils.URIBuilder;
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.server.AbstractClientConnector;
+import com.vaadin.server.AbstractJavaScriptExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -18,10 +20,10 @@ import java.net.URL;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class RemoteWindowHolder extends AbstractWindow {
+public class GuestWindowHolder extends AbstractWindow {
     public static final String SCREEN_ID = "remote-window-holder";
 
-    private static final Logger log = LoggerFactory.getLogger(RemoteWindowHolder.class);
+    private static final Logger log = LoggerFactory.getLogger(GuestWindowHolder.class);
 
     @Inject
     private BrowserFrame embeddingTarget;
@@ -48,13 +50,13 @@ public class RemoteWindowHolder extends AbstractWindow {
     public void init(Map<String, Object> params) {
         try {
             embeddingTarget.setSource(getResource());
-        } catch (MalformedURLException | URISyntaxException e) {
+        } catch (MalformedURLException e) {
             log.warn("External resource malformed URL", e);
             showNotification("External resource malformed URL", NotificationType.ERROR);
         }
     }
 
-    private UrlResource getResource() throws MalformedURLException, URISyntaxException {
+    private UrlResource getResource() throws MalformedURLException {
         String url = appUrl + "/app/open" +
                 "?screen=" + screenAlias +
                 "&appId=" + appId +

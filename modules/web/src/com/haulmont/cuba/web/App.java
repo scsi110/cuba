@@ -32,6 +32,8 @@ import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.app.embedded.EmbedAppConfig;
+import com.haulmont.cuba.web.app.embedded.GuestAppWindowManager;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
 import com.haulmont.cuba.web.exception.ExceptionHandlers;
@@ -91,6 +93,9 @@ public abstract class App {
 
     @Inject
     protected WebConfig webConfig;
+
+    @Inject
+    protected EmbedAppConfig embedAppConfig;
 
     @Inject
     protected WebAuthConfig webAuthConfig;
@@ -291,7 +296,12 @@ public abstract class App {
      * Called on each browser tab initialization.
      */
     public void createTopLevelWindow(AppUI ui) {
-        WebWindowManager wm = AppBeans.getPrototype(WebWindowManager.NAME);
+        WebWindowManager wm;
+        if (embedAppConfig.isGuestMode() && ui.getAppId() != null) {
+            wm = AppBeans.getPrototype(GuestAppWindowManager.NAME);
+        } else {
+            wm = AppBeans.getPrototype(WebWindowManager.NAME);
+        }
         wm.setUi(ui);
 
         String topLevelWindowId = routeTopLevelWindowId();

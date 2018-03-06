@@ -12,6 +12,7 @@ import com.haulmont.cuba.gui.WindowManagerProvider;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.PickerField;
 import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.app.embedded.GuestAppWindowManager;
 import com.haulmont.cuba.web.app.embedded.RemoteEntityInfo;
 import org.slf4j.LoggerFactory;
@@ -33,11 +34,17 @@ public class RemoteComponentsHelper {
     private DataManager dataManager;
 
     public void addRemoteLookupAction(PickerField lookupField) {
-        lookupField.addAction(new RemoteLookupAction(lookupField));
+        RemoteLookupAction action = new RemoteLookupAction(lookupField);
+        action.setIcon("font-icon:DATABASE");
+        action.setEnabled(AppUI.getCurrent().getAppId() != null);
+        lookupField.addAction(action);
     }
 
     public void addRemoteOpenAction(PickerField lookupField) {
-        lookupField.addAction(new RemoteOpenAction(lookupField));
+        RemoteOpenAction action = new RemoteOpenAction(lookupField);
+        action.setIcon("font-icon:EYE");
+        action.setEnabled(AppUI.getCurrent().getAppId() != null);
+        lookupField.addAction(action);
     }
 
     private BaseUuidEntity createEntity(RemoteEntityInfo remoteEntityInfo, MetaClass metaClass, String titleProperty) {
@@ -63,17 +70,16 @@ public class RemoteComponentsHelper {
     }
 
     private class RemoteLookupAction extends PickerField.LookupAction {
-        private final String appName;
         private final String titleProperty;
         private final MetaClass metaClass;
+        private final Class javaClass;
 
         RemoteLookupAction(PickerField pickerField) {
             super(pickerField);
             this.metaClass = pickerField.getMetaClass();
-            RemoteEntity annotation = (RemoteEntity) metaClass.getJavaClass().getAnnotation(RemoteEntity.class);
-            this.lookupScreen = annotation.lookup();
+            javaClass = metaClass.getJavaClass();
+            RemoteEntity annotation = (RemoteEntity) javaClass.getAnnotation(RemoteEntity.class);
 
-            this.appName = annotation.app();
             this.titleProperty = annotation.titleProperty();
         }
 
@@ -94,8 +100,7 @@ public class RemoteComponentsHelper {
             Map<String, Object> screenParams = prepareScreenParams();
 
             wm.openRemoteLookup(
-                    appName,
-                    lookupScreen,
+                    javaClass,
                     this::remoteEntitiesHandler,
                     openType.getOpenMode(),
                     screenParams
@@ -113,18 +118,17 @@ public class RemoteComponentsHelper {
     }
 
     private class RemoteOpenAction extends PickerField.OpenAction {
-        private final String appName;
         private final String titleProperty;
         private final MetaClass metaClass;
         private final String remoteName;
+        private final Class javaClass;
 
         RemoteOpenAction(PickerField pickerField) {
             super(pickerField);
             this.metaClass = pickerField.getMetaClass();
-            RemoteEntity annotation = (RemoteEntity) metaClass.getJavaClass().getAnnotation(RemoteEntity.class);
+            javaClass = metaClass.getJavaClass();
+            RemoteEntity annotation = (RemoteEntity) javaClass.getAnnotation(RemoteEntity.class);
             this.remoteName = annotation.remoteName();
-            this.editScreen = annotation.editor();
-            this.appName = annotation.app();
             this.titleProperty = annotation.titleProperty();
         }
 
@@ -160,7 +164,8 @@ public class RemoteComponentsHelper {
             entity = window.getDsContext().getDataSupplier().reload(entity, View.MINIMAL);
 
             String item = remoteName + "-" + entity.getId();
-            wm.openRemoteEditor(appName, editScreen, item,
+            wm.openRemoteEditor(javaClass,
+                    item,
                     this::remoteEntitiesHandler,
                     openType.getOpenMode(),
                     screenParams

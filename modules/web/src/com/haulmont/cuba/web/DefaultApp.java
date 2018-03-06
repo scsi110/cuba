@@ -52,9 +52,6 @@ public class DefaultApp extends App implements StateChangeListener, UserSubstitu
 
     private static final Logger log = LoggerFactory.getLogger(DefaultApp.class);
 
-    @Inject
-    protected EmbedAppConfig embedAppConfig;
-
     public DefaultApp() {
     }
 
@@ -196,7 +193,7 @@ public class DefaultApp extends App implements StateChangeListener, UserSubstitu
 
     @Override
     protected String routeTopLevelWindowId() {
-        if (embedAppConfig.isGuestMode()) {
+        if (embedAppConfig.isGuestMode() && AppUI.getCurrent().getAppId() != null) {
             return "embeddedWindow";
         }
         if (connection.isAuthenticated()) {

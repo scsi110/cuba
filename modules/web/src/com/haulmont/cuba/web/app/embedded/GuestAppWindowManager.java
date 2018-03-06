@@ -1,30 +1,40 @@
 package com.haulmont.cuba.web.app.embedded;
 
 import com.google.common.base.Preconditions;
+import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.cuba.core.entity.BaseUuidEntity;
 import com.haulmont.cuba.core.entity.Entity;
+import com.haulmont.cuba.core.entity.annotation.RemoteEntity;
 import com.haulmont.cuba.gui.components.Action;
 import com.haulmont.cuba.gui.components.DialogAction;
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.components.actions.BaseAction;
 import com.haulmont.cuba.gui.config.WindowInfo;
-import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.web.WebWindowManager;
-import com.haulmont.cuba.web.app.embedded.RemoteWindowManager.RemoteDialogAction;
 import com.haulmont.cuba.web.app.embedded.transport.RemoteApp;
-import com.haulmont.cuba.web.app.embedded.window.RemoteLookupHandler;
-import com.vaadin.ui.Component;
+import com.haulmont.cuba.web.app.embedded.window.RemoteEditor;
+import com.haulmont.cuba.web.app.embedded.window.RemoteLookup;
+import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager;
+import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager.RemoteDialogAction;
+import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager.RemoteDialogHandler;
+import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager.RemoteLookupHandler;
+import com.haulmont.cuba.web.sys.WindowBreadCrumbs;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
+@Component(GuestAppWindowManager.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class GuestAppWindowManager extends WebWindowManager {
+public class GuestAppWindowManager extends WebWindowManager implements HostBreadcrumbListener {
+    public static final String NAME = "cuba_GuestWindowManager";
 
     private RemoteWindowManager remoteWindowManager;
 
@@ -34,32 +44,23 @@ public class GuestAppWindowManager extends WebWindowManager {
     public void init() {
         hostApp = new RemoteApp(RemoteApp.HOST_APP_NAME);
         remoteWindowManager = hostApp.get(RemoteWindowManager.class);
-    }
-
-    @Override
-    public Window.Lookup openLookup(WindowInfo windowInfo, Window.Lookup.Handler handler, OpenType openType, Map<String, Object> params) {
-        //        todo breadcrumbs
-        return super.openLookup(windowInfo, handler, openType, params);
-    }
-
-    @Override
-    public Window.Editor openEditor(WindowInfo windowInfo, Entity item, OpenType openType, Map<String, Object> params, Datasource parentDs) {
-        //        todo breadcrumbs
-        return super.openEditor(windowInfo, item, openType, params, parentDs);
+        hostApp.register(this, HostBreadcrumbListener.class);
     }
 
     @Override
     public void showOptionDialog(String title, String message, Frame.MessageType messageType, Action[] actions) {
-        Preconditions.checkArgument(Arrays.stream(actions).allMatch(action -> action instanceof DialogAction));
+        Preconditions.checkArgument(Arrays.stream(actions).allMatch(action -> action instanceof BaseAction));
         RemoteDialogAction[] remoteActions = new RemoteDialogAction[actions.length];
         for (int i = 0; i < actions.length; i++) {
             RemoteDialogAction action = remoteActions[i] = new RemoteDialogAction();
             action.caption = actions[i].getCaption();
-            action.type = ((DialogAction) actions[i]).getType();
+            if(actions[i] instanceof DialogAction) {
+                action.type = ((DialogAction) actions[i]).getType();
+            }
             action.id = Integer.toString(i);
         }
 
-        RemoteWindowManager.RemoteDialogHandler handler = id -> actions[Integer.parseInt(id)].actionPerform(null);
+        RemoteDialogHandler handler = id -> actions[Integer.parseInt(id)].actionPerform(null);
 
         remoteWindowManager.showOptionsDialog(title, message, messageType, remoteActions, handler);
     }
@@ -70,28 +71,34 @@ public class GuestAppWindowManager extends WebWindowManager {
     }
 
     @Override
-    protected Component showWindowNewTab(Window window, boolean multipleOpen) {
-        //        todo breadcrumbs
-        return super.showWindowNewTab(window, multipleOpen);
+    protected void showWindow(Window window, String caption, String description, OpenType type, boolean multipleOpen) {
+        super.showWindow(window, caption, description, type, multipleOpen);
+        remoteWindowManager.guestWindowOpened(window.getCaption(), window.getDescription());
     }
 
     @Override
-    protected Component showWindowThisTab(Window window, String caption, String description) {
-//        todo breadcrumbs
-        return super.showWindowThisTab(window, caption, description);
+    protected void closeWindow(Window window, WindowOpenInfo openInfo) {
+        super.closeWindow(window, openInfo);
+        remoteWindowManager.remoteWindowClosed(Window.CLOSE_ACTION_ID);
     }
 
     @Override
-    protected Component showWindowDialog(Window window, OpenType openType, boolean forciblyDialog) {
-        return super.showWindowDialog(window, openType, forciblyDialog);
+    protected WindowBreadCrumbs createWindowBreadCrumbs(Window window) {
+        WindowBreadCrumbs breadCrumbs = super.createWindowBreadCrumbs(window);
+        breadCrumbs.setVisible(false);
+        return breadCrumbs;
     }
 
-    public void openRemoteLookup(String appName, String screenAlias, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
-        remoteWindowManager.openLookup(appName, screenAlias, handler, openMode, screenParams);
+    public RemoteLookup openRemoteLookup(Class<? extends Entity> entityClass, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
+        RemoteEntity remoteEntityAnnotation = entityClass.getAnnotation(RemoteEntity.class);
+        remoteWindowManager.openLookup(remoteEntityAnnotation.app(), remoteEntityAnnotation.lookup(), handler, openMode, screenParams);
+        return null;
     }
 
-    public void openRemoteEditor(String appName, String screenAlias, String item, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
-        remoteWindowManager.openEditor(appName, screenAlias, item, handler, openMode, screenParams);
+    public RemoteEditor openRemoteEditor(Class<? extends Entity> entityClass, String item, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
+        RemoteEntity remoteEntityAnnotation = entityClass.getAnnotation(RemoteEntity.class);
+        remoteWindowManager.openEditor(remoteEntityAnnotation.app(), remoteEntityAnnotation.editor(), item, handler, openMode, screenParams);
+        return null;
     }
 
     public void openLookupFromHost(WindowInfo windowInfo, OpenType openType, Map<String, Object> paramsMap) {
@@ -102,8 +109,20 @@ public class GuestAppWindowManager extends WebWindowManager {
         Window.Editor editor = openEditor(windowInfo, entity, openType, paramsMap);
         editor.addCloseWithCommitListener(() -> {
             RemoteEntityInfo entityInfo = RemoteEntityInfo.from((BaseUuidEntity) editor.getItem());
-            hostApp.get(RemoteLookupHandler.class).handleLookup(new RemoteEntityInfo[] {entityInfo});
+            hostApp.get(RemoteLookupHandler.class).handleLookup(new RemoteEntityInfo[]{entityInfo});
         });
+    }
+
+    @Override
+    public void closeWindow() {
+        WindowBreadCrumbs breadCrumbs = tabs.values().iterator().next();
+        Window window = breadCrumbs.getCurrentWindow();
+        if (window instanceof Window.Wrapper) {
+            window = ((Window.Wrapper) window).getWrappedWindow();
+        }
+
+        WindowOpenInfo openInfo = windowOpenMode.get(window);
+        super.closeWindow(window, openInfo);
     }
 
     private class ConvertingLookup implements Window.Lookup.Handler {

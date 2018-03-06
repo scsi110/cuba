@@ -81,5 +81,5 @@
             template="/com/haulmont/cuba/web/app/embedded/embeddedwindow.xml"/>
 
     <screen id="remote-window-holder"
-            template="/com/haulmont/cuba/web/app/embedded/window/remote-window-holder.xml"/>
+            template="/com/haulmont/cuba/web/app/embedded/window/guest-window-holder.xml"/>
 </screen-config>

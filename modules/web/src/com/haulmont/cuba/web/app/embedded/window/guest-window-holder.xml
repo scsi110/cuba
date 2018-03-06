@@ -15,8 +15,10 @@
   -->
 
 <window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
-        class="com.haulmont.cuba.web.app.embedded.window.RemoteWindowHolder">
-    <layout spacing="true">
-        <browserFrame id="embeddingTarget" width="100%" height="100%"/>
+        class="com.haulmont.cuba.web.app.embedded.window.GuestWindowHolder"
+        messagesPack="com.haulmont.cuba.web.app.embedded.window"
+        caption="msg://loading">
+    <layout spacing="false">
+        <browserFrame id="embeddingTarget" width="100%" height="100%" alternateText="msg://appUnavailable"/>
     </layout>
 </window>
