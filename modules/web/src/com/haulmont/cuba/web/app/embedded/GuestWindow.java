@@ -112,12 +112,14 @@ public class GuestWindow implements Window, Component.Wrapper {
 
     @Override
     public boolean close(String actionId) {
-        throw new UnsupportedOperationException();
+        handler.closeWindow(actionId);
+        return true;
     }
 
     @Override
     public boolean close(String actionId, boolean force) {
-        throw new UnsupportedOperationException();
+        handler.closeWindow(actionId);
+        return true;
     }
 
     @Override
