@@ -1,7 +1,6 @@
 package com.haulmont.cuba.web.app.embedded;
 
 import com.google.common.base.Preconditions;
-import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.cuba.core.entity.BaseUuidEntity;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.entity.annotation.RemoteEntity;
@@ -28,12 +27,11 @@ import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 @Component(GuestAppWindowManager.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class GuestAppWindowManager extends WebWindowManager implements HostBreadcrumbListener {
+public class GuestAppWindowManager extends WebWindowManager implements WindowStack {
     public static final String NAME = "cuba_GuestWindowManager";
 
     private RemoteWindowManager remoteWindowManager;
@@ -44,7 +42,7 @@ public class GuestAppWindowManager extends WebWindowManager implements HostBread
     public void init() {
         hostApp = new RemoteApp(RemoteApp.HOST_APP_NAME);
         remoteWindowManager = hostApp.get(RemoteWindowManager.class);
-        hostApp.register(this, HostBreadcrumbListener.class);
+        hostApp.register(this, WindowStack.class);
     }
 
     @Override
@@ -114,7 +112,7 @@ public class GuestAppWindowManager extends WebWindowManager implements HostBread
     }
 
     @Override
-    public void closeWindow() {
+    public void popStack() {
         WindowBreadCrumbs breadCrumbs = tabs.values().iterator().next();
         Window window = breadCrumbs.getCurrentWindow();
         if (window instanceof Window.Wrapper) {

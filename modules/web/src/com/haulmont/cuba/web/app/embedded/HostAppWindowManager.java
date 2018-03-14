@@ -68,11 +68,6 @@ public class HostAppWindowManager extends WebWindowManager {
     }
 
     @Override
-    protected void showWindow(Window window, String caption, String description, OpenType type, boolean multipleOpen) {
-        super.showWindow(window, caption, description, type, multipleOpen);
-    }
-
-    @Override
     protected Component showWindowThisTab(com.haulmont.cuba.gui.components.Window window, String caption, String description) {
         getDialogParams().reset();
 
@@ -248,6 +243,16 @@ public class HostAppWindowManager extends WebWindowManager {
         }
     }
 
+    private WindowBreadCrumbs getRelatedBreadcrumbs(Window window) {
+        if (window instanceof Window.Wrapper) {
+            window = ((Window.Wrapper) window).getWrappedWindow();
+        }
+
+        WindowOpenInfo openInfo = windowOpenMode.get(window);
+        //noinspection SuspiciousMethodCalls
+        return tabs.get(openInfo.getData());
+    }
+
     protected Layout createNewTabLayout(final Window window, final boolean multipleOpen, WindowBreadCrumbs breadCrumbs,
                                         Component... additionalComponents) {
         Layout layout = super.createNewTabLayout(window, multipleOpen, breadCrumbs, additionalComponents);
@@ -284,7 +289,8 @@ public class HostAppWindowManager extends WebWindowManager {
     class GuestWindowHandlerImpl {
 
         private final RemoteWindowManager windowManager;
-        private final HostBreadcrumbListener breadcrumbListener;
+        private final WindowStack guestAppWindowStack;
+        private final WindowBreadCrumbs breadcrumbs;
         private RemoteApp app;
         private Window window;
         private LinkedList<GuestWindow> guestWindows = new LinkedList<>();
@@ -294,22 +300,12 @@ public class HostAppWindowManager extends WebWindowManager {
             this.window = window;
             this.windowManager = new RemoteWindowManagerImpl(this);
             app.register(windowManager, RemoteWindowManager.class);
-            breadcrumbListener = app.get(HostBreadcrumbListener.class);
-        }
-
-        private WindowBreadCrumbs getBreadcrumbs() {
-            Window window = this.window;
-            if (window instanceof Window.Wrapper) {
-                window = ((Window.Wrapper) window).getWrappedWindow();
-            }
-
-            WindowOpenInfo openInfo = windowOpenMode.get(window);
-            //noinspection SuspiciousMethodCalls
-            return tabs.get(openInfo.getData());
+            guestAppWindowStack = app.get(WindowStack.class);
+            breadcrumbs = getRelatedBreadcrumbs(window);
         }
 
         private void updateCaption() {
-            String caption = getBreadcrumbs().getCurrentWindow().getCaption();
+            String caption = breadcrumbs.getCurrentWindow().getCaption();
 
             Window window = this.window;
             if (window instanceof Window.Wrapper) {
@@ -332,7 +328,7 @@ public class HostAppWindowManager extends WebWindowManager {
         }
 
         public void closeWindow(String actionId) {
-            breadcrumbListener.closeWindow();
+            guestAppWindowStack.popStack();
             popStack(actionId);
         }
 
@@ -345,24 +341,23 @@ public class HostAppWindowManager extends WebWindowManager {
 
             //noinspection IncorrectCreateGuiComponent
             GuestWindow guestWindow = new GuestWindow(((GuestWindowHolder) window), this, caption, description);
-            WindowBreadCrumbs breadCrumbs = getBreadcrumbs();
             if (guestWindows.isEmpty()) {
-                breadCrumbs.removeWindow();
+                breadcrumbs.removeWindow();
             }
             guestWindows.add(guestWindow);
-            breadCrumbs.addWindow(guestWindow);
+            breadcrumbs.addWindow(guestWindow);
 
             updateCaption();
         }
 
         public void popStack(String actionId) {
             if (!guestWindows.isEmpty()) {
-                getBreadcrumbs().removeWindow();
+                breadcrumbs.removeWindow();
                 guestWindows.removeLast();
             }
             if (guestWindows.isEmpty()) {
-                getBreadcrumbs().addWindow(window);
-                HostAppWindowManager.this.close(window);
+                breadcrumbs.addWindow(window);
+                window.close(actionId);
             } else {
                 updateCaption();
             }
@@ -406,6 +401,7 @@ public class HostAppWindowManager extends WebWindowManager {
 
         @Override
         public void showNotification(String caption, String description, Frame.NotificationType type) {
+            HostAppWindowManager.this.showNotification(caption, description, type);
         }
 
         @Override

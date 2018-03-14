@@ -75,6 +75,8 @@ public class CubaManagedTabSheet extends CssLayout
 
     protected final Map<String, Tab> tabIds = new HashMap<>();
 
+    protected final Map<Component, CssLayout> tabWrappers = new HashMap<>();
+
     protected final List<Component> tabComponents = new ArrayList<>();
 
     protected Component selected = null;
@@ -131,7 +133,7 @@ public class CubaManagedTabSheet extends CssLayout
 
         ((TabImpl) tab).setCloseHandler(null);
 
-        super.removeComponent(((TabImpl) tab));
+        tabWrappers.get(tab).removeComponent(((TabImpl) tab));
     }
 
     protected TabImpl getContentTab(Component tabContent) {
@@ -169,7 +171,11 @@ public class CubaManagedTabSheet extends CssLayout
         TabSheet.Tab tabbarTab = tabbedHeader.addTab(tabbarTabComponent, caption, icon, position);
         tab.setTabbarTab(tabbarTab);
 
-        addComponent(tab);
+        CssLayout tabWrapper = new CssLayout();
+        tabWrapper.addComponent(tab);
+        tabWrappers.put(tab, tabWrapper);
+
+        addComponent(tabWrapper);
 
         tabbedHeader.setVisible(true);
 

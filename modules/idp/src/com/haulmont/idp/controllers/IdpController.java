@@ -43,7 +43,6 @@ import javax.inject.Inject;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -154,7 +153,7 @@ public class IdpController {
 
     private String deleteParameters(String serviceProviderUrl) {
         boolean hasParameters = serviceProviderUrl.contains("?");
-        if(hasParameters) {
+        if (hasParameters) {
             serviceProviderUrl = serviceProviderUrl.substring(0, serviceProviderUrl.indexOf('?'));
         }
         return serviceProviderUrl;
@@ -164,13 +163,14 @@ public class IdpController {
         try {
             URL url = new URL(serviceProviderUrl);
             String query = url.getQuery();
-            if(query != null) {
+            if (query != null) {
                 Arrays.stream(query.split("&"))
                         .map(s -> s.split("="))
+                        .filter(strings -> strings.length == 2)
                         .forEach(kvPair -> uriBuilder.addParameter(kvPair[0], kvPair[1]));
             }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(String.format("Error during redirection parameters filling. Service provider url: %s", serviceProviderUrl), e);
         }
     }
 
