@@ -36,14 +36,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * IDP login form endpoint.
@@ -72,6 +76,16 @@ public class IdpController {
 
     @Inject
     protected IdpServiceLogoutCallbackInvoker logoutCallbackInvoker;
+
+    private List<Pattern> serviceProviderUrlMasks;
+
+    @PostConstruct
+    public void init() {
+        serviceProviderUrlMasks = idpConfig.getServiceProviderUrlMasks()
+                .stream()
+                .map(Pattern::compile)
+                .collect(Collectors.toList());
+    }
 
     @GetMapping(value = "/")
     public String checkIdpSession(@RequestParam(value = "sp", defaultValue = "") String serviceProviderUrl,
@@ -311,9 +325,9 @@ public class IdpController {
             return true;
         }
 
-        return idpConfig.getServiceProviderUrlsMasks()
+        return serviceProviderUrlMasks
                 .stream()
-                .anyMatch(redirectUrl::matches);
+                .anyMatch(pattern -> pattern.matcher(redirectUrl).matches());
     }
 
 }

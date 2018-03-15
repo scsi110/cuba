@@ -59,9 +59,9 @@ public interface IdpConfig extends Config {
      *         For example, http://your-domain.com.* unsafe mask, as would allow redirecting to http://your-domain.com.org, that might be owned by malefactor.
      *         For this case, safe mask would be http://your-domain.com/.*
      */
-    @Property("cuba.idp.serviceProviderUrlsMasks")
+    @Property("cuba.idp.serviceProviderUrlMasks")
     @Factory(factory = CommaSeparatedStringListTypeFactory.class)
-    List<String> getServiceProviderUrlsMasks();
+    List<String> getServiceProviderUrlMasks();
 
     /**
      * @return all URLs that need to be notified on session logout or expiration separated by comma. <br>
