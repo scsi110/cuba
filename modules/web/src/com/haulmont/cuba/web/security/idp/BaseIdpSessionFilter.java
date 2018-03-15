@@ -297,7 +297,7 @@ public abstract class BaseIdpSessionFilter implements Filter {
         return idpRedirectUrl;
     }
 
-    private String getRequestURL(HttpServletRequest request) {
+    protected String getRequestURL(HttpServletRequest request) {
         StringBuffer requestURL = request.getRequestURL();
         String queryString = request.getQueryString();
 
@@ -308,7 +308,7 @@ public abstract class BaseIdpSessionFilter implements Filter {
         }
     }
 
-    private String getRedirectUrlWithoutIdpTicket(HttpServletRequest httpRequest) throws URISyntaxException {
+    protected String getRedirectUrlWithoutIdpTicket(HttpServletRequest httpRequest) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(httpRequest.getRequestURL().toString());
         String queryString = httpRequest.getQueryString();
         if (!Strings.isNullOrEmpty(queryString)) {

@@ -320,7 +320,7 @@ public class IdpController {
         return localesInfo;
     }
 
-    private boolean isValidRedirectURL(String redirectUrl) {
+    protected boolean isValidRedirectURL(String redirectUrl) {
         if (idpConfig.getServiceProviderUrls().contains(redirectUrl)) {
             return true;
         }
