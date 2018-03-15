@@ -77,7 +77,7 @@ public class IdpController {
     @Inject
     protected IdpServiceLogoutCallbackInvoker logoutCallbackInvoker;
 
-    private List<Pattern> serviceProviderUrlMasks;
+    protected List<Pattern> serviceProviderUrlMasks;
 
     @PostConstruct
     public void init() {

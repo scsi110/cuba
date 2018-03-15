@@ -56,7 +56,8 @@ public interface IdpConfig extends Config {
     /**
      * @return java regexp masks for permitted service URLs separated by comma. <br>
      *         Should be carefully chosen to not to allow redirecting to untrusted URLs. <br>
-     *         For example, http://your-domain.com.* unsafe mask, as would allow redirecting to http://your-domain.com.org, that might be owned by malefactor.
+     *         For example, http://your-domain.com.* unsafe mask, as would allow redirecting to http://your-domain.com.org,
+     *         that might be owned by malefactor.
      *         For this case, safe mask would be http://your-domain.com/.*
      */
     @Property("cuba.idp.serviceProviderUrlMasks")
