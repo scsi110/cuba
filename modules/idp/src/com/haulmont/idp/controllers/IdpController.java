@@ -307,9 +307,13 @@ public class IdpController {
     }
 
     private boolean isValidRedirectURL(String redirectUrl) {
-        return idpConfig.getServiceProviderUrls()
+        if (idpConfig.getServiceProviderUrls().contains(redirectUrl)) {
+            return true;
+        }
+
+        return idpConfig.getServiceProviderUrlsMasks()
                 .stream()
-                .anyMatch(redirectUrl::startsWith);
+                .anyMatch(redirectUrl::matches);
     }
 
 }
