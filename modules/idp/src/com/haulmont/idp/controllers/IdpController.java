@@ -79,7 +79,7 @@ public class IdpController {
                                   @CookieValue(value = CUBA_IDP_COOKIE_NAME, defaultValue = "") String idpSessionCookie,
                                   HttpServletResponse response) {
         if (!Strings.isNullOrEmpty(serviceProviderUrl)
-                && !idpConfig.getServiceProviderUrls().contains(serviceProviderUrl)) {
+                && !isValidRedirectURL(serviceProviderUrl)) {
             log.warn("Incorrect serviceProviderUrl {} passed, will be used default", serviceProviderUrl);
             serviceProviderUrl = null;
         }
@@ -150,7 +150,7 @@ public class IdpController {
                          @CookieValue(value = CUBA_IDP_COOKIE_NAME, defaultValue = "") String idpSessionCookie,
                          HttpServletResponse response) {
         if (!Strings.isNullOrEmpty(serviceProviderUrl)
-                && !idpConfig.getServiceProviderUrls().contains(serviceProviderUrl)) {
+                && !isValidRedirectURL(serviceProviderUrl)) {
             log.warn("Incorrect serviceProviderUrl {} passed, will be used default", serviceProviderUrl);
             serviceProviderUrl = null;
         }
@@ -209,7 +209,7 @@ public class IdpController {
         String serviceProviderUrl = auth.getServiceProviderUrl();
 
         if (!Strings.isNullOrEmpty(serviceProviderUrl)
-                && !idpConfig.getServiceProviderUrls().contains(serviceProviderUrl)) {
+                && !isValidRedirectURL(serviceProviderUrl)) {
             log.warn("Incorrect serviceProviderUrl {} passed, will be used default", serviceProviderUrl);
             serviceProviderUrl = null;
         }
@@ -305,4 +305,11 @@ public class IdpController {
 
         return localesInfo;
     }
+
+    private boolean isValidRedirectURL(String redirectUrl) {
+        return idpConfig.getServiceProviderUrls()
+                .stream()
+                .anyMatch(redirectUrl::startsWith);
+    }
+
 }
