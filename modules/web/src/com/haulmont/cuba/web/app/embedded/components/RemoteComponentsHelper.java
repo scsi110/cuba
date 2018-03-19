@@ -15,10 +15,11 @@ import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.app.embedded.GuestAppWindowManager;
 import com.haulmont.cuba.web.app.embedded.RemoteEntityInfo;
+import com.haulmont.cuba.web.app.embedded.window.RemoteEditor;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -101,19 +102,16 @@ public class RemoteComponentsHelper {
 
             wm.openRemoteLookup(
                     javaClass,
-                    this::remoteEntitiesHandler,
                     openType.getOpenMode(),
                     screenParams
-            );
-        }
+            ).setLookupHandler(items -> {
+                List<BaseUuidEntity> entities = ((Collection<RemoteEntityInfo>) items).stream()
+                        .map(remoteEntityInfo -> createEntity(remoteEntityInfo, metaClass, titleProperty))
+                        .collect(Collectors.toList());
 
-        private void remoteEntitiesHandler(RemoteEntityInfo[] remotes) {
-            List<BaseUuidEntity> entities = Arrays.stream(remotes)
-                    .map(remoteEntityInfo -> createEntity(remoteEntityInfo, metaClass, titleProperty))
-                    .collect(Collectors.toList());
-
-            handleLookupWindowSelection(entities);
-            pickerField.requestFocus();
+                handleLookupWindowSelection(entities);
+                pickerField.requestFocus();
+            });
         }
     }
 
@@ -164,25 +162,23 @@ public class RemoteComponentsHelper {
             entity = window.getDsContext().getDataSupplier().reload(entity, View.MINIMAL);
 
             String item = remoteName + "-" + entity.getId();
-            wm.openRemoteEditor(javaClass,
+            RemoteEditor remoteEditor = wm.openRemoteEditor(javaClass,
                     item,
-                    this::remoteEntitiesHandler,
                     openType.getOpenMode(),
                     screenParams
             );
-        }
 
-        private void remoteEntitiesHandler(RemoteEntityInfo[] remotes) {
-            List<BaseUuidEntity> entities = Arrays.stream(remotes)
-                    .map(remoteEntityInfo -> createEntity(remoteEntityInfo, metaClass, titleProperty))
-                    .collect(Collectors.toList());
+            remoteEditor.addCloseListener(actionId -> {
+                if (actionId.equals(Window.COMMIT_ACTION_ID)) {
+                    RemoteEntityInfo entityInfo = remoteEditor.getCommittedInstance();
+                    BaseUuidEntity localItem = createEntity(entityInfo, metaClass, titleProperty);
 
-            if (!entities.isEmpty()) {
-                BaseUuidEntity entity = entities.get(0);
-                afterCommitOpenedEntity(entity);
-            }
+                    afterCommitOpenedEntity(localItem);
+                }
 
-            pickerField.requestFocus();
+                // move focus to owner
+                pickerField.requestFocus();
+            });
         }
     }
 }

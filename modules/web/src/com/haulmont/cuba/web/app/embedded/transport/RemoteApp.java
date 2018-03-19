@@ -141,7 +141,7 @@ public class RemoteApp implements CallbackHolder {
     private class RemoteObjectInvocationHandler implements InvocationHandler {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if(args == null) {
+            if (args == null) {
                 args = new Object[0];
             }
             createRemoteCallbackIfNeeded(method, args);

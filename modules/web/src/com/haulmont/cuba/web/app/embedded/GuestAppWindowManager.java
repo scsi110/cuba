@@ -17,7 +17,6 @@ import com.haulmont.cuba.web.app.embedded.window.RemoteLookup;
 import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager;
 import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager.RemoteDialogAction;
 import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager.RemoteDialogHandler;
-import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager.RemoteLookupHandler;
 import com.haulmont.cuba.web.sys.WindowBreadCrumbs;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -31,18 +30,22 @@ import java.util.stream.Collectors;
 
 @Component(GuestAppWindowManager.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class GuestAppWindowManager extends WebWindowManager implements WindowStack {
+public class GuestAppWindowManager extends WebWindowManager implements RemoteWindowStack {
     public static final String NAME = "cuba_GuestWindowManager";
 
     private RemoteWindowManager remoteWindowManager;
+
+    private RemoteWindowStackListener stackListener;
 
     private RemoteApp hostApp;
 
     @PostConstruct
     public void init() {
         hostApp = new RemoteApp(RemoteApp.HOST_APP_NAME);
+        hostApp.register(this, RemoteWindowStack.class);
+
         remoteWindowManager = hostApp.get(RemoteWindowManager.class);
-        hostApp.register(this, WindowStack.class);
+        stackListener = hostApp.get(RemoteWindowStackListener.class);
     }
 
     @Override
@@ -52,7 +55,7 @@ public class GuestAppWindowManager extends WebWindowManager implements WindowSta
         for (int i = 0; i < actions.length; i++) {
             RemoteDialogAction action = remoteActions[i] = new RemoteDialogAction();
             action.caption = actions[i].getCaption();
-            if(actions[i] instanceof DialogAction) {
+            if (actions[i] instanceof DialogAction) {
                 action.type = ((DialogAction) actions[i]).getType();
             }
             action.id = Integer.toString(i);
@@ -71,13 +74,13 @@ public class GuestAppWindowManager extends WebWindowManager implements WindowSta
     @Override
     protected void showWindow(Window window, String caption, String description, OpenType type, boolean multipleOpen) {
         super.showWindow(window, caption, description, type, multipleOpen);
-        remoteWindowManager.guestWindowOpened(window.getCaption(), window.getDescription());
+        stackListener.onWindowOpened(window.getCaption(), window.getDescription());
     }
 
     @Override
     protected void closeWindow(Window window, WindowOpenInfo openInfo) {
         super.closeWindow(window, openInfo);
-        remoteWindowManager.remoteWindowClosed(Window.CLOSE_ACTION_ID);
+        stackListener.onWindowClosed(Window.CLOSE_ACTION_ID);
     }
 
     @Override
@@ -87,27 +90,33 @@ public class GuestAppWindowManager extends WebWindowManager implements WindowSta
         return breadCrumbs;
     }
 
-    public RemoteLookup openRemoteLookup(Class<? extends Entity> entityClass, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
+    public RemoteLookup openRemoteLookup(Class<? extends Entity> entityClass, OpenMode openMode, Map<String, Object> screenParams) {
         RemoteEntity remoteEntityAnnotation = entityClass.getAnnotation(RemoteEntity.class);
-        remoteWindowManager.openLookup(remoteEntityAnnotation.app(), remoteEntityAnnotation.lookup(), handler, openMode, screenParams);
-        return null;
+        remoteWindowManager.openLookup(remoteEntityAnnotation.app(), remoteEntityAnnotation.lookup(), openMode, screenParams);
+        return new RemoteLookup(hostApp);
     }
 
-    public RemoteEditor openRemoteEditor(Class<? extends Entity> entityClass, String item, RemoteLookupHandler handler, OpenMode openMode, Map<String, Object> screenParams) {
+    public RemoteEditor openRemoteEditor(Class<? extends Entity> entityClass, String item, OpenMode openMode, Map<String, Object> screenParams) {
         RemoteEntity remoteEntityAnnotation = entityClass.getAnnotation(RemoteEntity.class);
-        remoteWindowManager.openEditor(remoteEntityAnnotation.app(), remoteEntityAnnotation.editor(), item, handler, openMode, screenParams);
-        return null;
+        remoteWindowManager.openEditor(remoteEntityAnnotation.app(), remoteEntityAnnotation.editor(), item, openMode, screenParams);
+        return new RemoteEditor(hostApp);
     }
 
     public void openLookupFromHost(WindowInfo windowInfo, OpenType openType, Map<String, Object> paramsMap) {
-        openLookup(windowInfo, new ConvertingLookup(), openType, paramsMap);
+        RemoteLookup.RemoteLookupListener listener = hostApp.get(RemoteLookup.RemoteLookupListener.class);
+        openLookup(windowInfo, new ConvertingLookup(listener), openType, paramsMap);
     }
 
     public void openEditorFromHost(WindowInfo windowInfo, Entity entity, OpenType openType, Map<String, Object> paramsMap) {
+        RemoteEditor.RemoteEditorListener editorListener = hostApp.get(RemoteEditor.RemoteEditorListener.class);
+
         Window.Editor editor = openEditor(windowInfo, entity, openType, paramsMap);
-        editor.addCloseWithCommitListener(() -> {
-            RemoteEntityInfo entityInfo = RemoteEntityInfo.from((BaseUuidEntity) editor.getItem());
-            hostApp.get(RemoteLookupHandler.class).handleLookup(new RemoteEntityInfo[]{entityInfo});
+        editor.addCloseListener(actionId -> {
+            if (actionId.equals(Window.COMMIT_ACTION_ID)) {
+                RemoteEntityInfo entityInfo = RemoteEntityInfo.from((BaseUuidEntity) editor.getItem());
+                editorListener.onCommit(entityInfo);
+            }
+            editorListener.onClose(actionId);
         });
     }
 
@@ -124,13 +133,19 @@ public class GuestAppWindowManager extends WebWindowManager implements WindowSta
     }
 
     private class ConvertingLookup implements Window.Lookup.Handler {
+        private RemoteLookup.RemoteLookupListener remoteListener;
+
+        ConvertingLookup(RemoteLookup.RemoteLookupListener remoteListener) {
+            this.remoteListener = remoteListener;
+        }
+
         @Override
         public void handleLookup(Collection items) {
             RemoteEntityInfo[] infos = ((Collection<BaseUuidEntity>) items).stream()
                     .map(RemoteEntityInfo::from)
                     .collect(Collectors.toList()).toArray(new RemoteEntityInfo[items.size()]);
 
-            hostApp.get(RemoteLookupHandler.class).handleLookup(infos);
+            remoteListener.handleLookup(infos);
         }
     }
 }

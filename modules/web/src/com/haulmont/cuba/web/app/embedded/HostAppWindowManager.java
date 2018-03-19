@@ -10,8 +10,7 @@ import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.web.WebWindowManager;
 import com.haulmont.cuba.web.app.embedded.transport.RemoteApp;
-import com.haulmont.cuba.web.app.embedded.window.GuestWindowHolder;
-import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager;
+import com.haulmont.cuba.web.app.embedded.window.*;
 import com.haulmont.cuba.web.app.embedded.window.RemoteWindowManager.RemoteLookupHandler;
 import com.haulmont.cuba.web.gui.WebWindow;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
@@ -37,7 +36,7 @@ public class HostAppWindowManager extends WebWindowManager {
     @Inject
     private EmbedAppConfig embedAppConfig;
 
-    private Map<Window, GuestWindowHandlerImpl> remoteApps = new HashMap<>();
+    private Map<Window, GuestWindowStack> remoteApps = new HashMap<>();
 
     private int guestIdCounter = 0;
 
@@ -60,7 +59,7 @@ public class HostAppWindowManager extends WebWindowManager {
 
             Window window = super.openWindow(windowInfo, openType, params);
             RemoteApp app = new RemoteApp(appId);
-            GuestWindowHandlerImpl windowHandler = new GuestWindowHandlerImpl(app, window);
+            GuestWindowStack windowHandler = new GuestWindowStack(app, window, remoteWindowInfo.getRemoteWindowMode());
             remoteApps.put(window, windowHandler);
             return window;
         }
@@ -141,7 +140,7 @@ public class HostAppWindowManager extends WebWindowManager {
             screenHistorySupport.saveScreenHistory(window, openInfo.getOpenMode());
         }
 
-        GuestWindowHandlerImpl windowHandler = remoteApps.get(window);
+        GuestWindowStack windowHandler = remoteApps.get(window);
         if (windowHandler != null) {
             windowHandler.destroy();
             remoteApps.remove(window);
@@ -286,22 +285,39 @@ public class HostAppWindowManager extends WebWindowManager {
         }
     }
 
-    class GuestWindowHandlerImpl {
-
+    class GuestWindowStack implements RemoteWindowStack.RemoteWindowStackListener {
         private final RemoteWindowManager windowManager;
-        private final WindowStack guestAppWindowStack;
+        private final RemoteWindowStack guestAppWindowStack;
         private final WindowBreadCrumbs breadcrumbs;
         private RemoteApp app;
         private Window window;
+        private RemoteWindowInfo.RemoteWindowMode mode;
         private LinkedList<GuestWindow> guestWindows = new LinkedList<>();
+        private RemoteWindow remoteWindow;
 
-        GuestWindowHandlerImpl(RemoteApp app, Window window) {
+        GuestWindowStack(RemoteApp app, Window window, RemoteWindowInfo.RemoteWindowMode mode) {
             this.app = app;
             this.window = window;
-            this.windowManager = new RemoteWindowManagerImpl(this);
+            this.mode = mode;
+            this.windowManager = new RemoteWindowManagerImpl(app);
+
             app.register(windowManager, RemoteWindowManager.class);
-            guestAppWindowStack = app.get(WindowStack.class);
+            app.register(this, RemoteWindowStack.RemoteWindowStackListener.class);
+
+            guestAppWindowStack = app.get(RemoteWindowStack.class);
             breadcrumbs = getRelatedBreadcrumbs(window);
+
+            switch (mode) {
+                case DEFAULT:
+                    remoteWindow = new RemoteWindow(app);
+                    break;
+                case EDITOR:
+                    remoteWindow = new RemoteEditor(app);
+                    break;
+                case LOOKUP:
+                    remoteWindow = new RemoteLookup(app);
+                    break;
+            }
         }
 
         private void updateCaption() {
@@ -329,14 +345,14 @@ public class HostAppWindowManager extends WebWindowManager {
 
         public void closeWindow(String actionId) {
             guestAppWindowStack.popStack();
-            popStack(actionId);
+            onWindowClosed(actionId);
         }
 
         public void destroy() {
             app.destroy();
         }
 
-        public void addToStack(String caption, String description) {
+        public void onWindowOpened(String caption, String description) {
             window.setCaption(caption);
 
             //noinspection IncorrectCreateGuiComponent
@@ -350,7 +366,7 @@ public class HostAppWindowManager extends WebWindowManager {
             updateCaption();
         }
 
-        public void popStack(String actionId) {
+        public void onWindowClosed(String actionId) {
             if (!guestWindows.isEmpty()) {
                 breadcrumbs.removeWindow();
                 guestWindows.removeLast();
@@ -362,33 +378,57 @@ public class HostAppWindowManager extends WebWindowManager {
                 updateCaption();
             }
         }
+
+        public void setupForwarding(RemoteWindow.RemoteWindowListener listener) {
+            switch (mode) {
+                case LOOKUP:
+                    RemoteLookup.RemoteLookupListener lookupListener = (RemoteLookup.RemoteLookupListener) listener;
+                    RemoteLookup lookup = (RemoteLookup) this.remoteWindow;
+                    lookup.setLookupHandler(items -> {
+                        RemoteEntityInfo[] infos = new RemoteEntityInfo[items.size()];
+                        //noinspection unchecked
+                        ((Collection<RemoteEntityInfo>) items).toArray(infos);
+                        lookupListener.handleLookup(infos);
+                    });
+                    lookup.addCloseListener(lookupListener::onClose);
+                    break;
+                case EDITOR:
+                    RemoteEditor.RemoteEditorListener editorListener = (RemoteEditor.RemoteEditorListener) listener;
+                    RemoteEditor editor = (RemoteEditor) this.remoteWindow;
+                    editor.addCloseListener(actionId -> {
+                        if (actionId.equals(Window.COMMIT_ACTION_ID)) {
+                            editorListener.onCommit(editor.getCommittedInstance());
+                        }
+                        editorListener.onClose(actionId);
+                    });
+                    break;
+            }
+        }
     }
 
     private class RemoteWindowManagerImpl implements RemoteWindowManager {
 
-        private GuestWindowHandlerImpl guestWindowHandler;
+        private final RemoteApp app;
 
-        RemoteWindowManagerImpl(GuestWindowHandlerImpl guestWindowHandler) {
-            this.guestWindowHandler = guestWindowHandler;
+        RemoteWindowManagerImpl(RemoteApp app) {
+            this.app = app;
         }
 
-        public void openLookup(String appName, String screenAlias, RemoteLookupHandler lookupHandler, OpenMode openType, Map<String, Object> remoteScreenParams) {
+        public void openLookup(String appName, String screenAlias, OpenMode openType, Map<String, Object> remoteScreenParams) {
             RemoteWindowInfo windowInfo = (RemoteWindowInfo) windowConfig.getWindowInfo(appName + "/" + screenAlias);
             windowInfo.setRemoteWindowMode(RemoteWindowInfo.RemoteWindowMode.LOOKUP);
 
             GuestWindowHolder lookup = (GuestWindowHolder) openWindow(windowInfo, new OpenType(openType), remoteScreenParams);
-            RemoteApp remoteApp = remoteApps.get(lookup).app;
-            remoteApp.register(new ResendingLookupHandler(lookupHandler, lookup), RemoteLookupHandler.class);
+            remoteApps.get(lookup).setupForwarding(app.get(RemoteLookup.RemoteLookupListener.class));
         }
 
-        public void openEditor(String appName, String screenAlias, String item, RemoteLookupHandler handler, WindowManager.OpenMode openType, Map<String, Object> remoteScreenParams) {
+        public void openEditor(String appName, String screenAlias, String item, WindowManager.OpenMode openType, Map<String, Object> remoteScreenParams) {
             RemoteWindowInfo windowInfo = (RemoteWindowInfo) windowConfig.getWindowInfo(appName + "/" + screenAlias);
             windowInfo.setRemoteWindowMode(RemoteWindowInfo.RemoteWindowMode.EDITOR);
             windowInfo.setRemoteItem(item);
 
             GuestWindowHolder editor = (GuestWindowHolder) openWindow(windowInfo, new OpenType(openType), remoteScreenParams);
-            RemoteApp remoteApp = remoteApps.get(editor).app;
-            remoteApp.register(new ResendingLookupHandler(handler, editor), RemoteLookupHandler.class);
+            remoteApps.get(editor).setupForwarding(app.get(RemoteEditor.RemoteEditorListener.class));
         }
 
         public void showOptionsDialog(String title, String message, Frame.MessageType messageType, RemoteDialogAction[] actions, RemoteDialogHandler handler) {
@@ -402,15 +442,6 @@ public class HostAppWindowManager extends WebWindowManager {
         @Override
         public void showNotification(String caption, String description, Frame.NotificationType type) {
             HostAppWindowManager.this.showNotification(caption, description, type);
-        }
-
-        @Override
-        public void guestWindowOpened(String caption, String description) {
-            guestWindowHandler.addToStack(caption, description);
-        }
-
-        public void remoteWindowClosed(String actionId) {
-            guestWindowHandler.popStack(actionId);
         }
     }
 }

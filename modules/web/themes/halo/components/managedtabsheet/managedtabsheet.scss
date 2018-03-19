@@ -22,7 +22,7 @@ $c-managed-tabsheet-tabbar-height: $v-unit-size + round($v-unit-size/6) + 2*firs
   }
 
   .#{$primary-stylename} {
-    & > .c-managed-tab {
+    & > div > .c-managed-tab {
       background-color: rgb(255, 255, 255);
       height: auto !important;
     }

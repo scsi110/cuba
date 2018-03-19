@@ -17,12 +17,12 @@ import java.util.Map;
 
 public class GuestWindow implements Window, Component.Wrapper {
     private GuestWindowHolder holder;
-    private HostAppWindowManager.GuestWindowHandlerImpl handler;
+    private HostAppWindowManager.GuestWindowStack handler;
 
     private String caption;
     private String description;
 
-    GuestWindow(GuestWindowHolder holder, HostAppWindowManager.GuestWindowHandlerImpl handler, String caption, String description) {
+    GuestWindow(GuestWindowHolder holder, HostAppWindowManager.GuestWindowStack handler, String caption, String description) {
         this.holder = holder;
         this.handler = handler;
         this.caption = caption;

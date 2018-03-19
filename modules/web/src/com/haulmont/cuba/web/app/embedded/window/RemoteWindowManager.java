@@ -9,17 +9,13 @@ import com.haulmont.cuba.web.app.embedded.transport.RemoteCallback;
 import java.util.Map;
 
 public interface RemoteWindowManager {
-    void openLookup(String appName, String screenAlias, @RemoteCallback RemoteLookupHandler handler, WindowManager.OpenMode openType, Map<String, Object> remoteScreenParams);
+    void openLookup(String appName, String screenAlias, WindowManager.OpenMode openType, Map<String, Object> remoteScreenParams);
 
-    void openEditor(String appName, String screenAlias, String entityId, @RemoteCallback RemoteLookupHandler handler, WindowManager.OpenMode openType, Map<String, Object> remoteScreenParams);
+    void openEditor(String appName, String screenAlias, String entityId, WindowManager.OpenMode openType, Map<String, Object> remoteScreenParams);
 
     void showOptionsDialog(String title, String message, Frame.MessageType messageType, RemoteDialogAction[] actions, @RemoteCallback RemoteDialogHandler handler);
 
     void showNotification(String caption, String description, Frame.NotificationType type);
-
-    void guestWindowOpened(String caption, String description);
-
-    void remoteWindowClosed(String actionId);
 
     interface RemoteDialogHandler {
         void onAction(String id);
