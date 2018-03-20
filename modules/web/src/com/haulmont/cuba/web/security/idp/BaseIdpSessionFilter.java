@@ -198,6 +198,7 @@ public abstract class BaseIdpSessionFilter implements Filter {
                             .collect(Collectors.joining("&", "?", ""));
                     redirectUrl += queryString;
                 }
+                httpResponse.addHeader("P3P", "CP=\"IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT\"");
                 httpResponse.sendRedirect(redirectUrl);
                 return;
             }

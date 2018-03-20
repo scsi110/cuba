@@ -16,9 +16,9 @@ public class EmbeddedAppBootstrapListener extends CubaBootstrapListener {
 
         Element head = response.getDocument().getElementsByTag("head").get(0);
 
-        includeScript("VAADIN/resources/connector.js", response, head);
+        includeScript("./VAADIN/resources/connector.js", response, head);
         if (embedAppConfig.isHostMode()) {
-            includeScript("VAADIN/resources/embeddedAppsEventBus.js", response, head);
+            includeScript("./VAADIN/resources/embeddedAppsEventBus.js", response, head);
         }
     }
 }
