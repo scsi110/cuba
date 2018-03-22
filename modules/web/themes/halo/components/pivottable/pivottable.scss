@@ -85,6 +85,13 @@
     }
 
     .pvtFilterBox {
+      padding-top: $v-layout-spacing-vertical;
+
+      p {
+        margin-top: $v-layout-spacing-vertical;
+        margin-bottom: $v-layout-spacing-vertical;
+      }
+
       button {
         @include valo-button-static-style;
         @include valo-button-style($font-color: $v-button-font-color);
@@ -94,10 +101,11 @@
         @include valo-textfield-style;
         width: $v-default-field-width;
         box-sizing: border-box;
+        margin-bottom: $v-layout-spacing-vertical;
       }
 
       p > button {
-        margin: 0 $v-layout-spacing-horizontal/2 $v-layout-spacing-vertical $v-layout-spacing-horizontal/2;
+        margin: 0 $v-layout-spacing-horizontal/2;
       }
     }
 
@@ -118,6 +126,12 @@
     .pvtAxisContainer,
     .pvtVals {
       padding: $v-layout-spacing-vertical $v-layout-spacing-horizontal;
+    }
+
+    .pvtRowOrder,
+    .pvtColOrder {
+      text-decoration: none;
+      color: valo-font-color($v-background-color);
     }
   }
 
