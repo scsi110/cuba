@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
@@ -34,8 +35,8 @@ public class UserSwitchLinkHandlerProcessor implements LinkHandlerProcessor {
 
     private final Logger log = LoggerFactory.getLogger(UserSwitchLinkHandlerProcessor.class);
 
-    @Inject
-    protected ScreensLinkHandlerProcessor screenHandler;
+    @Resource(name = ScreensLinkHandlerProcessor.NAME)
+    protected LinkHandlerProcessor screenHandler;
 
     @Inject
     protected TimeSource timeSource;
