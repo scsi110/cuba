@@ -47,6 +47,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Main CUBA web-application servlet.
@@ -111,13 +112,13 @@ public class CubaApplicationServlet extends VaadinServlet {
     protected void servletInitialized() throws ServletException {
         super.servletInitialized();
 
-        getService().addSessionInitListener(event -> {
-            ApplicationContext applicationContext = AppContext.getApplicationContext();
-            applicationContext.getBeansOfType(BootstrapListener.class)
-                    .values().stream()
-                    .sorted(AnnotationAwareOrderComparator.INSTANCE)
-                    .forEach(event.getSession()::addBootstrapListener);
-        });
+        ApplicationContext applicationContext = AppContext.getApplicationContext();
+        List<BootstrapListener> bootstrapListeners = applicationContext.getBeansOfType(BootstrapListener.class)
+                .values().stream()
+                .sorted(AnnotationAwareOrderComparator.INSTANCE)
+                .collect(Collectors.toList());
+
+        getService().addSessionInitListener(event -> bootstrapListeners.forEach(event.getSession()::addBootstrapListener));
     }
 
     @Override

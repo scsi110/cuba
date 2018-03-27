@@ -25,15 +25,17 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Handles links from outside of the application.
  * <br> This bean is used particularly when a request URL contains one of
  * {@link com.haulmont.cuba.web.WebConfig#getLinkHandlerActions()} actions.
+ * <br> The bean traverses all implementations of {@link com.haulmont.cuba.web.sys.linkhandling.LinkHandlerProcessor}
+ * by their priority and gives control to first possible to handle processor.
  */
 @org.springframework.stereotype.Component(LinkHandler.NAME)
 @Scope("prototype")
@@ -42,7 +44,7 @@ public class LinkHandler {
     public static final String NAME = "cuba_LinkHandler";
 
     @Inject
-    protected ApplicationContext applicationContext;
+    protected List<LinkHandlerProcessor> processors;
 
     protected App app;
     protected String action;
@@ -68,13 +70,12 @@ public class LinkHandler {
      */
     public void handle() {
         try {
-            applicationContext.getBeansOfType(LinkHandlerProcessor.class)
-                    .values().stream()
-                    .sorted(AnnotationAwareOrderComparator.INSTANCE)
-                    .filter(linkHandlerProcessor -> linkHandlerProcessor.canHandle(requestParams, action))
-                    .findFirst()
-                    .ifPresent(linkHandlerProcessor -> linkHandlerProcessor.handle(requestParams, action, app));
-
+            for (LinkHandlerProcessor processor : processors) {
+                if (processor.canHandle(requestParams, action)) {
+                    processor.handle(requestParams, action, app);
+                    break;
+                }
+            }
         } finally {
             VaadinRequest request = VaadinService.getCurrentRequest();
             WrappedSession wrappedSession = request.getWrappedSession();
