@@ -33,6 +33,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import javax.annotation.Nullable;
 import javax.servlet.ServletConfig;
@@ -110,8 +112,11 @@ public class CubaApplicationServlet extends VaadinServlet {
         super.servletInitialized();
 
         getService().addSessionInitListener(event -> {
-            BootstrapListener bootstrapListener = AppBeans.get(CubaBootstrapListener.NAME);
-            event.getSession().addBootstrapListener(bootstrapListener);
+            ApplicationContext applicationContext = AppContext.getApplicationContext();
+            applicationContext.getBeansOfType(BootstrapListener.class)
+                    .values().stream()
+                    .sorted(AnnotationAwareOrderComparator.INSTANCE)
+                    .forEach(event.getSession()::addBootstrapListener);
         });
     }
 
