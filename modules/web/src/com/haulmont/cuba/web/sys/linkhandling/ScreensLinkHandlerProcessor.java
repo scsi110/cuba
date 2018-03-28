@@ -11,7 +11,6 @@ import com.haulmont.cuba.gui.exception.AccessDeniedHandler;
 import com.haulmont.cuba.gui.exception.EntityAccessExceptionHandler;
 import com.haulmont.cuba.gui.exception.NoSuchScreenHandler;
 import com.haulmont.cuba.web.App;
-import com.haulmont.cuba.web.sys.LinkHandler.ExternalLinkContext;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -36,6 +35,9 @@ public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor, Ordere
     protected DataService dataService;
 
     @Inject
+    protected WindowConfig windowConfig;
+
+    @Inject
     protected EntityAccessExceptionHandler entityAccessExceptionHandler;
     @Inject
     protected AccessDeniedHandler accessDeniedHandler;
@@ -52,7 +54,6 @@ public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor, Ordere
         String screenName = linkContext.getRequestParams().get("screen");
         App app = linkContext.getApp();
 
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         final WindowInfo windowInfo = windowConfig.getWindowInfo(screenName);
         if (windowInfo == null) {
             log.warn("WindowInfo not found for screen: {}", screenName);

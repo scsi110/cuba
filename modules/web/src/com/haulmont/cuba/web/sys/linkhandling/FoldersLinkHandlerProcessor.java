@@ -4,7 +4,6 @@ import com.haulmont.cuba.core.app.DataService;
 import com.haulmont.cuba.core.entity.AbstractSearchFolder;
 import com.haulmont.cuba.core.global.LoadContext;
 import com.haulmont.cuba.web.app.folders.Folders;
-import com.haulmont.cuba.web.sys.LinkHandler.ExternalLinkContext;
 import org.slf4j.Logger;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;

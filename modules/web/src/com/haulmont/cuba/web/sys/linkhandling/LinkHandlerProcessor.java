@@ -1,7 +1,5 @@
 package com.haulmont.cuba.web.sys.linkhandling;
 
-import com.haulmont.cuba.web.sys.LinkHandler;
-
 /**
  * Interface that is used by {@link com.haulmont.cuba.web.sys.LinkHandler}
  * to handle links from outside of the application.
@@ -24,10 +22,10 @@ public interface LinkHandlerProcessor {
     /**
      * @return true if action with such request parameters should be handled by this processor.
      */
-    boolean canHandle(LinkHandler.ExternalLinkContext linkContext);
+    boolean canHandle(ExternalLinkContext linkContext);
 
     /**
      * Called to handle action.
      */
-    void handle(LinkHandler.ExternalLinkContext linkContext);
+    void handle(ExternalLinkContext linkContext);
 }

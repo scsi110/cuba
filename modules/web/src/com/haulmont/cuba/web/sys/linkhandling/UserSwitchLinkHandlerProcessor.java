@@ -14,7 +14,6 @@ import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.actions.ChangeSubstUserAction;
 import com.haulmont.cuba.web.actions.DoNotChangeSubstUserAction;
-import com.haulmont.cuba.web.sys.LinkHandler.ExternalLinkContext;
 import com.vaadin.server.Page;
 import com.vaadin.ui.JavaScript;
 import org.apache.commons.lang.StringUtils;
