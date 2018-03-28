@@ -14,26 +14,24 @@ import com.haulmont.cuba.security.global.UserSession;
 import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.actions.ChangeSubstUserAction;
 import com.haulmont.cuba.web.actions.DoNotChangeSubstUserAction;
+import com.haulmont.cuba.web.sys.LinkHandler.ExternalLinkContext;
 import com.vaadin.server.Page;
 import com.vaadin.ui.JavaScript;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
+import org.springframework.core.Ordered;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @org.springframework.stereotype.Component(UserSwitchLinkHandlerProcessor.NAME)
-@Order(1000)
-public class UserSwitchLinkHandlerProcessor implements LinkHandlerProcessor {
+public class UserSwitchLinkHandlerProcessor implements LinkHandlerProcessor, Ordered {
     public static final String NAME = "cuba_UserSwitchLinkHandlerProcessor";
 
-    private final Logger log = LoggerFactory.getLogger(UserSwitchLinkHandlerProcessor.class);
+    @Inject
+    private Logger log;
 
     @Resource(name = ScreensLinkHandlerProcessor.NAME)
     protected LinkHandlerProcessor screenHandler;
@@ -48,18 +46,18 @@ public class UserSwitchLinkHandlerProcessor implements LinkHandlerProcessor {
     protected Messages messages;
 
     @Override
-    public boolean canHandle(Map<String, String> requestParams, String action) {
-        if (!screenHandler.canHandle(requestParams, action)) {
+    public boolean canHandle(ExternalLinkContext linkContext) {
+        if (!screenHandler.canHandle(linkContext)) {
             return false;
         }
 
-        UUID userId = getUUID(requestParams.get("user"));
+        UUID userId = getUUID(linkContext.getRequestParams().get("user"));
         return userId != null;
     }
 
     @Override
-    public void handle(Map<String, String> requestParams, String action, App app) {
-        UUID userId = getUUID(requestParams.get("user"));
+    public void handle(ExternalLinkContext linkContext) {
+        UUID userId = getUUID(linkContext.getRequestParams().get("user"));
         assert userId != null;
 
         UserSession userSession = App.getInstance().getConnection().getSession();
@@ -69,19 +67,20 @@ public class UserSwitchLinkHandlerProcessor implements LinkHandlerProcessor {
         }
 
         if (!userSession.getCurrentOrSubstitutedUser().getId().equals(userId)) {
-            substituteUserAndOpenWindow(requestParams, userId, action, app);
+            substituteUserAndOpenWindow(linkContext, userId);
         } else {
-            screenHandler.handle(requestParams, action, app);
+            screenHandler.handle(linkContext);
         }
     }
 
-    protected void substituteUserAndOpenWindow(Map<String, String> requestParams, UUID userId, String action, App app) {
+    protected void substituteUserAndOpenWindow(ExternalLinkContext linkContext, UUID userId) {
+        App app = linkContext.getApp();
+
         UserSession userSession = app.getConnection().getSession();
         assert userSession != null;
 
         final User substitutedUser = loadUser(userId, userSession.getUser());
         if (substitutedUser != null) {
-            Map<String, String> currentRequestParams = new HashMap<>(requestParams);
 
             app.getWindowManager().showOptionDialog(
                     messages.getMainMessage("toSubstitutedUser.title"),
@@ -92,7 +91,7 @@ public class UserSwitchLinkHandlerProcessor implements LinkHandlerProcessor {
                                 @Override
                                 public void doAfterChangeUser() {
                                     super.doAfterChangeUser();
-                                    screenHandler.handle(currentRequestParams, action, app);
+                                    screenHandler.handle(linkContext);
                                 }
 
                                 @Override
@@ -189,5 +188,10 @@ public class UserSwitchLinkHandlerProcessor implements LinkHandlerProcessor {
                 "warning.msg",
                 StringUtils.isBlank(user.getName()) ? user.getLogin() : user.getName()
         );
+    }
+
+    @Override
+    public int getOrder() {
+        return HIGHEST_PLATFORM_PRECEDENCE + 20;
     }
 }

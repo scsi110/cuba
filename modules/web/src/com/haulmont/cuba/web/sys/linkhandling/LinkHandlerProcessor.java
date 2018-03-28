@@ -1,8 +1,6 @@
 package com.haulmont.cuba.web.sys.linkhandling;
 
-import com.haulmont.cuba.web.App;
-
-import java.util.Map;
+import com.haulmont.cuba.web.sys.LinkHandler;
 
 /**
  * Interface that is used by {@link com.haulmont.cuba.web.sys.LinkHandler}
@@ -14,12 +12,22 @@ import java.util.Map;
 public interface LinkHandlerProcessor {
 
     /**
+     * Defines the highest precedence for {@link org.springframework.core.Ordered} processors of the platform.
+     */
+    int HIGHEST_PLATFORM_PRECEDENCE = 100;
+
+    /**
+     * Defines the lowest precedence for {@link org.springframework.core.Ordered} processors of the platform.
+     */
+    int LOWEST_PLATFORM_PRECEDENCE = 1000;
+
+    /**
      * @return true if action with such request parameters should be handled by this processor.
      */
-    boolean canHandle(Map<String, String> requestParams, String action);
+    boolean canHandle(LinkHandler.ExternalLinkContext linkContext);
 
     /**
      * Called to handle action.
      */
-    void handle(Map<String, String> requestParams, String action, App app);
+    void handle(LinkHandler.ExternalLinkContext linkContext);
 }

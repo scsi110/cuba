@@ -3,24 +3,22 @@ package com.haulmont.cuba.web.sys.linkhandling;
 import com.haulmont.cuba.core.app.DataService;
 import com.haulmont.cuba.core.entity.AbstractSearchFolder;
 import com.haulmont.cuba.core.global.LoadContext;
-import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.app.folders.Folders;
+import com.haulmont.cuba.web.sys.LinkHandler.ExternalLinkContext;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.util.Map;
 import java.util.UUID;
 
 @Component(FoldersLinkHandlerProcessor.NAME)
-@Order(0)
-public class FoldersLinkHandlerProcessor implements LinkHandlerProcessor {
+public class FoldersLinkHandlerProcessor implements LinkHandlerProcessor, Ordered {
 
     public static final String NAME = "cuba_FoldersLinkHandlerProcessor";
 
-    private final Logger log = LoggerFactory.getLogger(FoldersLinkHandlerProcessor.class);
+    @Inject
+    private Logger log;
 
     @Inject
     protected DataService dataService;
@@ -29,13 +27,13 @@ public class FoldersLinkHandlerProcessor implements LinkHandlerProcessor {
     protected Folders folders;
 
     @Override
-    public boolean canHandle(Map<String, String> requestParams, String action) {
-        return requestParams.containsKey("folder");
+    public boolean canHandle(ExternalLinkContext linkContext) {
+        return linkContext.getRequestParams().containsKey("folder");
     }
 
     @Override
-    public void handle(Map<String, String> requestParams, String action, App app) {
-        String folderId = requestParams.get("folder");
+    public void handle(ExternalLinkContext linkContext) {
+        String folderId = linkContext.getRequestParams().get("folder");
 
         AbstractSearchFolder folder = loadFolder(UUID.fromString(folderId));
         if (folder != null) {
@@ -47,5 +45,10 @@ public class FoldersLinkHandlerProcessor implements LinkHandlerProcessor {
 
     protected AbstractSearchFolder loadFolder(UUID folderId) {
         return dataService.load(new LoadContext<>(AbstractSearchFolder.class).setId(folderId));
+    }
+
+    @Override
+    public int getOrder() {
+        return HIGHEST_PLATFORM_PRECEDENCE + 10;
     }
 }

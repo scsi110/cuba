@@ -23,10 +23,10 @@ import com.haulmont.cuba.web.sys.linkhandling.LinkHandlerProcessor;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.WrappedSession;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,9 +70,10 @@ public class LinkHandler {
      */
     public void handle() {
         try {
+            ExternalLinkContext linkContext = new ExternalLinkContext(requestParams, action, app);
             for (LinkHandlerProcessor processor : processors) {
-                if (processor.canHandle(requestParams, action)) {
-                    processor.handle(requestParams, action, app);
+                if (processor.canHandle(linkContext)) {
+                    processor.handle(linkContext);
                     break;
                 }
             }
@@ -81,6 +82,30 @@ public class LinkHandler {
             WrappedSession wrappedSession = request.getWrappedSession();
             wrappedSession.removeAttribute(AppUI.LAST_REQUEST_PARAMS_ATTR);
             wrappedSession.removeAttribute(AppUI.LAST_REQUEST_ACTION_ATTR);
+        }
+    }
+
+    public static class ExternalLinkContext {
+        protected Map<String, String> requestParams;
+        protected String action;
+        protected App app;
+
+        protected ExternalLinkContext(Map<String, String> requestParams, String action, App app) {
+            this.requestParams = new HashMap<>(requestParams);
+            this.action = action;
+            this.app = app;
+        }
+
+        public Map<String, String> getRequestParams() {
+            return requestParams;
+        }
+
+        public String getAction() {
+            return action;
+        }
+
+        public App getApp() {
+            return app;
         }
     }
 }

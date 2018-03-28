@@ -11,10 +11,11 @@ import com.haulmont.cuba.gui.exception.AccessDeniedHandler;
 import com.haulmont.cuba.gui.exception.EntityAccessExceptionHandler;
 import com.haulmont.cuba.gui.exception.NoSuchScreenHandler;
 import com.haulmont.cuba.web.App;
+import com.haulmont.cuba.web.sys.LinkHandler.ExternalLinkContext;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -22,10 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component(ScreensLinkHandlerProcessor.NAME)
-public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor {
+public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor, Ordered {
     public static final String NAME = "cuba_ScreensLinkHandlerProcessor";
 
-    private final Logger log = LoggerFactory.getLogger(ScreensLinkHandlerProcessor.class);
+    @Inject
+    private Logger log;
 
     @Inject
     protected Metadata metadata;
@@ -41,13 +43,14 @@ public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor {
     protected NoSuchScreenHandler noSuchScreenHandler;
 
     @Override
-    public boolean canHandle(Map<String, String> requestParams, String action) {
-        return requestParams.containsKey("screen");
+    public boolean canHandle(ExternalLinkContext linkContext) {
+        return linkContext.getRequestParams().containsKey("screen");
     }
 
     @Override
-    public void handle(Map<String, String> requestParams, String action, App app) {
-        String screenName = requestParams.get("screen");
+    public void handle(ExternalLinkContext linkContext) {
+        String screenName = linkContext.getRequestParams().get("screen");
+        App app = linkContext.getApp();
 
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         final WindowInfo windowInfo = windowConfig.getWindowInfo(screenName);
@@ -57,7 +60,7 @@ public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor {
         }
 
         try {
-            openWindow(windowInfo, requestParams, app);
+            openWindow(windowInfo, linkContext);
         } catch (EntityAccessException e) {
             entityAccessExceptionHandler.handle(e, app.getWindowManager());
         } catch (AccessDeniedException e) {
@@ -67,7 +70,10 @@ public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor {
         }
     }
 
-    protected void openWindow(WindowInfo windowInfo, Map<String, String> requestParams, App app) {
+    protected void openWindow(WindowInfo windowInfo, ExternalLinkContext linkContext) {
+        Map<String, String> requestParams = linkContext.getRequestParams();
+        App app = linkContext.getApp();
+
         String itemStr = requestParams.get("item");
         String openTypeParam = requestParams.get("openType");
         WindowManager.OpenType openType = WindowManager.OpenType.NEW_TAB;
@@ -142,5 +148,10 @@ public class ScreensLinkHandlerProcessor implements LinkHandlerProcessor {
             return null;
         }
         return entity;
+    }
+
+    @Override
+    public int getOrder() {
+        return HIGHEST_PLATFORM_PRECEDENCE + 30;
     }
 }
