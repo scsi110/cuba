@@ -190,36 +190,50 @@ public class MetadataImpl implements Metadata {
     }
 
     protected void invokePostConstructMethods(Entity entity) throws InvocationTargetException, IllegalAccessException {
-        List<Method> postConstructMethods = new ArrayList<>(4);
+        List<Method> postConstructMethods = null;
         List<String> methodNames = new ArrayList<>(4);
         Class clazz = entity.getClass();
         while (clazz != Object.class) {
             Method[] classMethods = clazz.getDeclaredMethods();
             for (Method method : classMethods) {
-                if (method.isAnnotationPresent(PostConstruct.class) && !methodNames.contains(method.getName())) {
+                if (method.isAnnotationPresent(PostConstruct.class)
+                        && !methodNames.contains(method.getName())) {
+                    if (postConstructMethods == null) {
+                        postConstructMethods = new ArrayList<>();
+                    }
                     postConstructMethods.add(method);
                     methodNames.add(method.getName());
                 }
             }
+
+            Class[] interfaces = clazz.getInterfaces();
+            for (Class interfaceClazz : interfaces) {
+                Method[] interfaceMethods = interfaceClazz.getDeclaredMethods();
+                for (Method method : interfaceMethods) {
+                    if (method.isAnnotationPresent(PostConstruct.class)
+                            && method.isDefault()
+                            && !methodNames.contains(method.getName())) {
+                        if (postConstructMethods == null) {
+                            postConstructMethods = new ArrayList<>();
+                        }
+                        postConstructMethods.add(method);
+                        methodNames.add(method.getName());
+                    }
+                }
+            }
+
             clazz = clazz.getSuperclass();
         }
 
-        Arrays.stream(entity.getClass().getMethods())
-                .filter(method -> method.isAnnotationPresent(PostConstruct.class)
-                        && !methodNames.contains(method.getName())
-                        && method.isDefault())
-                .forEach(method -> {
-                    postConstructMethods.add(method);
-                    methodNames.add(method.getName());
-                });
-
-        ListIterator<Method> iterator = postConstructMethods.listIterator(postConstructMethods.size());
-        while (iterator.hasPrevious()) {
-            Method method = iterator.previous();
-            if (!method.isAccessible()) {
-                method.setAccessible(true);
+        if (postConstructMethods != null) {
+            ListIterator<Method> iterator = postConstructMethods.listIterator(postConstructMethods.size());
+            while (iterator.hasPrevious()) {
+                Method method = iterator.previous();
+                if (!method.isAccessible()) {
+                    method.setAccessible(true);
+                }
+                method.invoke(entity);
             }
-            method.invoke(entity);
         }
     }
 
