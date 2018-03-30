@@ -190,18 +190,22 @@ public class MetadataImpl implements Metadata {
     }
 
     protected void invokePostConstructMethods(Entity entity) throws InvocationTargetException, IllegalAccessException {
-        List<Method> postConstructMethods = null;
-        List<String> methodNames = new ArrayList<>(4);
+        List<Method> postConstructMethods = Collections.emptyList();
+        List<String> methodNames = Collections.emptyList();
         Class clazz = entity.getClass();
         while (clazz != Object.class) {
             Method[] classMethods = clazz.getDeclaredMethods();
             for (Method method : classMethods) {
                 if (method.isAnnotationPresent(PostConstruct.class)
                         && !methodNames.contains(method.getName())) {
-                    if (postConstructMethods == null) {
+                    if (postConstructMethods.isEmpty()) {
                         postConstructMethods = new ArrayList<>();
                     }
                     postConstructMethods.add(method);
+
+                    if (methodNames.isEmpty()) {
+                        methodNames = new ArrayList<>();
+                    }
                     methodNames.add(method.getName());
                 }
             }
@@ -213,10 +217,14 @@ public class MetadataImpl implements Metadata {
                     if (method.isAnnotationPresent(PostConstruct.class)
                             && method.isDefault()
                             && !methodNames.contains(method.getName())) {
-                        if (postConstructMethods == null) {
+                        if (postConstructMethods.isEmpty()) {
                             postConstructMethods = new ArrayList<>();
                         }
                         postConstructMethods.add(method);
+
+                        if (methodNames.isEmpty()) {
+                            methodNames = new ArrayList<>();
+                        }
                         methodNames.add(method.getName());
                     }
                 }
@@ -225,7 +233,7 @@ public class MetadataImpl implements Metadata {
             clazz = clazz.getSuperclass();
         }
 
-        if (postConstructMethods != null) {
+        if (!postConstructMethods.isEmpty()) {
             ListIterator<Method> iterator = postConstructMethods.listIterator(postConstructMethods.size());
             while (iterator.hasPrevious()) {
                 Method method = iterator.previous();
