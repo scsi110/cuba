@@ -52,7 +52,7 @@
 
             <hbox margin="false,false,false,true" spacing="true">
                 <label value="msg://component" align="MIDDLE_RIGHT"/>
-                <textField id="componentTextField" width="${filterFieldWidth}"/>
+                <lookupField id="componentLookupField" width="${filterFieldWidth}"/>
                 <button id="addPermissionBtn" caption="msg://actions.Add" invoke="addUiPermission"/>
                 <button id="removePermissionBtn"/>
             </hbox>

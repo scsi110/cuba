@@ -21,6 +21,7 @@ import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Metadata;
 import com.haulmont.cuba.core.global.Security;
 import com.haulmont.cuba.gui.AppConfig;
+import com.haulmont.cuba.gui.ScreensHelper;
 import com.haulmont.cuba.gui.app.security.ds.RestorablePermissionDatasource;
 import com.haulmont.cuba.gui.app.security.ds.UiPermissionsDatasource;
 import com.haulmont.cuba.gui.app.security.entity.UiPermissionTarget;
@@ -53,7 +54,7 @@ public class UiPermissionsFrame extends AbstractFrame {
     protected LookupField screenFilter;
 
     @Inject
-    protected TextField componentTextField;
+    protected LookupField componentLookupField;
 
     @Inject
     protected RestorablePermissionDatasource uiPermissionsDs;
@@ -92,7 +93,10 @@ public class UiPermissionsFrame extends AbstractFrame {
     protected Companion companion;
 
     @Inject
-    private GroupBoxLayout editPane;
+    protected GroupBoxLayout editPane;
+
+    @Inject
+    protected ScreensHelper screensHelper;
 
     protected boolean itemChanging = false;
 
@@ -100,17 +104,7 @@ public class UiPermissionsFrame extends AbstractFrame {
     public void init(Map<String, Object> params) {
         super.init(params);
 
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        Collection<WindowInfo> windows = sortWindowInfos(windowConfig.getWindows());
-        Map<String, Object> screens = new LinkedHashMap<>();
-        for (WindowInfo windowInfo : windows) {
-            String id = windowInfo.getId();
-            String menuId = "menu-config." + id;
-            String localeMsg = messages.getMessage(AppConfig.getMessagesPack(), menuId);
-            String title = menuId.equals(localeMsg) ? id : localeMsg + " (" + id + ")";
-            screens.put(title, id);
-        }
-        screenFilter.setOptionsMap(screens);
+        initScreenFilterField();
 
         companion.initPermissionsColoredColumns(uiPermissionsTable);
 
@@ -163,6 +157,26 @@ public class UiPermissionsFrame extends AbstractFrame {
         editPane.setEnabled(security.isEntityOpPermitted(Role.class, EntityOp.UPDATE));
 
         applyPermissions(hasPermissionsToModifyPermission);
+    }
+
+    protected void initScreenFilterField() {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        Collection<WindowInfo> windows = sortWindowInfos(windowConfig.getWindows());
+        Map<String, Object> screens = new LinkedHashMap<>();
+        for (WindowInfo windowInfo : windows) {
+            String id = windowInfo.getId();
+            String menuId = "menu-config." + id;
+            String localeMsg = messages.getMessage(AppConfig.getMessagesPack(), menuId);
+            String title = menuId.equals(localeMsg) ? id : localeMsg + " (" + id + ")";
+            screens.put(title, id);
+        }
+        screenFilter.setOptionsMap(screens);
+
+        screenFilter.addValueChangeListener(e -> {
+            Map<String, Object> screenComponents =
+                    screensHelper.getScreenComponents(screenFilter.getValue());
+            componentLookupField.setOptionsMap(screenComponents);
+        });
     }
 
     protected Collection<WindowInfo> sortWindowInfos(Collection<WindowInfo> infos) {
@@ -252,7 +266,7 @@ public class UiPermissionsFrame extends AbstractFrame {
 
     public void addUiPermission() {
         String screen = screenFilter.getValue();
-        String component = componentTextField.getValue();
+        String component = componentLookupField.getValue();
         if (StringUtils.isNotBlank(screen) && StringUtils.isNotBlank(component)) {
             UiPermissionTarget target = new UiPermissionTarget("ui:" + screen + ":" + component,
                     screen + ":" + component, screen + ":" + component, UiPermissionVariant.NOTSET);

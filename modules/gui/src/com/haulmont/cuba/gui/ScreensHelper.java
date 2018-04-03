@@ -20,7 +20,7 @@ package com.haulmont.cuba.gui;
 import com.haulmont.bali.util.Dom4j;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.xml.XmlInheritanceProcessor;
@@ -99,6 +99,81 @@ public class ScreensHelper {
         }
 
         return null;
+    }
+
+    public Map<String, Object> getScreenComponents(String screenId) {
+        WindowInfo windowInfo = windowConfig.findWindowInfo(screenId);
+        if (windowInfo != null) {
+            String template = windowInfo.getTemplate();
+            try {
+                Element layoutElement = getRootLayoutElement(template);
+                if (layoutElement != null) {
+                    Map<String, Object> components = new TreeMap<>();
+                    fillScreenComponentsList(components, layoutElement);
+                    return components;
+                }
+            } catch (FileNotFoundException e) {
+                log.error(e.getMessage());
+            }
+        }
+
+        return Collections.emptyMap();
+    }
+
+    public void fillScreenComponentsList(Map<String, Object> components, Element root) {
+        for (Element element : Dom4j.elements(root)) {
+            if (isComponentElement(element)) {
+                String id = element.attributeValue("id");
+                if (StringUtils.isNotEmpty(id)) {
+                    String cation = getDetailedComponentCation(element, id);
+                    components.put(cation, id);
+                }
+                fillScreenComponentsList(components, element);
+            }
+        }
+    }
+
+    protected boolean isComponentElement(Element element) {
+        // TODO: gg, think something better
+        return !"column".equals(element.getName());
+    }
+
+    protected boolean isHolderComponent(Element element) {
+        // TODO: gg, think something better
+        String name = element.getName();
+        return Table.NAME.equals(name)
+                || GroupTable.NAME.equals(name)
+                || TreeTable.NAME.equals(name)
+                || DataGrid.NAME.equals(name)
+                || FieldGroup.NAME.equals(name)
+                || TabSheet.NAME.equals(name);
+    }
+
+    protected boolean isParentRequired(Element element) {
+        // TODO: gg, think something better
+        return "action".equals(element.getName());
+    }
+
+    protected String getDetailedComponentCation(Element element, String id) {
+        String name = element.getName();
+        if (isParentRequired(element)) {
+            Element parent = element.getParent();
+            while (parent != null) {
+                if (isHolderComponent(parent)) {
+                    String parentId = parent.attributeValue("id");
+                    name = StringUtils.isNotEmpty(parentId) ? parentId : parent.getName() + ": " + name;
+                    break;
+                }
+                parent = parent.getParent();
+            }
+        }
+
+        return id + ": <" + name + ">";
+    }
+
+    protected String getDetailedComponentPath(Element element, String id) {
+        // TODO: gg, calculate path
+        return id;
     }
 
     protected enum ScreenType {
@@ -259,6 +334,16 @@ public class ScreensHelper {
         } else {
             throw new FileNotFoundException("File doesn't exist or empty: " + src);
         }
+        return null;
+    }
+
+    @Nullable
+    protected Element getRootLayoutElement(String src) throws FileNotFoundException {
+        Element windowElement = getWindowElement(src);
+        if (windowElement != null) {
+            return windowElement.element("layout");
+        }
+
         return null;
     }
 
