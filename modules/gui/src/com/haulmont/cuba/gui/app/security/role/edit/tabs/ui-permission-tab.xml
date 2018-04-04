@@ -38,6 +38,11 @@
                          view="_local"
                          datasourceClass="com.haulmont.cuba.gui.app.security.ds.UiPermissionsDatasource">
         </groupDatasource>
+
+        <hierarchicalDatasource id="componentDescriptorsDs"
+                                allowCommit="false"
+                                class="com.haulmont.cuba.gui.components.ScreenComponentDescriptor"
+                                hierarchyProperty="parent"/>
     </dsContext>
 
     <assign name="filterFieldWidth" value="theme://cuba.gui.ui-permission-tab.filterFieldWidth.width"/>
@@ -52,7 +57,8 @@
 
             <hbox margin="false,false,false,true" spacing="true">
                 <label value="msg://component" align="MIDDLE_RIGHT"/>
-                <lookupField id="componentLookupField" width="${filterFieldWidth}"/>
+                <textField id="componentTextField" width="${filterFieldWidth}"/>
+                <button id="componentsTreeBtn" icon="SITEMAP"  invoke="showComponentsTree"/>
                 <button id="addPermissionBtn" caption="msg://actions.Add" invoke="addUiPermission"/>
                 <button id="removePermissionBtn"/>
             </hbox>
@@ -60,8 +66,13 @@
         <hbox id="contentPane" spacing="true" margin="false,true,true,true" width="100%">
             <split id="contentSplit" width="100%" height="100%" orientation="horizontal" pos="80">
                 <!-- Table -->
-                <vbox height="100%" margin="false;true;false;false">
-                    <groupTable id="uiPermissionsTable" height="100%" width="100%">
+                <hbox height="100%"
+                      expand="uiPermissionsTable"
+                      margin="false;true;false;false"
+                      spacing="true"
+                      width="100%">
+                    <groupTable id="uiPermissionsTable"
+                                height="100%">
                         <columns>
                             <group>
                                 <column id="screen"/>
@@ -71,7 +82,24 @@
                         </columns>
                         <rows datasource="uiPermissionTargetsDs"/>
                     </groupTable>
-                </vbox>
+                    <vbox id="componentsTreeBox"
+                          expand="componentsTree"
+                          height="100%"
+                          spacing="true"
+                          visible="false"
+                          width="400px">
+                        <tree id="componentsTree"
+                              caption="msg://componentsTree"
+                              width="100%">
+                            <treechildren captionProperty="caption"
+                                          datasource="componentDescriptorsDs"/>
+                        </tree>
+                        <button id="closeComponentsTreeBoxBtn"
+                                align="BOTTOM_RIGHT"
+                                caption="msg://actions.Close"
+                                invoke="hideComponentsTree"/>
+                    </vbox>
+                </hbox>
                 <!-- Edit pane -->
                 <vbox margin="false;false;false;true" height="100%">
                     <groupBox id="editPane" width="100%" height="100%" caption="msg://permissions">

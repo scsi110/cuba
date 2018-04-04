@@ -32,6 +32,7 @@ import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.data.Datasource;
+import com.haulmont.cuba.gui.data.HierarchicalDatasource;
 import com.haulmont.cuba.security.entity.EntityOp;
 import com.haulmont.cuba.security.entity.Permission;
 import com.haulmont.cuba.security.entity.PermissionType;
@@ -54,7 +55,7 @@ public class UiPermissionsFrame extends AbstractFrame {
     protected LookupField screenFilter;
 
     @Inject
-    protected LookupField componentLookupField;
+    protected TextField componentTextField;
 
     @Inject
     protected RestorablePermissionDatasource uiPermissionsDs;
@@ -98,13 +99,29 @@ public class UiPermissionsFrame extends AbstractFrame {
     @Inject
     protected ScreensHelper screensHelper;
 
+    @Inject
+    private VBoxLayout componentsTreeBox;
+
+    @Inject
+    private HierarchicalDatasource<ScreenComponentDescriptor, UUID> componentDescriptorsDs;
+
     protected boolean itemChanging = false;
 
     @Override
     public void init(Map<String, Object> params) {
         super.init(params);
 
-        initScreenFilterField();
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        Collection<WindowInfo> windows = sortWindowInfos(windowConfig.getWindows());
+        Map<String, Object> screens = new LinkedHashMap<>();
+        for (WindowInfo windowInfo : windows) {
+            String id = windowInfo.getId();
+            String menuId = "menu-config." + id;
+            String localeMsg = messages.getMessage(AppConfig.getMessagesPack(), menuId);
+            String title = menuId.equals(localeMsg) ? id : localeMsg + " (" + id + ")";
+            screens.put(title, id);
+        }
+        screenFilter.setOptionsMap(screens);
 
         companion.initPermissionsColoredColumns(uiPermissionsTable);
 
@@ -159,24 +176,23 @@ public class UiPermissionsFrame extends AbstractFrame {
         applyPermissions(hasPermissionsToModifyPermission);
     }
 
-    protected void initScreenFilterField() {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        Collection<WindowInfo> windows = sortWindowInfos(windowConfig.getWindows());
-        Map<String, Object> screens = new LinkedHashMap<>();
-        for (WindowInfo windowInfo : windows) {
-            String id = windowInfo.getId();
-            String menuId = "menu-config." + id;
-            String localeMsg = messages.getMessage(AppConfig.getMessagesPack(), menuId);
-            String title = menuId.equals(localeMsg) ? id : localeMsg + " (" + id + ")";
-            screens.put(title, id);
-        }
-        screenFilter.setOptionsMap(screens);
-
-        screenFilter.addValueChangeListener(e -> {
-            Map<String, Object> screenComponents =
+    public void showComponentsTree() {
+        if (StringUtils.isNotBlank(screenFilter.getValue())) {
+            List<ScreenComponentDescriptor> screenComponents =
                     screensHelper.getScreenComponents(screenFilter.getValue());
-            componentLookupField.setOptionsMap(screenComponents);
-        });
+
+            componentDescriptorsDs.clear();
+
+            for (ScreenComponentDescriptor descriptor : screenComponents) {
+                componentDescriptorsDs.includeItem(descriptor);
+            }
+
+            componentsTreeBox.setVisible(true);
+        }
+    }
+
+    public void hideComponentsTree() {
+        componentsTreeBox.setVisible(false);
     }
 
     protected Collection<WindowInfo> sortWindowInfos(Collection<WindowInfo> infos) {
@@ -266,7 +282,7 @@ public class UiPermissionsFrame extends AbstractFrame {
 
     public void addUiPermission() {
         String screen = screenFilter.getValue();
-        String component = componentLookupField.getValue();
+        String component = componentTextField.getValue();
         if (StringUtils.isNotBlank(screen) && StringUtils.isNotBlank(component)) {
             UiPermissionTarget target = new UiPermissionTarget("ui:" + screen + ":" + component,
                     screen + ":" + component, screen + ":" + component, UiPermissionVariant.NOTSET);

@@ -24,6 +24,7 @@ import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.web.gui.components.*;
 import com.haulmont.cuba.web.gui.components.mainwindow.*;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
@@ -194,6 +195,13 @@ public class WebComponentsFactory implements ComponentsFactory {
 
         throw new IllegalArgumentException(String.format("Can't create component for the '%s' with " +
                 "given meta class '%s'", context.getProperty(), context.getMetaClass()));
+    }
+
+
+    @Nullable
+    @Override
+    public Class<?> getComponentType(String name) {
+        return classes.get(name);
     }
 
     @Override

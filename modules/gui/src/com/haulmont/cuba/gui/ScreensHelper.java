@@ -20,10 +20,13 @@ package com.haulmont.cuba.gui;
 import com.haulmont.bali.util.Dom4j;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.gui.components.*;
+import com.haulmont.cuba.gui.components.RowsCount;
+import com.haulmont.cuba.gui.components.ScreenComponentDescriptor;
+import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.xml.XmlInheritanceProcessor;
+import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -63,6 +66,9 @@ public class ScreensHelper {
     @Inject
     protected Metadata metadata;
 
+    @Inject
+    private ComponentsFactory componentsFactory;
+
     private Map<String, String> captionCache = new ConcurrentHashMap<>();
     private Map<String, Map<String, Object>> availableScreensCache = new ConcurrentHashMap<>();
 
@@ -101,15 +107,15 @@ public class ScreensHelper {
         return null;
     }
 
-    public Map<String, Object> getScreenComponents(String screenId) {
+    public List<ScreenComponentDescriptor> getScreenComponents(String screenId) {
         WindowInfo windowInfo = windowConfig.findWindowInfo(screenId);
         if (windowInfo != null) {
             String template = windowInfo.getTemplate();
             try {
                 Element layoutElement = getRootLayoutElement(template);
                 if (layoutElement != null) {
-                    Map<String, Object> components = new TreeMap<>();
-                    fillScreenComponentsList(components, layoutElement);
+                    List<ScreenComponentDescriptor> components = new ArrayList<>();
+                    findScreenComponents(components, null, layoutElement);
                     return components;
                 }
             } catch (FileNotFoundException e) {
@@ -117,63 +123,36 @@ public class ScreensHelper {
             }
         }
 
-        return Collections.emptyMap();
+        return Collections.emptyList();
     }
 
-    public void fillScreenComponentsList(Map<String, Object> components, Element root) {
+    public void findScreenComponents(List<ScreenComponentDescriptor> components,
+                                     @Nullable ScreenComponentDescriptor parent, Element root) {
         for (Element element : Dom4j.elements(root)) {
             if (isComponentElement(element)) {
                 String id = element.attributeValue("id");
-                if (StringUtils.isNotEmpty(id)) {
-                    String cation = getDetailedComponentCation(element, id);
-                    components.put(cation, id);
-                }
-                fillScreenComponentsList(components, element);
+                //noinspection IncorrectCreateEntity
+                ScreenComponentDescriptor descriptor = new ScreenComponentDescriptor(id, element, parent);
+                components.add(descriptor);
+                findScreenComponents(components, descriptor, element);
             }
         }
     }
 
     protected boolean isComponentElement(Element element) {
-        // TODO: gg, think something better
-        return !"column".equals(element.getName());
+        // TODO: gg, think something better, hasLoader?
+        Class<?> componentType = componentsFactory.getComponentType(element.getName());
+        return !isExclusion(element) &&
+                (isAction(element) || componentType != null);
     }
 
-    protected boolean isHolderComponent(Element element) {
-        // TODO: gg, think something better
-        String name = element.getName();
-        return Table.NAME.equals(name)
-                || GroupTable.NAME.equals(name)
-                || TreeTable.NAME.equals(name)
-                || DataGrid.NAME.equals(name)
-                || FieldGroup.NAME.equals(name)
-                || TabSheet.NAME.equals(name);
+    protected boolean isAction(Element element) {
+        return "action".equals(element.getName())
+                || "actions".equals(element.getName());
     }
 
-    protected boolean isParentRequired(Element element) {
-        // TODO: gg, think something better
-        return "action".equals(element.getName());
-    }
-
-    protected String getDetailedComponentCation(Element element, String id) {
-        String name = element.getName();
-        if (isParentRequired(element)) {
-            Element parent = element.getParent();
-            while (parent != null) {
-                if (isHolderComponent(parent)) {
-                    String parentId = parent.attributeValue("id");
-                    name = StringUtils.isNotEmpty(parentId) ? parentId : parent.getName() + ": " + name;
-                    break;
-                }
-                parent = parent.getParent();
-            }
-        }
-
-        return id + ": <" + name + ">";
-    }
-
-    protected String getDetailedComponentPath(Element element, String id) {
-        // TODO: gg, calculate path
-        return id;
+    protected boolean isExclusion(Element element) {
+        return RowsCount.NAME.equals(element.getName());
     }
 
     protected enum ScreenType {

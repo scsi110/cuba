@@ -21,6 +21,8 @@ import com.haulmont.cuba.gui.components.ComponentGenerationContext;
 import com.haulmont.cuba.gui.components.ComponentGenerationStrategy;
 import com.haulmont.cuba.gui.components.Timer;
 
+import javax.annotation.Nullable;
+
 /**
  * Factory to create UI components in client independent manner.
  * <br> An instance of the factory can be injected into screen controllers or obtained through {@link com.haulmont.cuba.core.global.AppBeans}.
@@ -61,6 +63,17 @@ public interface ComponentsFactory {
      * @throws IllegalArgumentException if no component can be created for a given context
      */
     Component createComponent(ComponentGenerationContext context);
+
+    /**
+     * Returns component type by its name.
+     *
+     * @param name component name. It is usually defined in NAME constant inside the component interface,
+     *             e.g. {@link com.haulmont.cuba.gui.components.Label#NAME}.
+     *             It is also usually equal to component's XML name.
+     * @return component type by its name or null if not found
+     */
+    @Nullable
+    Class<?> getComponentType(String name);
 
     /**
      * Create a timer instance.

@@ -23,6 +23,7 @@ import com.haulmont.cuba.gui.ComponentPalette;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
@@ -158,6 +159,12 @@ public class DesktopComponentsFactory implements ComponentsFactory {
 
         throw new IllegalArgumentException(String.format("Can't create component for the '%s' with " +
                 "given meta class '%s'", context.getProperty(), context.getMetaClass()));
+    }
+
+    @Nullable
+    @Override
+    public Class<?> getComponentType(String name) {
+        return classes.get(name);
     }
 
     @Override
