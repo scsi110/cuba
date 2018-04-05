@@ -20,10 +20,7 @@ package com.haulmont.cuba.gui;
 import com.haulmont.bali.util.Dom4j;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.gui.components.FieldGroup;
-import com.haulmont.cuba.gui.components.RowsCount;
-import com.haulmont.cuba.gui.components.ScreenComponentDescriptor;
-import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.xml.XmlInheritanceProcessor;
@@ -127,7 +124,9 @@ public class ScreensHelper {
 
     public void findScreenComponents(List<ScreenComponentDescriptor> components,
                                      @Nullable ScreenComponentDescriptor parent, Element root) {
-        for (Element element : Dom4j.elements(root)) {
+
+        List<Element> elements = isFrame(root) ? getFrameElements(root) : Dom4j.elements(root);
+        for (Element element : elements) {
             if (isComponentElement(element)) {
                 //noinspection IncorrectCreateEntity
                 ScreenComponentDescriptor descriptor = new ScreenComponentDescriptor(element, parent);
@@ -135,6 +134,15 @@ public class ScreensHelper {
                 findScreenComponents(components, descriptor, element);
             }
         }
+    }
+
+    protected List<Element> getFrameElements(Element frameElement) {
+        // TODO: gg, implement
+        return null;
+    }
+
+    protected boolean isFrame(Element element) {
+        return Frame.NAME.equals(element.getName());
     }
 
     protected boolean isComponentElement(Element element) {
