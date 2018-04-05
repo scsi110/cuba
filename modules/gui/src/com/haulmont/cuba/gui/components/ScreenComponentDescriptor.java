@@ -22,22 +22,16 @@ import com.haulmont.cuba.core.entity.BaseUuidEntity;
 import com.haulmont.cuba.core.entity.annotation.SystemLevel;
 import org.dom4j.Element;
 
-import javax.annotation.Nullable;
-
 @com.haulmont.chile.core.annotations.MetaClass(name = "sec$ScreenComponentDescriptor")
 @SystemLevel
 public class ScreenComponentDescriptor extends BaseUuidEntity {
-
-    protected String componentId;
 
     protected Element element;
 
     @MetaProperty
     protected ScreenComponentDescriptor parent;
 
-    public ScreenComponentDescriptor(@Nullable String componentId, Element element,
-                                     ScreenComponentDescriptor parent) {
-        this.componentId = componentId;
+    public ScreenComponentDescriptor(Element element, ScreenComponentDescriptor parent) {
         this.element = element;
         this.parent = parent;
     }
@@ -45,14 +39,6 @@ public class ScreenComponentDescriptor extends BaseUuidEntity {
     @MetaProperty
     public String getCaption() {
         return toString();
-    }
-
-    public String getComponentId() {
-        return componentId;
-    }
-
-    public void setComponentId(String componentId) {
-        this.componentId = componentId;
     }
 
     public Element getElement() {
@@ -74,10 +60,15 @@ public class ScreenComponentDescriptor extends BaseUuidEntity {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (!Strings.isNullOrEmpty(componentId)) {
-            sb.append(componentId).append(": ");
+
+        String id = element.attributeValue("id");
+        id = Strings.isNullOrEmpty(id) ? element.attributeValue("property") : id;
+
+        if (!Strings.isNullOrEmpty(id)) {
+            sb.append(id).append(": ");
         }
         sb.append("<").append(element.getName()).append(">");
+
         return sb.toString();
     }
 }

@@ -20,6 +20,7 @@ package com.haulmont.cuba.gui;
 import com.haulmont.bali.util.Dom4j;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.gui.components.FieldGroup;
 import com.haulmont.cuba.gui.components.RowsCount;
 import com.haulmont.cuba.gui.components.ScreenComponentDescriptor;
 import com.haulmont.cuba.gui.components.Window;
@@ -130,9 +131,8 @@ public class ScreensHelper {
                                      @Nullable ScreenComponentDescriptor parent, Element root) {
         for (Element element : Dom4j.elements(root)) {
             if (isComponentElement(element)) {
-                String id = element.attributeValue("id");
                 //noinspection IncorrectCreateEntity
-                ScreenComponentDescriptor descriptor = new ScreenComponentDescriptor(id, element, parent);
+                ScreenComponentDescriptor descriptor = new ScreenComponentDescriptor(element, parent);
                 components.add(descriptor);
                 findScreenComponents(components, descriptor, element);
             }
@@ -147,6 +147,8 @@ public class ScreensHelper {
                         || isAction(element)
                         || isTab(element)
                         || isRow(element)
+                        || isField(element)
+                        || isFieldGroupColumn(element)
                 );
     }
 
@@ -162,6 +164,16 @@ public class ScreensHelper {
     protected boolean isRow(Element element) {
         return "row".equals(element.getName())
                 || "rows".equals(element.getName());
+    }
+
+    protected boolean isField(Element element) {
+        return "field".equals(element.getName());
+    }
+
+    protected boolean isFieldGroupColumn(Element element) {
+        return "column".equals(element.getName())
+                && element.getParent() != null
+                && FieldGroup.NAME.equals(element.getParent().getName());
     }
 
     protected boolean isExclusion(Element element) {
