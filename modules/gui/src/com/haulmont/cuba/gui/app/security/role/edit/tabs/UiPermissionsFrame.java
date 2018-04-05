@@ -21,8 +21,8 @@ import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Metadata;
 import com.haulmont.cuba.core.global.Security;
 import com.haulmont.cuba.gui.AppConfig;
-import com.haulmont.cuba.gui.ScreensHelper;
 import com.haulmont.cuba.gui.app.security.ds.RestorablePermissionDatasource;
+import com.haulmont.cuba.gui.app.security.ds.ScreenComponentsTreeDatasource;
 import com.haulmont.cuba.gui.app.security.ds.UiPermissionsDatasource;
 import com.haulmont.cuba.gui.app.security.entity.UiPermissionTarget;
 import com.haulmont.cuba.gui.app.security.entity.UiPermissionVariant;
@@ -32,7 +32,6 @@ import com.haulmont.cuba.gui.components.actions.RemoveAction;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.data.Datasource;
-import com.haulmont.cuba.gui.data.HierarchicalDatasource;
 import com.haulmont.cuba.security.entity.EntityOp;
 import com.haulmont.cuba.security.entity.Permission;
 import com.haulmont.cuba.security.entity.PermissionType;
@@ -97,16 +96,13 @@ public class UiPermissionsFrame extends AbstractFrame {
     protected GroupBoxLayout editPane;
 
     @Inject
-    protected ScreensHelper screensHelper;
-
-    @Inject
     protected Tree<ScreenComponentDescriptor> componentsTree;
 
     @Inject
     protected Button componentsTreeBtn;
 
     @Inject
-    protected HierarchicalDatasource<ScreenComponentDescriptor, UUID> componentDescriptorsDs;
+    protected ScreenComponentsTreeDatasource componentDescriptorsDs;
 
     protected boolean itemChanging = false;
 
@@ -114,17 +110,7 @@ public class UiPermissionsFrame extends AbstractFrame {
     public void init(Map<String, Object> params) {
         super.init(params);
 
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        Collection<WindowInfo> windows = sortWindowInfos(windowConfig.getWindows());
-        Map<String, Object> screens = new LinkedHashMap<>();
-        for (WindowInfo windowInfo : windows) {
-            String id = windowInfo.getId();
-            String menuId = "menu-config." + id;
-            String localeMsg = messages.getMessage(AppConfig.getMessagesPack(), menuId);
-            String title = menuId.equals(localeMsg) ? id : localeMsg + " (" + id + ")";
-            screens.put(title, id);
-        }
-        screenFilter.setOptionsMap(screens);
+        initScreenFilter();
 
         companion.initPermissionsColoredColumns(uiPermissionsTable);
 
@@ -179,24 +165,37 @@ public class UiPermissionsFrame extends AbstractFrame {
         applyPermissions(hasPermissionsToModifyPermission);
     }
 
+    protected void initScreenFilter() {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        Collection<WindowInfo> windows = sortWindowInfos(windowConfig.getWindows());
+        Map<String, Object> screens = new LinkedHashMap<>();
+        for (WindowInfo windowInfo : windows) {
+            String id = windowInfo.getId();
+            String menuId = "menu-config." + id;
+            String localeMsg = messages.getMessage(AppConfig.getMessagesPack(), menuId);
+            String title = menuId.equals(localeMsg) ? id : localeMsg + " (" + id + ")";
+            screens.put(title, id);
+        }
+        screenFilter.setOptionsMap(screens);
+
+        componentsTreeBtn.setEnabled(screenFilter.getValue() != null);
+        screenFilter.addValueChangeListener(e -> {
+            componentsTreeBtn.setEnabled(screenFilter.getValue() != null);
+
+            componentDescriptorsDs.setScreenId(screenFilter.getValue());
+            componentDescriptorsDs.refresh();
+
+            componentsTree.expandTree();
+        });
+    }
+
     public void changeComponentsTreeVisibility() {
         if (componentsTree.isVisible()) {
             componentsTree.setVisible(false);
             componentsTreeBtn.setCaption(getMessage("componentsTree.show"));
-        } else {
-            if (StringUtils.isNotBlank(screenFilter.getValue())) {
-                List<ScreenComponentDescriptor> screenComponents =
-                        screensHelper.getScreenComponents(screenFilter.getValue());
-
-                componentDescriptorsDs.clear();
-
-                for (ScreenComponentDescriptor descriptor : screenComponents) {
-                    componentDescriptorsDs.includeItem(descriptor);
-                }
-
-                componentsTree.setVisible(true);
-                componentsTreeBtn.setCaption(getMessage("componentsTree.hide"));
-            }
+        } else if (StringUtils.isNotBlank(screenFilter.getValue())) {
+            componentsTree.setVisible(true);
+            componentsTreeBtn.setCaption(getMessage("componentsTree.hide"));
         }
     }
 

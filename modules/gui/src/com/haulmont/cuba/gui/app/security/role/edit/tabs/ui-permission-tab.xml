@@ -34,7 +34,6 @@
 
         <groupDatasource id="uiPermissionTargetsDs"
                          class="com.haulmont.cuba.gui.app.security.entity.UiPermissionTarget"
-                         allowCommit="false"
                          view="_local"
                          datasourceClass="com.haulmont.cuba.gui.app.security.ds.UiPermissionsDatasource">
         </groupDatasource>
@@ -42,10 +41,11 @@
         <hierarchicalDatasource id="componentDescriptorsDs"
                                 allowCommit="false"
                                 class="com.haulmont.cuba.gui.components.ScreenComponentDescriptor"
-                                hierarchyProperty="parent"/>
+                                datasourceClass="com.haulmont.cuba.gui.app.security.ds.ScreenComponentsTreeDatasource"/>
     </dsContext>
 
     <assign name="filterFieldWidth" value="theme://cuba.gui.ui-permission-tab.filterFieldWidth.width"/>
+    <assign name="componentsTreeWidth" value="theme://cuba.gui.ui-permission-tab.componentsTreeWidth.width"/>
 
     <layout expand="contentPane">
         <!-- Filter -->
@@ -106,7 +106,7 @@
             <tree id="componentsTree"
                   height="100%"
                   visible="false"
-                  width="400px"> <!-- todo: gg, variable? -->
+                  width="${componentsTreeWidth}">
                 <treechildren captionProperty="caption"
                               datasource="componentDescriptorsDs"/>
             </tree>
