@@ -27,7 +27,8 @@ import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.xml.XmlInheritanceProcessor;
-import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
+import com.haulmont.cuba.gui.xml.layout.ComponentLoader;
+import com.haulmont.cuba.gui.xml.layout.LayoutLoaderConfig;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -66,9 +67,6 @@ public class ScreensHelper {
 
     @Inject
     protected Metadata metadata;
-
-    @Inject
-    private ComponentsFactory componentsFactory;
 
     private Map<String, String> captionCache = new ConcurrentHashMap<>();
     private Map<String, Map<String, Object>> availableScreensCache = new ConcurrentHashMap<>();
@@ -140,10 +138,10 @@ public class ScreensHelper {
     }
 
     protected boolean isComponentElement(Element element) {
-        // TODO: gg, think something better, hasLoader?
-        Class<?> componentType = componentsFactory.getComponentType(element.getName());
+        // TODO: gg, some special method?
+        Class<? extends ComponentLoader> loader = LayoutLoaderConfig.getWindowLoaders().getLoader(element.getName());
         return !isExclusion(element) &&
-                (componentType != null
+                (loader != null
                         || isAction(element)
                         || isTab(element)
                         || isRow(element)

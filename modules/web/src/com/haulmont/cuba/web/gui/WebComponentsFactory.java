@@ -197,13 +197,6 @@ public class WebComponentsFactory implements ComponentsFactory {
                 "given meta class '%s'", context.getProperty(), context.getMetaClass()));
     }
 
-
-    @Nullable
-    @Override
-    public Class<?> getComponentType(String name) {
-        return classes.get(name);
-    }
-
     @Override
     public Timer createTimer() {
         return new WebTimer();
