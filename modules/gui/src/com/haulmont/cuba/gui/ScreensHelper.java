@@ -143,12 +143,25 @@ public class ScreensHelper {
         // TODO: gg, think something better, hasLoader?
         Class<?> componentType = componentsFactory.getComponentType(element.getName());
         return !isExclusion(element) &&
-                (isAction(element) || componentType != null);
+                (componentType != null
+                        || isAction(element)
+                        || isTab(element)
+                        || isRow(element)
+                );
     }
 
     protected boolean isAction(Element element) {
         return "action".equals(element.getName())
                 || "actions".equals(element.getName());
+    }
+
+    protected boolean isTab(Element element) {
+        return "tab".equals(element.getName());
+    }
+
+    protected boolean isRow(Element element) {
+        return "row".equals(element.getName())
+                || "rows".equals(element.getName());
     }
 
     protected boolean isExclusion(Element element) {

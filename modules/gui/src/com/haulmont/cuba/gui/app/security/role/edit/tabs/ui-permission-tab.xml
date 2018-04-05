@@ -58,13 +58,16 @@
             <hbox margin="false,false,false,true" spacing="true">
                 <label value="msg://component" align="MIDDLE_RIGHT"/>
                 <textField id="componentTextField" width="${filterFieldWidth}"/>
-                <button id="componentsTreeBtn" icon="SITEMAP"  invoke="showComponentsTree"/>
                 <button id="addPermissionBtn" caption="msg://actions.Add" invoke="addUiPermission"/>
                 <button id="removePermissionBtn"/>
+                <button id="componentsTreeBtn"
+                        caption="msg://componentsTree.show"
+                        icon="SITEMAP"
+                        invoke="changeComponentsTreeVisibility"/>
             </hbox>
         </hbox>
-        <hbox id="contentPane" spacing="true" margin="false,true,true,true" width="100%">
-            <split id="contentSplit" width="100%" height="100%" orientation="horizontal" pos="80">
+        <hbox id="contentPane" expand="contentSplit" spacing="true" margin="false,true,true,true" width="100%">
+            <split id="contentSplit" height="100%" orientation="horizontal" pos="80">
                 <!-- Table -->
                 <hbox height="100%"
                       expand="uiPermissionsTable"
@@ -82,23 +85,6 @@
                         </columns>
                         <rows datasource="uiPermissionTargetsDs"/>
                     </groupTable>
-                    <vbox id="componentsTreeBox"
-                          expand="componentsTree"
-                          height="100%"
-                          spacing="true"
-                          visible="false"
-                          width="400px">
-                        <tree id="componentsTree"
-                              caption="msg://componentsTree"
-                              width="100%">
-                            <treechildren captionProperty="caption"
-                                          datasource="componentDescriptorsDs"/>
-                        </tree>
-                        <button id="closeComponentsTreeBoxBtn"
-                                align="BOTTOM_RIGHT"
-                                caption="msg://actions.Close"
-                                invoke="hideComponentsTree"/>
-                    </vbox>
                 </hbox>
                 <!-- Edit pane -->
                 <vbox margin="false;false;false;true" height="100%">
@@ -117,6 +103,13 @@
                     </groupBox>
                 </vbox>
             </split>
+            <tree id="componentsTree"
+                  height="100%"
+                  visible="false"
+                  width="400px"> <!-- todo: gg, variable? -->
+                <treechildren captionProperty="caption"
+                              datasource="componentDescriptorsDs"/>
+            </tree>
         </hbox>
     </layout>
 </window>

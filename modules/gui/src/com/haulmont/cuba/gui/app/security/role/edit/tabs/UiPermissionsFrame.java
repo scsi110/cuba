@@ -100,10 +100,13 @@ public class UiPermissionsFrame extends AbstractFrame {
     protected ScreensHelper screensHelper;
 
     @Inject
-    private VBoxLayout componentsTreeBox;
+    protected Tree<ScreenComponentDescriptor> componentsTree;
 
     @Inject
-    private HierarchicalDatasource<ScreenComponentDescriptor, UUID> componentDescriptorsDs;
+    protected Button componentsTreeBtn;
+
+    @Inject
+    protected HierarchicalDatasource<ScreenComponentDescriptor, UUID> componentDescriptorsDs;
 
     protected boolean itemChanging = false;
 
@@ -176,23 +179,25 @@ public class UiPermissionsFrame extends AbstractFrame {
         applyPermissions(hasPermissionsToModifyPermission);
     }
 
-    public void showComponentsTree() {
-        if (StringUtils.isNotBlank(screenFilter.getValue())) {
-            List<ScreenComponentDescriptor> screenComponents =
-                    screensHelper.getScreenComponents(screenFilter.getValue());
+    public void changeComponentsTreeVisibility() {
+        if (componentsTree.isVisible()) {
+            componentsTree.setVisible(false);
+            componentsTreeBtn.setCaption(getMessage("componentsTree.show"));
+        } else {
+            if (StringUtils.isNotBlank(screenFilter.getValue())) {
+                List<ScreenComponentDescriptor> screenComponents =
+                        screensHelper.getScreenComponents(screenFilter.getValue());
 
-            componentDescriptorsDs.clear();
+                componentDescriptorsDs.clear();
 
-            for (ScreenComponentDescriptor descriptor : screenComponents) {
-                componentDescriptorsDs.includeItem(descriptor);
+                for (ScreenComponentDescriptor descriptor : screenComponents) {
+                    componentDescriptorsDs.includeItem(descriptor);
+                }
+
+                componentsTree.setVisible(true);
+                componentsTreeBtn.setCaption(getMessage("componentsTree.hide"));
             }
-
-            componentsTreeBox.setVisible(true);
         }
-    }
-
-    public void hideComponentsTree() {
-        componentsTreeBox.setVisible(false);
     }
 
     protected Collection<WindowInfo> sortWindowInfos(Collection<WindowInfo> infos) {
