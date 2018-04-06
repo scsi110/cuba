@@ -17,6 +17,7 @@
 
 package com.haulmont.cuba.gui;
 
+import com.google.common.base.Strings;
 import com.haulmont.bali.util.Dom4j;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.global.*;
@@ -124,7 +125,6 @@ public class ScreensHelper {
 
     public void findScreenComponents(List<ScreenComponentDescriptor> components,
                                      @Nullable ScreenComponentDescriptor parent, Element root) {
-
         List<Element> elements = isFrame(root) ? getFrameElements(root) : Dom4j.elements(root);
         for (Element element : elements) {
             if (isComponentElement(element)) {
@@ -137,8 +137,25 @@ public class ScreensHelper {
     }
 
     protected List<Element> getFrameElements(Element frameElement) {
-        // TODO: gg, implement
-        return null;
+        String src = frameElement.attributeValue("src");
+        if (Strings.isNullOrEmpty(src)) {
+            String screenId = frameElement.attributeValue("screen");
+            if (!Strings.isNullOrEmpty(screenId)) {
+                src = windowConfig.getWindowInfo(screenId).getTemplate();
+            }
+        }
+
+        if (!Strings.isNullOrEmpty(src)) {
+            try {
+                Element layoutElement = getRootLayoutElement(src);
+                if (layoutElement != null) {
+                    return Dom4j.elements(layoutElement);
+                }
+            } catch (FileNotFoundException e) {
+                log.error(e.getMessage());
+            }
+        }
+        return Collections.emptyList();
     }
 
     protected boolean isFrame(Element element) {

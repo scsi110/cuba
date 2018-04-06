@@ -192,10 +192,10 @@ public class UiPermissionsFrame extends AbstractFrame {
     public void changeComponentsTreeVisibility() {
         if (componentsTree.isVisible()) {
             componentsTree.setVisible(false);
-            componentsTreeBtn.setCaption(getMessage("componentsTree.show"));
+            componentsTreeBtn.setDescription(getMessage("componentsTree.show"));
         } else if (StringUtils.isNotBlank(screenFilter.getValue())) {
             componentsTree.setVisible(true);
-            componentsTreeBtn.setCaption(getMessage("componentsTree.hide"));
+            componentsTreeBtn.setDescription(getMessage("componentsTree.hide"));
         }
     }
 

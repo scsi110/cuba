@@ -61,7 +61,7 @@
                 <button id="addPermissionBtn" caption="msg://actions.Add" invoke="addUiPermission"/>
                 <button id="removePermissionBtn"/>
                 <button id="componentsTreeBtn"
-                        caption="msg://componentsTree.show"
+                        description="msg://componentsTree.show"
                         icon="SITEMAP"
                         invoke="changeComponentsTreeVisibility"/>
             </hbox>
