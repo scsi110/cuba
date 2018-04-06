@@ -68,6 +68,7 @@ public class ScreensHelper {
 
     private Map<String, String> captionCache = new ConcurrentHashMap<>();
     private Map<String, Map<String, Object>> availableScreensCache = new ConcurrentHashMap<>();
+    private Map<String, List<ScreenComponentDescriptor>> screenComponentsCache = new ConcurrentHashMap<>();
 
     /**
      * Sorts window infos alphabetically, takes into account $ mark
@@ -105,22 +106,30 @@ public class ScreensHelper {
     }
 
     public List<ScreenComponentDescriptor> getScreenComponents(String screenId) {
+        String key = getScreenComponentsCacheKey(screenId, getUserLocale());
+        List<ScreenComponentDescriptor> screenComponents = screenComponentsCache.get(key);
+        if (screenComponents != null) {
+            return screenComponents;
+        }
+
+        List<ScreenComponentDescriptor> components = new ArrayList<>();
+
         WindowInfo windowInfo = windowConfig.findWindowInfo(screenId);
         if (windowInfo != null) {
             String template = windowInfo.getTemplate();
             try {
                 Element layoutElement = getRootLayoutElement(template);
                 if (layoutElement != null) {
-                    List<ScreenComponentDescriptor> components = new ArrayList<>();
                     findScreenComponents(components, null, layoutElement);
-                    return components;
                 }
             } catch (FileNotFoundException e) {
                 log.error(e.getMessage());
             }
         }
 
-        return Collections.emptyList();
+        components = Collections.unmodifiableList(components);
+        cacheScreenComponents(key, components);
+        return components;
     }
 
     public void findScreenComponents(List<ScreenComponentDescriptor> components,
@@ -473,6 +482,11 @@ public class ScreensHelper {
             availableScreensCache.put(key, value);
     }
 
+    protected void cacheScreenComponents(String key, List<ScreenComponentDescriptor> value) {
+        if (!screenComponentsCache.containsKey(key))
+            screenComponentsCache.put(key, value);
+    }
+
     protected String getCaptionCacheKey(String src, Locale locale) {
         return src + locale.toString();
     }
@@ -481,8 +495,13 @@ public class ScreensHelper {
         return String.format("%s_%s_%s", className, locale.toString(), filterScreenType);
     }
 
+    protected String getScreenComponentsCacheKey(String screenId, Locale locale) {
+        return screenId + locale.toString();
+    }
+
     public void clearCache() {
         captionCache.clear();
         availableScreensCache.clear();
+        screenComponentsCache.clear();
     }
 }
