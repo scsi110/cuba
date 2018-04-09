@@ -172,7 +172,6 @@ public class ScreensHelper {
     }
 
     protected boolean isComponentElement(Element element) {
-        // TODO: gg, some special method?
         Class<? extends ComponentLoader> loader = LayoutLoaderConfig.getWindowLoaders().getLoader(element.getName());
         return !isExclusion(element) &&
                 (loader != null
@@ -209,7 +208,14 @@ public class ScreensHelper {
     }
 
     protected boolean isExclusion(Element element) {
-        return RowsCount.NAME.equals(element.getName());
+        return RowsCount.NAME.equals(element.getName())
+                || isTableRows(element);
+    }
+
+    protected boolean isTableRows(Element element) {
+        return "rows".equals(element.getName())
+                && element.getParent() != null
+                && StringUtils.containsIgnoreCase(element.getParent().getName(), Table.NAME);
     }
 
     protected enum ScreenType {
