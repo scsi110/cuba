@@ -99,6 +99,9 @@ public class UiPermissionsFrame extends AbstractFrame {
     protected Tree<ScreenComponentDescriptor> componentsTree;
 
     @Inject
+    protected VBoxLayout componentsTreeBox;
+
+    @Inject
     protected Button componentsTreeBtn;
 
     @Inject
@@ -190,11 +193,11 @@ public class UiPermissionsFrame extends AbstractFrame {
     }
 
     public void changeComponentsTreeVisibility() {
-        if (componentsTree.isVisible()) {
-            componentsTree.setVisible(false);
+        if (componentsTreeBox.isVisible()) {
+            componentsTreeBox.setVisible(false);
             componentsTreeBtn.setDescription(getMessage("componentsTree.show"));
         } else if (StringUtils.isNotBlank(screenFilter.getValue())) {
-            componentsTree.setVisible(true);
+            componentsTreeBox.setVisible(true);
             componentsTreeBtn.setDescription(getMessage("componentsTree.hide"));
         }
     }
@@ -297,5 +300,13 @@ public class UiPermissionsFrame extends AbstractFrame {
             uiPermissionsTable.expandPath(target);
             uiPermissionsTable.setSelected(target);
         }
+    }
+
+    public void collapseTree() {
+        componentsTree.collapseTree();
+    }
+
+    public void expandTree() {
+        componentsTree.expandTree();
     }
 }

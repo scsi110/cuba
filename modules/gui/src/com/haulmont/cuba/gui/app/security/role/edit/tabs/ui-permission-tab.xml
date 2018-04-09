@@ -103,13 +103,34 @@
                     </groupBox>
                 </vbox>
             </split>
-            <tree id="componentsTree"
+            <!-- Components Tree -->
+            <vbox id="componentsTreeBox"
+                  expand="componentsTree"
                   height="100%"
                   visible="false"
                   width="${componentsTreeWidth}">
-                <treechildren captionProperty="caption"
-                              datasource="componentDescriptorsDs"/>
-            </tree>
+                <hbox id="componentsTreeButtonsPanel"
+                      expand="componentsTreeCaptionLabel"
+                      spacing="true"
+                      width="100%">
+                    <label id="componentsTreeCaptionLabel"
+                           stylename="h2"
+                           value="msg://componentsTree.caption"/>
+                    <linkButton id="collapseAllBtn"
+                                align="BOTTOM_RIGHT"
+                                caption="msg://collapseAll"
+                                invoke="collapseTree"/>
+                    <linkButton id="expandAllBtn"
+                                align="BOTTOM_RIGHT"
+                                caption="msg://expandAll"
+                                invoke="expandTree"/>
+                </hbox>
+                <tree id="componentsTree"
+                      width="100%">
+                    <treechildren captionProperty="caption"
+                                  datasource="componentDescriptorsDs"/>
+                </tree>
+            </vbox>
         </hbox>
     </layout>
 </window>
