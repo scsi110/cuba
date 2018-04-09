@@ -114,7 +114,6 @@
                       spacing="true"
                       width="100%">
                     <label id="componentsTreeCaptionLabel"
-                           stylename="h2"
                            value="msg://componentsTree.caption"/>
                     <linkButton id="collapseAllBtn"
                                 align="BOTTOM_RIGHT"
