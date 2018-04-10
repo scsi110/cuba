@@ -123,7 +123,7 @@ public class ScreensHelper {
                     findScreenComponents(components, null, layoutElement);
                 }
             } catch (FileNotFoundException e) {
-                log.error(e.getMessage());
+                log.error("Can't obtain screen's root layout: ", e);
             }
         }
 
