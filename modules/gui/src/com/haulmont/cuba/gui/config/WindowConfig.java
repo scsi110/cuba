@@ -16,37 +16,44 @@
  */
 package com.haulmont.cuba.gui.config;
 
+import com.google.common.base.Strings;
 import com.haulmont.bali.util.Dom4j;
-import com.haulmont.bali.util.Preconditions;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.DevelopmentException;
 import com.haulmont.cuba.core.global.Metadata;
 import com.haulmont.cuba.core.global.Resources;
+import com.haulmont.cuba.core.global.Scripting;
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.gui.Design;
 import com.haulmont.cuba.gui.NoSuchScreenException;
+import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.UIController;
 import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.sys.UIControllerUtils;
+import com.haulmont.cuba.gui.sys.UIControllersConfiguration;
+import com.haulmont.cuba.gui.sys.UIControllersConfiguration.UIControllerDefinition;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringTokenizer;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * GenericUI class holding information about all registered in <code>screens.xml</code> screens.
@@ -62,23 +69,103 @@ public class WindowConfig {
 
     private final Logger log = LoggerFactory.getLogger(WindowConfig.class);
 
-    protected Map<String, List<WindowInfo>> screens = new HashMap<>();
+    protected Map<String, WindowInfo> screens = new HashMap<>();
 
     @Inject
     protected Resources resources;
-
+    @Inject
+    protected Scripting scripting;
     @Inject
     protected Metadata metadata;
-
     @Inject
-    protected DeviceInfoProvider deviceInfoProvider;
-
-    // Map alias -> ScreenAgent
-    protected Map<String, ScreenAgent> activeScreenAgents;
+    protected List<UIControllersConfiguration> uiControllersConfigurations;
 
     protected volatile boolean initialized;
 
     protected ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    protected WindowAttributesProvider windowAttributesProvider = new WindowAttributesProvider() {
+        @Nullable
+        @Override
+        public String getTemplate(WindowInfo windowInfo) {
+            return extractWindowTemplate(windowInfo);
+        }
+
+        @Override
+        public boolean isMultiOpen(WindowInfo windowInfo) {
+            return extractMultiOpen(windowInfo);
+        }
+
+        @Nonnull
+        @Override
+        public Class<? extends Screen> getScreenClass(WindowInfo windowInfo) {
+            return extractScreenClass(windowInfo);
+        }
+    };
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    protected Class<? extends Screen> extractScreenClass(WindowInfo windowInfo) {
+        if (windowInfo.getDescriptor() != null) {
+            String className = windowInfo.getDescriptor().attributeValue("class");
+
+            if (Strings.isNullOrEmpty(className)) {
+                throw new IllegalStateException("Window descriptor does not declare class attribute");
+            }
+
+            return (Class<? extends Screen>) scripting.loadClassNN(className);
+        }
+
+        if (windowInfo.getScreenClassName() != null) {
+            return loadDefinedScreenClass(windowInfo.getScreenClassName());
+        }
+
+        throw new IllegalStateException("Neither screen class not descriptor is set for WindowInfo");
+    }
+
+    protected boolean extractMultiOpen(WindowInfo windowInfo) {
+        if (windowInfo.getDescriptor() != null) {
+            return Boolean.parseBoolean(windowInfo.getDescriptor().attributeValue("multipleOpen"));
+        }
+
+        if (windowInfo.getScreenClassName() != null) {
+            Class<? extends Screen> screenClass = loadDefinedScreenClass(windowInfo.getScreenClassName());
+
+            UIController uiController = screenClass.getAnnotation(UIController.class);
+            if (uiController == null) {
+                // default is false
+                return false;
+            }
+            return uiController.multipleOpen();
+        }
+
+        throw new IllegalStateException("Neither screen class not descriptor is set for WindowInfo");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    protected String extractWindowTemplate(WindowInfo windowInfo) {
+        if (windowInfo.getDescriptor() != null) {
+            return windowInfo.getDescriptor().attributeValue("template");
+        }
+
+        if (windowInfo.getScreenClassName() != null) {
+            Class<? extends Screen> screenClass = loadDefinedScreenClass(windowInfo.getScreenClassName());
+
+            Design annotation = screenClass.getAnnotation(Design.class);
+            if (annotation == null) {
+                return null;
+            }
+            return UIControllerUtils.getInferredDesignTemplate(annotation, screenClass);
+        }
+
+        throw new IllegalStateException("Neither screen class not descriptor is set for WindowInfo");
+    }
+
+    @SuppressWarnings("unchecked")
+    protected Class<? extends Screen> loadDefinedScreenClass(String className) {
+        return (Class<? extends Screen>) scripting.loadClassNN(className);
+    }
 
     protected void checkInitialized() {
         if (!initialized) {
@@ -99,18 +186,23 @@ public class WindowConfig {
     protected void init() {
         screens.clear();
 
-        Map<String, ScreenAgent> agentMap = AppBeans.getAll(ScreenAgent.class);
+        loadScreenConfigurations();
+        loadScreensXml();
+    }
 
-        Map<String, ScreenAgent> screenAgents = new LinkedHashMap<>();
-        List<ScreenAgent> availableAgents = new ArrayList<>(agentMap.values());
+    protected void loadScreenConfigurations() {
+        for (UIControllersConfiguration provider : uiControllersConfigurations) {
+            List<UIControllerDefinition> uiControllers = provider.getUIControllers();
 
-        AnnotationAwareOrderComparator.sort(availableAgents);
-
-        for (ScreenAgent screenAgent : availableAgents) {
-            screenAgents.put(screenAgent.getAlias(), screenAgent);
+            for (UIControllerDefinition definition : uiControllers) {
+                WindowInfo windowInfo = new WindowInfo(definition.getId(), windowAttributesProvider,
+                        definition.getControllerClass());
+                screens.put(definition.getId(), windowInfo);
+            }
         }
-        this.activeScreenAgents = screenAgents;
+    }
 
+    protected void loadScreensXml() {
         String configName = AppContext.getProperty(WINDOW_CONFIG_XML_PROP);
         StringTokenizer tokenizer = new StringTokenizer(configName);
         for (String location : tokenizer.getTokenArray()) {
@@ -150,36 +242,8 @@ public class WindowConfig {
                 log.warn("Invalid window config: 'id' attribute not defined");
                 continue;
             }
-
-            ScreenAgent targetAgent = null;
-            String agent = element.attributeValue("agent");
-            if (StringUtils.isNotEmpty(agent)) {
-                targetAgent = activeScreenAgents.get(agent);
-
-                if (targetAgent == null) {
-                    throw new DevelopmentException("Unable to find target screen agent", "agent", agent);
-                }
-            }
-
-            WindowInfo windowInfo = new WindowInfo(id, element, targetAgent);
-
-            List<WindowInfo> screenInfos = screens.get(id);
-            if (screenInfos == null) {
-                screenInfos = new ArrayList<>();
-                screens.put(id, screenInfos);
-            } else {
-                WindowInfo existingScreen = screenInfos.stream()
-                        .filter(existingWindowInfo ->
-                                existingWindowInfo.getScreenAgent() == windowInfo.getScreenAgent())
-                        .findFirst()
-                        .orElse(null);
-
-                if (existingScreen != null) {
-                    screenInfos.remove(existingScreen);
-                }
-            }
-
-            screenInfos.add(windowInfo);
+            WindowInfo windowInfo = new WindowInfo(id, windowAttributesProvider, element);
+            screens.put(id, windowInfo);
         }
     }
 
@@ -190,70 +254,34 @@ public class WindowConfig {
         initialized = false;
     }
 
-    public WindowInfo findWindowInfo(String id) {
-        return findWindowInfo(id, null);
-    }
-
     /**
      * Get screen information by screen ID.
      *
      * @param id         screen ID as set up in <code>screens.xml</code>
-     * @param deviceInfo target device info
      * @return screen's registration information or null if not found
      */
     @Nullable
-    public WindowInfo findWindowInfo(String id, @Nullable DeviceInfo deviceInfo) {
+    public WindowInfo findWindowInfo(String id) {
         lock.readLock().lock();
         try {
             checkInitialized();
 
-            List<WindowInfo> infos = screens.get(id);
-
-            if (infos == null) {
+            WindowInfo windowInfo = screens.get(id);
+            if (windowInfo == null) {
                 Matcher matcher = ENTITY_SCREEN_PATTERN.matcher(id);
                 if (matcher.matches()) {
                     MetaClass metaClass = metadata.getClass(matcher.group(1));
-                    if (metaClass == null) {
+                    if (metaClass == null)
                         return null;
-                    }
-
                     MetaClass originalMetaClass = metadata.getExtendedEntities().getOriginalMetaClass(metaClass);
                     if (originalMetaClass != null) {
                         String originalId = new StringBuilder(id)
                                 .replace(matcher.start(1), matcher.end(1), originalMetaClass.getName()).toString();
-                        infos = screens.get(originalId);
+                        windowInfo = screens.get(originalId);
                     }
                 }
             }
-
-            List<WindowInfo> foundWindowInfos = infos;
-
-            if (foundWindowInfos != null) {
-                // do not perform stream processing in a simple case
-                if (foundWindowInfos.size() == 1 && foundWindowInfos.get(0).getScreenAgent() == null) {
-                    return foundWindowInfos.get(0);
-                }
-
-                if (deviceInfo == null) {
-                    // find default screen
-                    return foundWindowInfos.stream()
-                            .filter(windowInfo -> windowInfo.getScreenAgent() == null)
-                            .findFirst()
-                            .orElse(null);
-                } else {
-                    return infos.stream().filter(wi ->
-                            wi.getScreenAgent() != null
-                                    && wi.getScreenAgent().isSupported(deviceInfo)
-                    ).findFirst().orElseGet(() ->
-                            foundWindowInfos.stream()
-                                    .filter(windowInfo -> windowInfo.getScreenAgent() == null)
-                                    .findFirst()
-                                    .orElse(null)
-                    );
-                }
-            }
-
-            return null;
+            return windowInfo;
         } finally {
             lock.readLock().unlock();
         }
@@ -262,26 +290,12 @@ public class WindowConfig {
     /**
      * Get screen information by screen ID.
      *
-     * @param id screen ID as set up in <code>screens.xml</code>
+     * @param id         screen ID as set up in <code>screens.xml</code>
      * @return screen's registration information
      * @throws NoSuchScreenException if the screen with specified ID is not registered
      */
     public WindowInfo getWindowInfo(String id) {
-        Preconditions.checkNotNullArgument(id, "Screen id cannot be null");
-
-        return getWindowInfo(id, deviceInfoProvider.getDeviceInfo());
-    }
-
-    /**
-     * Get screen information by screen ID.
-     *
-     * @param id         screen ID as set up in <code>screens.xml</code>
-     * @param deviceInfo device info
-     * @return screen's registration information
-     * @throws NoSuchScreenException if the screen with specified ID is not registered
-     */
-    public WindowInfo getWindowInfo(String id, DeviceInfo deviceInfo) {
-        WindowInfo windowInfo = findWindowInfo(id, deviceInfo);
+        WindowInfo windowInfo = findWindowInfo(id);
         if (windowInfo == null) {
             throw new NoSuchScreenException(id);
         }
@@ -302,10 +316,7 @@ public class WindowConfig {
         lock.readLock().lock();
         try {
             checkInitialized();
-            Collection<List<WindowInfo>> values = screens.values();
-            return values.stream()
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
+            return screens.values();
         } finally {
             lock.readLock().unlock();
         }

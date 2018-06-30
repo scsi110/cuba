@@ -56,6 +56,19 @@
 
     <bean id="cuba_Events" class="com.haulmont.cuba.web.sys.WebEvents"/>
 
+    <!-- Screens registry -->
+
+    <!-- todo custom XSD for screen configuration: scanning/defining screens -->
+
+    <bean id="cuba_web_UIControllersConfiguration" class="com.haulmont.cuba.gui.sys.UIControllersConfiguration">
+        <property name="packages">
+            <list>
+                <value>com.haulmont.cuba.gui.app</value>
+                <value>com.haulmont.cuba.web.app</value>
+            </list>
+        </property>
+    </bean>
+
     <!-- MBeans registration -->
 
     <bean id="cuba_web_MBeanExporter" class="com.haulmont.cuba.core.sys.jmx.MBeanExporter" lazy-init="false">

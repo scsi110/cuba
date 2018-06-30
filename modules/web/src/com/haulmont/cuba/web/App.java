@@ -17,13 +17,13 @@
 
 package com.haulmont.cuba.web;
 
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.core.global.Events;
-import com.haulmont.cuba.core.global.GlobalConfig;
-import com.haulmont.cuba.core.global.MessageTools;
+import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.gui.WindowManager;
+import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowConfig;
+import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.executors.IllegalConcurrentAccessException;
 import com.haulmont.cuba.gui.settings.SettingsClient;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
@@ -32,6 +32,7 @@ import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
+import com.haulmont.cuba.web.app.ui.demo.DemoScreen;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
 import com.haulmont.cuba.web.exception.ExceptionHandlers;
@@ -41,6 +42,7 @@ import com.haulmont.cuba.web.settings.WebSettingsClient;
 import com.haulmont.cuba.web.sys.AppCookies;
 import com.haulmont.cuba.web.sys.BackgroundTaskManager;
 import com.haulmont.cuba.web.sys.LinkHandler;
+import com.haulmont.cuba.web.sys.WebWindowManagerImpl;
 import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
@@ -112,6 +114,9 @@ public abstract class App {
 
     @Inject
     protected Events events;
+
+    @Inject
+    protected BeanLocator beanLocator;
 
     protected AppCookies cookies;
 
@@ -291,11 +296,21 @@ public abstract class App {
      * Called on each browser tab initialization.
      */
     public void createTopLevelWindow(AppUI ui) {
-        WebWindowManager wm = AppBeans.getPrototype(WebWindowManager.NAME);
+        WindowManager wm = beanLocator.getPrototype(WindowManager.NAME);
+        // todo set UI to WM
+        ui.setWindowManager(wm);
+
+        String topLevelWindowId = routeTopLevelWindowId();
+        WindowInfo windowInfo = windowConfig.getWindowInfo(topLevelWindowId);
+
+        DemoScreen screen = wm.create(DemoScreen.class, OpenMode.TOP_LEVEL);
+        wm.show(screen);
+
+        /*WebWindowManagerImpl wm = AppBeans.getPrototype(WebWindowManagerImpl.NAME);
         wm.setUi(ui);
 
         String topLevelWindowId = routeTopLevelWindowId();
-        wm.createTopLevelWindow(windowConfig.getWindowInfo(topLevelWindowId));
+        wm.createTopLevelWindow(windowConfig.getWindowInfo(topLevelWindowId));*/
     }
 
     protected abstract String routeTopLevelWindowId();
@@ -310,7 +325,7 @@ public abstract class App {
      * @param topLevelWindowId target top level window id
      */
     public void navigateTo(String topLevelWindowId) {
-        WebWindowManager wm = AppBeans.getPrototype(WebWindowManager.NAME);
+        WebWindowManagerImpl wm = AppBeans.getPrototype(WebWindowManagerImpl.NAME);
         wm.setUi(AppUI.getCurrent());
 
         wm.createTopLevelWindow(windowConfig.getWindowInfo(topLevelWindowId));
@@ -386,16 +401,17 @@ public abstract class App {
     }
 
     /**
-     * @return WindowManager instance or null if the current UI has no MainWindow
+     * @return WindowManagerImpl instance or null if the current UI has no MainWindow
      */
-    public WebWindowManager getWindowManager() {
+    public WebWindowManagerImpl getWindowManager() {
         if (getAppUI() == null) {
             return null;
         }
 
+        // todo change this, WindowManager should be bound to UI
         Window.TopLevelWindow topLevelWindow = getTopLevelWindow();
 
-        return topLevelWindow != null ? (WebWindowManager) topLevelWindow.getWindowManager() : null;
+        return topLevelWindow != null ? (WebWindowManagerImpl) topLevelWindow.getWindowManager() : null;
     }
 
     public AppLog getAppLog() {
@@ -480,10 +496,11 @@ public abstract class App {
         try {
             for (AppUI ui : getAppUIs()) {
                 ui.accessSynchronously(() -> {
+                    // todo WindowManager should belong to UI
                     Window.TopLevelWindow topLevelWindow = getTopLevelWindow();
                     if (topLevelWindow != null) {
-                        WebWindowManager webWindowManager = (WebWindowManager) topLevelWindow.getWindowManager();
-                        webWindowManager.disableSavingScreenHistory = true;
+                        WebWindowManagerImpl webWindowManager = (WebWindowManagerImpl) topLevelWindow.getWindowManager();
+                        webWindowManager.setDisableSavingScreenHistory(true);
                         webWindowManager.closeAll();
                     }
 
@@ -522,7 +539,7 @@ public abstract class App {
             if (topLevelWindow != null) {
                 topLevelWindow.saveSettings();
 
-                WebWindowManager wm = (WebWindowManager) topLevelWindow.getWindowManager();
+                WebWindowManagerImpl wm = (WebWindowManagerImpl) topLevelWindow.getWindowManager();
                 wm.checkModificationsAndCloseAll(() -> {
                     Connection connection = getConnection();
                     connection.logout();
@@ -542,7 +559,10 @@ public abstract class App {
         } catch (Exception e) {
             log.error("Error on logout", e);
             String url = ControllerUtils.getLocationWithoutParams() + "?restartApp";
-            AppUI.getCurrent().getPage().open(url, "_self");
+            AppUI ui = AppUI.getCurrent();
+            if (ui != null) {
+                ui.getPage().open(url, "_self");
+            }
         }
     }
 }
