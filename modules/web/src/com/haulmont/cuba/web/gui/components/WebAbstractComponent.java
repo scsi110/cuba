@@ -36,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,10 +45,10 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
                    Component.HasCaption, HasDebugId {
 
     @Deprecated
-    public static final List<Sizeable.Unit> UNIT_SYMBOLS = Collections.unmodifiableList(Arrays.asList(
+    public static final List<Sizeable.Unit> UNIT_SYMBOLS = Arrays.asList(
             Sizeable.Unit.PIXELS, Sizeable.Unit.POINTS, Sizeable.Unit.PICAS,
             Sizeable.Unit.EM, Sizeable.Unit.EX, Sizeable.Unit.MM,
-            Sizeable.Unit.CM, Sizeable.Unit.INCH, Sizeable.Unit.PERCENTAGE));
+            Sizeable.Unit.CM, Sizeable.Unit.INCH, Sizeable.Unit.PERCENTAGE);
 
     public static final String ICON_STYLE = "icon";
 

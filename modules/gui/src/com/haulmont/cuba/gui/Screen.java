@@ -1,6 +1,6 @@
 package com.haulmont.cuba.gui;
 
-import com.haulmont.bali.events.EventPublisher;
+import com.haulmont.bali.events.EventHub;
 import com.haulmont.cuba.gui.components.Window;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
@@ -10,9 +10,9 @@ public abstract class Screen {
 
     private Window window;
 
-    private EventPublisher eventHub = new EventPublisher();
+    private EventHub eventHub = new EventHub();
 
-    protected EventPublisher getEventHub() {
+    protected EventHub getEventHub() {
         return eventHub;
     }
 

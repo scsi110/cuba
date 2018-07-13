@@ -58,6 +58,8 @@ public class WindowDelegate {
     public Window wrapBy(Class<?> wrapperClass) {
         try {
             Constructor<?> constructor = null;
+
+            // fixme remove this support, always use default constructor
             // First try to find an old-style constructor with Frame parameter
             try {
                 constructor = wrapperClass.getConstructor(Window.class);

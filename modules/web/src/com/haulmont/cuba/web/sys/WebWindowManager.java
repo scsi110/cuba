@@ -21,9 +21,11 @@ import com.haulmont.cuba.core.global.Security;
 import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.UIController;
 import com.haulmont.cuba.gui.WindowManager;
+import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.sys.UIControllerUtils;
+import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.security.entity.PermissionType;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -38,6 +40,8 @@ public class WebWindowManager implements WindowManager {
     protected WindowConfig windowConfig;
     @Inject
     protected Security security;
+    @Inject
+    protected ComponentsFactory componentsFactory;
 
     @Override
     public <T extends Screen> T create(Class<T> screenClass, LaunchMode launchMode, ScreenOptions options) {
@@ -47,9 +51,9 @@ public class WebWindowManager implements WindowManager {
 
         // todo check if already opened
 
-        // todo create the corresponding Window instance first without loader
+        Window window = createWindow(screenClass, launchMode);
 
-        // todo create controller class
+        T controller = createController(window, screenClass, launchMode);
 
         // todo load XML markup if annotation present, or screen is legacy screen
 
@@ -70,6 +74,19 @@ public class WebWindowManager implements WindowManager {
     @Override
     public void remove(Screen screen) {
 
+    }
+
+    protected <T extends Screen> T createController(Window window, Class<T> screenClass, LaunchMode launchMode) {
+        // todo create controller class
+
+        return null;
+    }
+
+    protected Window createWindow(Class<? extends Screen> screenClass, LaunchMode launchMode) {
+        // here we should create TabWindow / DialogWindow / TopLevelWindow UI components
+        // depending on launchMode
+
+        return componentsFactory.createComponent(Window.class);
     }
 
     protected void checkPermissions(LaunchMode launchMode, WindowInfo windowInfo) {
