@@ -23,6 +23,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.haulmont.cuba.client.ClientConfiguration;
 import com.haulmont.cuba.core.config.Config;
+import com.haulmont.cuba.core.global.BeanLocator;
 import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.core.global.Events;
 import com.haulmont.cuba.gui.AppConfig;
@@ -41,10 +42,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.EventListener;
@@ -64,11 +62,11 @@ import java.util.stream.Collectors;
  */
 @org.springframework.stereotype.Component(ControllerDependencyInjector.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class ControllerDependencyInjector implements ApplicationContextAware {
+public class ControllerDependencyInjector {
 
     public static final String NAME = "cuba_ControllerDependencyInjector";
 
-    protected static final LoadingCache<Class<?>, List<Method>> eventListenerMethodsCache =
+    protected final LoadingCache<Class<?>, List<Method>> eventListenerMethodsCache =
             CacheBuilder.newBuilder()
                     .weakKeys()
                     .build(new CacheLoader<Class<?>, List<Method>>() {
@@ -81,20 +79,20 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
     protected Frame frame;
     protected Map<String, Object> params;
 
-    protected ApplicationContext applicationContext;
+    protected BeanLocator beanLocator;
 
     public ControllerDependencyInjector(Frame frame, Map<String, Object> params) {
         this.frame = frame;
         this.params = params;
     }
 
-    @Override
-    public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+    @Inject
+    public void setBeanLocator(BeanLocator beanLocator) {
+        this.beanLocator = beanLocator;
     }
 
     public void inject() {
-        Map<AnnotatedElement, Class> toInject = new HashMap<>();
+        Map<AnnotatedElement, Class> toInject = Collections.emptyMap(); // lazily initialized
 
         @SuppressWarnings("unchecked")
         List<Class<?>> classes = ClassUtils.getAllSuperclasses(frame.getClass());
@@ -104,12 +102,18 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
         for (Field field : getAllFields(classes)) {
             Class aClass = injectionAnnotation(field);
             if (aClass != null) {
+                if (toInject.isEmpty()) {
+                    toInject = new HashMap<>();
+                }
                 toInject.put(field, aClass);
             }
         }
         for (Method method : frame.getClass().getMethods()) {
             Class aClass = injectionAnnotation(method);
             if (aClass != null) {
+                if (toInject.isEmpty()) {
+                    toInject = new HashMap<>();
+                }
                 toInject.put(method, aClass);
             }
         }
@@ -127,7 +131,7 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
         List<Method> eventListenerMethods = getAnnotatedListenerMethods(clazz);
 
         if (!eventListenerMethods.isEmpty()) {
-            Events events = (Events) applicationContext.getBean(Events.NAME);
+            Events events = beanLocator.get(Events.NAME);
 
             List<ApplicationListener> listeners = eventListenerMethods.stream()
                     .map(m -> new UiEventListenerMethodAdapter(frame, clazz, m, events))
@@ -137,7 +141,7 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
         }
     }
 
-    protected static List<Method> getAnnotatedListenerMethods(Class<?> clazz) {
+    protected List<Method> getAnnotatedListenerMethods(Class<?> clazz) {
         if (clazz == AbstractWindow.class
                 || clazz == AbstractEditor.class
                 || clazz == AbstractLookup.class
@@ -189,12 +193,13 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
     protected void doInjection(AnnotatedElement element, Class annotationClass) {
         Class<?> type;
         String name = null;
-        if (annotationClass == Named.class)
+        if (annotationClass == Named.class) {
             name = element.getAnnotation(Named.class).value();
-        else if (annotationClass == Resource.class)
+        } else if (annotationClass == Resource.class) {
             name = element.getAnnotation(Resource.class).name();
-        else if (annotationClass == WindowParam.class)
+        } else if (annotationClass == WindowParam.class) {
             name = element.getAnnotation(WindowParam.class).name();
+        }
 
         boolean required = true;
         if (element.isAnnotationPresent(WindowParam.class))
@@ -202,18 +207,20 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
 
         if (element instanceof Field) {
             type = ((Field) element).getType();
-            if (StringUtils.isEmpty(name))
+            if (StringUtils.isEmpty(name)) {
                 name = ((Field) element).getName();
+            }
         } else if (element instanceof Method) {
             Class<?>[] types = ((Method) element).getParameterTypes();
             if (types.length != 1)
                 throw new IllegalStateException("Can inject to methods with one parameter only");
             type = types[0];
             if (StringUtils.isEmpty(name)) {
-                if (((Method) element).getName().startsWith("set"))
+                if (((Method) element).getName().startsWith("set")) {
                     name = StringUtils.uncapitalize(((Method) element).getName().substring(3));
-                else
+                } else {
                     name = ((Method) element).getName();
+                }
             }
         } else {
             throw new IllegalStateException("Can inject to fields and setter methods only");
@@ -278,13 +285,11 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
 
         } else if (ThemeConstants.class.isAssignableFrom(type)) {
             // Injecting a Theme
-            ThemeConstantsManager themeManager =
-                    (ThemeConstantsManager) applicationContext.getBean(ThemeConstantsManager.NAME);
+            ThemeConstantsManager themeManager = beanLocator.get(ThemeConstantsManager.NAME);
             return themeManager.getConstants();
 
         } else if (Config.class.isAssignableFrom(type)) {
-            ClientConfiguration configuration =
-                    (ClientConfiguration) applicationContext.getBean(Configuration.NAME);
+            ClientConfiguration configuration = beanLocator.get(Configuration.NAME);
             //noinspection unchecked
             return configuration.getConfigCached((Class<? extends Config>) type);
 
@@ -293,7 +298,7 @@ public class ControllerDependencyInjector implements ApplicationContextAware {
         } else {
             Object instance;
             // Try to find a Spring bean
-            Map<String, ?> beans = applicationContext.getBeansOfType(type, true, true);
+            Map<String, ?> beans = beanLocator.getAll(type);
             if (!beans.isEmpty()) {
                 instance = beans.get(name);
                 // If a bean with required name found, return it. Otherwise return first found.
