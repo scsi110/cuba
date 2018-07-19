@@ -2,9 +2,9 @@ package com.haulmont.cuba.gui.sys;
 
 import com.google.common.base.Strings;
 import com.haulmont.cuba.core.global.DevelopmentException;
-import com.haulmont.cuba.gui.Design;
+import com.haulmont.cuba.gui.screen.Design;
 import com.haulmont.cuba.gui.Screen;
-import com.haulmont.cuba.gui.UIController;
+import com.haulmont.cuba.gui.screen.UIController;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 

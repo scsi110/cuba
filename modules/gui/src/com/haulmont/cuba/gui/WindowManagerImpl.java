@@ -540,7 +540,7 @@ public abstract class WindowManagerImpl {
         Window clientSpecificWindow = (Window) windowLoader.getResultComponent();
         Window windowWrapper = wrapByCustomClass(clientSpecificWindow, element);
 
-        screenViewsLoader.deployViews(element);
+        screenViewsLoader.deployViews(element); // todo will be removed from new screens
 
         DsContext dsContext = loadDsContext(element);
         initDatasources(clientSpecificWindow, dsContext, params);

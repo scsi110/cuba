@@ -1,10 +1,18 @@
 package com.haulmont.cuba.gui;
 
 import com.haulmont.bali.events.EventHub;
+import com.haulmont.bali.events.Subscription;
 import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.screen.AfterInitEvent;
+import com.haulmont.cuba.gui.screen.InitEvent;
+
+import java.util.function.Consumer;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
+/**
+ * JavaDoc
+ */
 public abstract class Screen {
     private String id;
 
@@ -38,7 +46,19 @@ public abstract class Screen {
         this.window = window;
     }
 
-    protected Window getWindow() {
+    protected <E> void fireEvent(Class<E> eventType, E event) {
+        eventHub.publish(eventType, event);
+    }
+
+    public Window getWindow() {
         return window;
+    }
+
+    protected Subscription addInitListener(Consumer<InitEvent> listener) {
+        return eventHub.subscribe(InitEvent.class, listener);
+    }
+
+    protected Subscription addAfterInitListener(Consumer<AfterInitEvent> listener) {
+        return eventHub.subscribe(AfterInitEvent.class, listener);
     }
 }

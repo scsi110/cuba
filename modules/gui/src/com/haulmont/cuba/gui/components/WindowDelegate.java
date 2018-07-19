@@ -34,7 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.UUID;
 
 public class WindowDelegate {
 
@@ -55,31 +58,20 @@ public class WindowDelegate {
         this.window = window;
     }
 
+    // fixme move to WindowManager
     public Window wrapBy(Class<?> wrapperClass) {
+        Constructor<?> constructor;
         try {
-            Constructor<?> constructor = null;
+            constructor = wrapperClass.getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Unable to get constructor for screen class " + wrapperClass);
+        }
 
-            // fixme remove this support, always use default constructor
-            // First try to find an old-style constructor with Frame parameter
-            try {
-                constructor = wrapperClass.getConstructor(Window.class);
-            } catch (NoSuchMethodException e) {
-                try {
-                    constructor = wrapperClass.getConstructor(Frame.class);
-                } catch (NoSuchMethodException e1) {
-                    //
-                }
-            }
-            if (constructor != null) {
-                wrapper = (Window) constructor.newInstance(window);
-            } else {
-                // If not found, get the default constructor
-                constructor = wrapperClass.getConstructor();
-                wrapper = (Window) constructor.newInstance();
-                ((AbstractFrame) wrapper).setWrappedFrame(window);
-            }
+        try {
+            wrapper = (Window) constructor.newInstance();
+            ((AbstractFrame) wrapper).setWrappedFrame(window);
             return wrapper;
-        } catch (Throwable e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException("Unable to init window controller", e);
         }
     }
@@ -88,6 +80,7 @@ public class WindowDelegate {
         return wrapper;
     }
 
+    @Deprecated
     public Datasource getDatasource() {
         Datasource ds = null;
         Element element = ((Component.HasXmlDescriptor) window).getXmlDescriptor();

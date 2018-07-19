@@ -103,6 +103,14 @@ public class LayoutLoader {
         return loader;
     }
 
+    public ComponentLoader createWindowContent(Element element, String windowId) {
+        ComponentLoader loader = getLoader(element);
+        ((WindowLoader) loader).setWindowId(windowId);
+
+        ((WindowLoader) loader).createContent(element);
+        return loader;
+    }
+
     public Locale getLocale() {
         return locale;
     }

@@ -1,4 +1,4 @@
-package com.haulmont.cuba.gui;
+package com.haulmont.cuba.gui.screen;
 
 import org.springframework.core.annotation.AliasFor;
 
@@ -9,10 +9,12 @@ import java.lang.annotation.RetentionPolicy;
  * JavaDoc
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Design {
-    @AliasFor("path")
+public @interface UIController {
+    @AliasFor("id")
     String value() default "";
 
     @AliasFor("value")
-    String path() default "";
+    String id() default "";
+
+    boolean multipleOpen() default false;
 }
