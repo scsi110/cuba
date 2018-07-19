@@ -24,6 +24,7 @@ import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.HasDebugId;
 import com.haulmont.cuba.gui.components.SizeUnit;
+import com.haulmont.cuba.gui.components.sys.EventHubOwner;
 import com.haulmont.cuba.gui.icons.Icons;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.gui.icons.IconResolver;
@@ -42,7 +43,7 @@ import java.util.Objects;
 public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
         extends EventHub
         implements Component, Component.Wrapper, Component.HasXmlDescriptor, Component.BelongToFrame, Component.HasIcon,
-                   Component.HasCaption, HasDebugId {
+                   Component.HasCaption, HasDebugId, EventHubOwner {
 
     @Deprecated
     public static final List<Sizeable.Unit> UNIT_SYMBOLS = Arrays.asList(
@@ -75,6 +76,11 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
             eventRouter = new EventRouter();
         }
         return eventRouter;
+    }
+
+    @Override
+    public EventHub getEventHub() {
+        return this;
     }
 
     @Override
@@ -259,6 +265,8 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
     }
 
     /**
+     * vaadin8 remove
+     *
      * @return component enabled property
      */
     public boolean getComponentEnabledFlag() {
@@ -266,6 +274,8 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
     }
 
     /**
+     * vaadin8 remove
+     *
      * @return component visible property
      */
     public boolean getComponentVisibleFlag() {

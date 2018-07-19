@@ -2,9 +2,12 @@ package com.haulmont.cuba.gui.sys;
 
 import com.google.common.base.Strings;
 import com.haulmont.cuba.core.global.DevelopmentException;
-import com.haulmont.cuba.gui.screen.Design;
 import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Design;
+import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.screen.UIController;
+
+import javax.annotation.Nullable;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
@@ -41,5 +44,16 @@ public final class UIControllerUtils {
         }
 
         return templateLocation;
+    }
+
+    public static String getInferredSubscribeTarget(Subscribe subscribe) {
+        checkNotNullArgument(subscribe);
+
+        String target = subscribe.value();
+        if (Strings.isNullOrEmpty(target)) {
+            target = subscribe.target();
+        }
+
+        return target;
     }
 }

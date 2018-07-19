@@ -19,6 +19,7 @@ package com.haulmont.cuba.gui.xml.layout;
 import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.GuiDevelopmentException;
+import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.xml.layout.loaders.FrameLoader;
 import com.haulmont.cuba.gui.xml.layout.loaders.WindowLoader;
 import org.dom4j.Element;
@@ -28,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 import java.util.Map;
 
+// todo convert to bean
 public class LayoutLoader {
 
     protected ComponentLoader.Context context;
@@ -57,9 +59,26 @@ public class LayoutLoader {
             throw new GuiDevelopmentException("Unknown component: " + element.getName(), context.getFullFrameId());
         }
 
+        return initLoader(element, loaderClass);
+    }
+
+    protected WindowLoader getWindowLoader(Element element) {
+        Class<? extends ComponentLoader> loaderClass = config.getWindowLoader();
+
+        return (WindowLoader) initLoader(element, loaderClass);
+    }
+
+    protected ComponentLoader initLoader(Element element, Class<? extends ComponentLoader> loaderClass) {
         ComponentLoader loader;
+
+        Constructor<? extends ComponentLoader> constructor;
         try {
-            Constructor<? extends ComponentLoader> constructor = loaderClass.getConstructor();
+            constructor = loaderClass.getConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new GuiDevelopmentException("Unable to get constructor for loader: " + e, context.getFullFrameId());
+        }
+
+        try {
             loader = constructor.newInstance();
 
             loader.setLocale(locale);
@@ -68,15 +87,16 @@ public class LayoutLoader {
             loader.setLayoutLoaderConfig(config);
             loader.setFactory(factory);
             loader.setElement(element);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
+        } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
             throw new GuiDevelopmentException("Loader instantiation error: " + e, context.getFullFrameId());
         }
 
         return loader;
     }
 
-    public Pair<ComponentLoader, Element> createFrameComponent(String resourcePath, String id, Map<String, Object> params) {
-        ScreenXmlLoader screenXmlLoader = AppBeans.get(ScreenXmlLoader.class);
+    public Pair<ComponentLoader, Element> createFrameComponent(String resourcePath, String id,
+                                                               Map<String, Object> params) {
+        ScreenXmlLoader screenXmlLoader = AppBeans.get(ScreenXmlLoader.class); // todo use injection
         Element element = screenXmlLoader.load(resourcePath, id, params);
 
         ComponentLoader loader = getLoader(element);
@@ -103,12 +123,17 @@ public class LayoutLoader {
         return loader;
     }
 
-    public ComponentLoader createWindowContent(Element element, String windowId) {
-        ComponentLoader loader = getLoader(element);
-        ((WindowLoader) loader).setWindowId(windowId);
+    public ComponentLoader createWindowContent(Window window, Element element, String windowId) {
+        WindowLoader windowLoader = getWindowLoader(element);
 
-        ((WindowLoader) loader).createContent(element);
-        return loader;
+        windowLoader.setWindowId(windowId);
+        windowLoader.setResultComponent(window);
+
+        Element layout = element.element("layout");
+        if (layout != null) {
+            windowLoader.createContent(layout);
+        }
+        return windowLoader;
     }
 
     public Locale getLocale() {

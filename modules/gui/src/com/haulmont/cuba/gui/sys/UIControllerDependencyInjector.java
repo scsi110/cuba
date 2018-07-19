@@ -17,22 +17,27 @@
 
 package com.haulmont.cuba.gui.sys;
 
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.haulmont.bali.events.EventHub;
 import com.haulmont.cuba.client.ClientConfiguration;
 import com.haulmont.cuba.core.config.Config;
 import com.haulmont.cuba.core.global.BeanLocator;
 import com.haulmont.cuba.core.global.Configuration;
+import com.haulmont.cuba.core.global.DevelopmentException;
 import com.haulmont.cuba.core.global.Events;
 import com.haulmont.cuba.gui.*;
 import com.haulmont.cuba.gui.components.*;
+import com.haulmont.cuba.gui.components.sys.EventHubOwner;
 import com.haulmont.cuba.gui.data.DataSupplier;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.events.sys.UiEventListenerMethodAdapter;
 import com.haulmont.cuba.gui.export.ExportDisplay;
+import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
 import com.haulmont.cuba.gui.theme.ThemeConstantsManager;
 import org.apache.commons.lang3.ClassUtils;
@@ -54,7 +59,10 @@ import javax.inject.Named;
 import java.lang.reflect.*;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Wires {@link Inject}, {@link Named}, {@link WindowParam} fields/setters and {@link EventListener} methods.
@@ -72,6 +80,16 @@ public class UIControllerDependencyInjector {
                         @Override
                         public List<Method> load(@Nonnull Class<?> concreteClass) {
                             return getAnnotatedListenerMethodsNotCached(concreteClass);
+                        }
+                    });
+
+    protected final LoadingCache<Class<?>, List<Method>> subscribeMethodsCache =
+            CacheBuilder.newBuilder()
+                    .weakKeys()
+                    .build(new CacheLoader<Class<?>, List<Method>>() {
+                        @Override
+                        public List<Method> load(@Nonnull Class<?> concreteClass) {
+                            return getAnnotatedSubscribeMethodsNotCached(concreteClass);
                         }
                     });
 
@@ -124,9 +142,9 @@ public class UIControllerDependencyInjector {
             doInjection(entry.getKey(), entry.getValue());
         }
 
-        // todo wire all event handlers with lifecycle events
+        subscribeListenerMethods(screen);
 
-        injectEventListeners(screen);
+        subscribeUiEventListeners(screen);
 
         if (screen instanceof ApplicationContextAware) {
             ((ApplicationContextAware) screen).setApplicationContext(beanLocator.get(ApplicationContext.class));
@@ -135,7 +153,49 @@ public class UIControllerDependencyInjector {
         // todo @PostConstruct
     }
 
-    protected void injectEventListeners(Screen screen) {
+    @SuppressWarnings("unchecked")
+    protected void subscribeListenerMethods(Screen screen) {
+        Class<? extends Screen> clazz = screen.getClass();
+
+        List<Method> eventListenerMethods = getAnnotatedSubscribeMethods(clazz);
+        EventHub screenEvents = WindowManagerUtils.getEventHub(screen);
+
+        for (Method method : eventListenerMethods) {
+            Subscribe annotation = method.getAnnotation(Subscribe.class);
+            checkState(annotation != null);
+
+            Parameter parameter = method.getParameters()[0];
+            Consumer listener = event -> {
+                try {
+                    method.invoke(screen, event);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException("Unhandled exception in UI controller", e);
+                }
+            };
+
+            String target = UIControllerUtils.getInferredSubscribeTarget(annotation);
+            Class<?> parameterType = parameter.getType();
+
+            if (Strings.isNullOrEmpty(target)) {
+                // controller event
+                screenEvents.subscribe(parameterType, listener);
+            } else {
+                // component event
+                Component component = screen.getWindow().getComponent(target);
+                if (component == null) {
+                    throw new DevelopmentException("Unable to find @Subscribe target " + target);
+                }
+                if (!(component instanceof EventHubOwner)) {
+                    throw new DevelopmentException("Component does not support @Subscribe events " + target);
+                }
+
+                EventHub componentEvents = ((EventHubOwner) component).getEventHub();
+                componentEvents.subscribe(parameterType, listener);
+            }
+        }
+    }
+
+    protected void subscribeUiEventListeners(Screen screen) {
         Class<? extends Screen> clazz = screen.getClass();
 
         List<Method> eventListenerMethods = getAnnotatedListenerMethods(clazz);
@@ -152,6 +212,10 @@ public class UIControllerDependencyInjector {
         }
     }
 
+    protected List<Method> getAnnotatedSubscribeMethods(Class<?> clazz) {
+        return subscribeMethodsCache.getUnchecked(clazz);
+    }
+
     protected List<Method> getAnnotatedListenerMethods(Class<?> clazz) {
         if (clazz == AbstractWindow.class
                 || clazz == AbstractEditor.class
@@ -163,11 +227,27 @@ public class UIControllerDependencyInjector {
         return eventListenerMethodsCache.getUnchecked(clazz);
     }
 
-    protected static List<Method> getAnnotatedListenerMethodsNotCached(Class<?> clazz) {
+    protected List<Method> getAnnotatedListenerMethodsNotCached(Class<?> clazz) {
         Method[] methods = ReflectionUtils.getUniqueDeclaredMethods(clazz);
 
         List<Method> eventListenerMethods = Arrays.stream(methods)
                 .filter(m -> m.getAnnotation(EventListener.class) != null)
+                .collect(Collectors.toList());
+
+        if (eventListenerMethods.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return ImmutableList.copyOf(eventListenerMethods);
+    }
+
+    protected List<Method> getAnnotatedSubscribeMethodsNotCached(Class<?> clazz) {
+        Method[] methods = ReflectionUtils.getUniqueDeclaredMethods(clazz);
+
+        List<Method> eventListenerMethods = Arrays.stream(methods)
+                .filter(m -> m.getAnnotation(Subscribe.class) != null)
+                .filter(m -> m.getParameterCount() == 1)
+                .filter(m -> EventObject.class.isAssignableFrom(m.getParameterTypes()[0]))
                 .collect(Collectors.toList());
 
         if (eventListenerMethods.isEmpty()) {

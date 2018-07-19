@@ -20,9 +20,9 @@ package com.haulmont.cuba.web;
 import com.haulmont.cuba.client.ClientUserSession;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
-import com.haulmont.cuba.gui.sys.TestIdManager;
-import com.haulmont.cuba.gui.components.Window.TopLevelWindow;
+import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.events.sys.UiEventsMulticaster;
+import com.haulmont.cuba.gui.sys.TestIdManager;
 import com.haulmont.cuba.gui.theme.ThemeConstantsRepository;
 import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.LoginException;
@@ -113,7 +113,7 @@ public class AppUI extends CubaUI
 
     protected CubaHistoryControl historyControl;
 
-    protected TopLevelWindow topLevelWindow;
+    protected Window.TopLevelWindow topLevelWindow;
 
     protected WindowManager windowManager;
 
@@ -359,7 +359,7 @@ public class AppUI extends CubaUI
     /**
      * @return currently displayed top-level window
      */
-    public TopLevelWindow getTopLevelWindow() {
+    public Window.TopLevelWindow getTopLevelWindow() {
         return topLevelWindow;
     }
 
@@ -367,12 +367,9 @@ public class AppUI extends CubaUI
      * INTERNAL.
      * Set currently displayed top-level window.
      */
-    public void setTopLevelWindow(TopLevelWindow window) {
+    public void setTopLevelWindow(Window.TopLevelWindow window) {
         if (this.topLevelWindow != window) {
             this.topLevelWindow = window;
-
-            // unregister previous components
-            setContent(null);
 
             setContent(topLevelWindow.unwrapComposition(Component.class));
         }
@@ -449,7 +446,7 @@ public class AppUI extends CubaUI
 
     @Override
     public void onHistoryBackPerformed() {
-        TopLevelWindow topLevelWindow = getTopLevelWindow();
+        Window topLevelWindow = getTopLevelWindow();
         if (topLevelWindow instanceof CubaHistoryControl.HistoryBackHandler) {
             ((CubaHistoryControl.HistoryBackHandler) topLevelWindow).onHistoryBackPerformed();
         }

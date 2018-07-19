@@ -35,6 +35,7 @@ import com.haulmont.cuba.gui.components.Timer;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.components.actions.BaseAction;
 import com.haulmont.cuba.gui.components.security.ActionsPermissions;
+import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.events.sys.UiEventsMulticaster;
@@ -44,11 +45,11 @@ import com.haulmont.cuba.gui.settings.Settings;
 import com.haulmont.cuba.gui.sys.TestIdManager;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.WebConfig;
-import com.haulmont.cuba.web.sys.WebWindowManagerImpl;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.haulmont.cuba.web.gui.components.WebFrameActionsHolder;
 import com.haulmont.cuba.web.gui.components.WebWrapperUtils;
 import com.haulmont.cuba.web.gui.icons.IconResolver;
+import com.haulmont.cuba.web.sys.WebWindowManagerImpl;
 import com.haulmont.cuba.web.widgets.CubaSingleModeContainer;
 import com.haulmont.cuba.web.widgets.CubaVerticalActionsLayout;
 import com.vaadin.server.ClientConnector;
@@ -73,7 +74,9 @@ import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
 public class WebWindow implements Window, Component.Wrapper,
                                   Component.HasXmlDescriptor, WrappedWindow, Component.Disposable,
-                                  SecuredActionsHolder, Component.HasIcon {
+                                  SecuredActionsHolder, Component.HasIcon,
+                                  Window.TopLevelWindow, // todo remove
+                                  WindowImplementation {
 
     private static final Logger log = LoggerFactory.getLogger(WebWindow.class);
 
@@ -93,6 +96,8 @@ public class WebWindow implements Window, Component.Wrapper,
     protected String focusComponentId;
 
     protected com.vaadin.ui.Component component;
+
+    protected Screen controller;
 
     protected Element element;
 
@@ -124,6 +129,7 @@ public class WebWindow implements Window, Component.Wrapper,
     private EventRouter eventRouter;
 
     protected ContentSwitchMode contentSwitchMode = ContentSwitchMode.DEFAULT;
+    private WindowManager.LaunchMode launchMode;
 
     public WebWindow() {
         component = createLayout();
@@ -1418,6 +1424,26 @@ public class WebWindow implements Window, Component.Wrapper,
         }
 
         this.contentSwitchMode = mode;
+    }
+
+    @Override
+    public void setController(Screen controller) {
+        this.controller = controller;
+    }
+
+    @Override
+    public Screen getController() {
+        return controller;
+    }
+
+    @Override
+    public void setLaunchMode(WindowManager.LaunchMode launchMode) {
+        this.launchMode = launchMode;
+    }
+
+    @Override
+    public WindowManager.LaunchMode getLaunchMode() {
+        return launchMode;
     }
 
     protected class WebDialogOptions extends DialogOptions {

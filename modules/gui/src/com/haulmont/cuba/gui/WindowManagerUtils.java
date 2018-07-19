@@ -1,5 +1,6 @@
 package com.haulmont.cuba.gui;
 
+import com.haulmont.bali.events.EventHub;
 import com.haulmont.cuba.gui.components.Window;
 
 /**
@@ -13,5 +14,9 @@ public final class WindowManagerUtils {
 
     public static <E> void fireEvent(Screen screen, Class<E> eventType, E event) {
         screen.fireEvent(eventType, event);
+    }
+
+    public static EventHub getEventHub(Screen screen) {
+        return screen.getEventHub();
     }
 }

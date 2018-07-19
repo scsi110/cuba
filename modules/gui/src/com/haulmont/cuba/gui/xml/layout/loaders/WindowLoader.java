@@ -47,6 +47,10 @@ public class WindowLoader extends FrameLoader<Window> implements ComponentRootLo
         createContent(element.element("layout"));
     }
 
+    public void setResultComponent(Window window) {
+        this.resultComponent = window;
+    }
+
     @Override
     public void createContent(Element layoutElement) {
         if (layoutElement == null) {

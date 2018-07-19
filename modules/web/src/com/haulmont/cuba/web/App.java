@@ -300,8 +300,8 @@ public abstract class App {
         // todo set UI to WM
         ui.setWindowManager(wm);
 
-        String topLevelWindowId = routeTopLevelWindowId();
-        WindowInfo windowInfo = windowConfig.getWindowInfo(topLevelWindowId);
+//        String topLevelWindowId = routeTopLevelWindowId();
+//        WindowInfo windowInfo = windowConfig.getWindowInfo(topLevelWindowId);
 
         DemoScreen screen = wm.create(DemoScreen.class, OpenMode.TOP_LEVEL);
         wm.show(screen);

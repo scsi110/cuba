@@ -39,7 +39,7 @@ public interface ComponentsFactory {
      *             It is also usually equal to component's XML name.
      * @return component instance for the current client type (web or desktop)
      */
-    Component createComponent(String name);
+    <T extends Component> T createComponent(String name);
 
     /**
      * Create a component instance by its type.

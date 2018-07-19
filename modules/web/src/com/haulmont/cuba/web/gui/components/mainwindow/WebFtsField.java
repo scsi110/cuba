@@ -105,7 +105,7 @@ public class WebFtsField extends WebAbstractComponent<CssLayout> implements FtsF
 
     protected void adjustWidth() {
         if (getWidth() < 0) {
-            // todo rework - use CSS class
+            // vaadin8 rework - use CSS class
             ThemeConstants theme = App.getInstance().getThemeConstants();
             searchField.setWidth(theme.get("cuba.web.AppWindow.searchField.width"));
         } else {

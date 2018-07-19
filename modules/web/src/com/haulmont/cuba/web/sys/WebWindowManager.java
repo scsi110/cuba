@@ -21,16 +21,17 @@ import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerUtils;
 import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
-import com.haulmont.cuba.gui.screen.InitEvent;
-import com.haulmont.cuba.gui.screen.UIController;
+import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.sys.ScreenViewsLoader;
 import com.haulmont.cuba.gui.sys.UIControllerDependencyInjector;
 import com.haulmont.cuba.gui.sys.UIControllerUtils;
 import com.haulmont.cuba.gui.xml.layout.*;
 import com.haulmont.cuba.gui.xml.layout.loaders.ComponentLoaderContext;
 import com.haulmont.cuba.security.entity.PermissionType;
+import com.haulmont.cuba.web.AppUI;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -63,6 +64,9 @@ public class WebWindowManager implements WindowManager {
     @Inject
     protected ScreenViewsLoader screenViewsLoader;
 
+    @Inject
+    protected AppUI ui;
+
     @Override
     public <T extends Screen> T create(Class<T> requiredScreenClass, LaunchMode launchMode, ScreenOptions options) {
         WindowInfo windowInfo = getScreenInfo(requiredScreenClass);
@@ -82,7 +86,9 @@ public class WebWindowManager implements WindowManager {
 
         WindowManagerUtils.setWindow(controller, window);
 
-        // todo set controller to window
+        WindowImplementation windowImpl = (WindowImplementation) window;
+        windowImpl.setController(controller);
+        windowImpl.setLaunchMode(launchMode);
 
         // todo legacy datasource layer
 
@@ -90,11 +96,13 @@ public class WebWindowManager implements WindowManager {
                 beanLocator.getPrototype(UIControllerDependencyInjector.NAME, controller, options);
         dependencyInjector.inject();
 
-        InitEvent event = new InitEvent(controller, options);
-        WindowManagerUtils.fireEvent(controller, InitEvent.class, event);
+        InitEvent initEvent = new InitEvent(controller, options);
+        WindowManagerUtils.fireEvent(controller, InitEvent.class, initEvent);
 
         // todo post init tasks for compatibility
         // componentLoaderContext.executePostInitTasks();
+        AfterInitEvent afterInitEvent = new AfterInitEvent(controller, options);
+        WindowManagerUtils.fireEvent(controller, AfterInitEvent.class, afterInitEvent);
 
         return controller;
     }
@@ -104,6 +112,8 @@ public class WebWindowManager implements WindowManager {
         String templatePath = windowInfo.getTemplate();
 
         if (StringUtils.isNotEmpty(templatePath)) {
+            // todo support relative design path
+
             Element element = screenXmlLoader.load(templatePath, windowInfo.getId(),
                     Collections.emptyMap()); // todo support legacy params map
 
@@ -114,7 +124,7 @@ public class WebWindowManager implements WindowManager {
             componentLoaderContext.setFullFrameId(windowInfo.getId());
             componentLoaderContext.setCurrentFrameId(windowInfo.getId());
 
-            ComponentLoader windowLoader = createLayout(windowInfo, element, componentLoaderContext);
+            ComponentLoader windowLoader = createLayout(windowInfo, window, element, componentLoaderContext);
 
             screenViewsLoader.deployViews(element); // todo will be removed from new screens
 
@@ -124,7 +134,7 @@ public class WebWindowManager implements WindowManager {
         }
     }
 
-    protected ComponentLoader createLayout(WindowInfo windowInfo, Element rootElement,
+    protected ComponentLoader createLayout(WindowInfo windowInfo, Window window, Element rootElement,
                                            ComponentLoader.Context context) {
         String descriptorPath = windowInfo.getTemplate();
 
@@ -144,7 +154,7 @@ public class WebWindowManager implements WindowManager {
             layoutLoader.setMessagesPack(path);
         }
         //noinspection UnnecessaryLocalVariable
-        ComponentLoader windowLoader = layoutLoader.createWindowContent(rootElement, windowInfo.getId());
+        ComponentLoader windowLoader = layoutLoader.createWindowContent(window, rootElement, windowInfo.getId());
         return windowLoader;
     }
 
@@ -156,9 +166,41 @@ public class WebWindowManager implements WindowManager {
     public void show(Screen screen) {
         checkMultiOpen(screen);
 
-        // todo before event
+        BeforeShowEvent beforeShowEvent = new BeforeShowEvent(screen);
+        WindowManagerUtils.fireEvent(screen, BeforeShowEvent.class, beforeShowEvent);
 
-        // todo after event
+        // todo show
+
+        WindowImplementation windowImpl = (WindowImplementation) screen.getWindow();
+
+        if (windowImpl.getLaunchMode() instanceof OpenMode) {
+            OpenMode openMode = (OpenMode) windowImpl.getLaunchMode();
+
+            switch (openMode) {
+                case TOP_LEVEL:
+                    // todo
+                    ui.setTopLevelWindow((Window.TopLevelWindow) screen.getWindow());
+
+                    break;
+
+                case DIALOG:
+                    break;
+
+                case NEW_WINDOW:
+                case NEW_TAB:
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        // todo load and apply settings
+
+        // todo UI security
+
+        AfterShowEvent afterShowEvent = new AfterShowEvent(screen);
+        WindowManagerUtils.fireEvent(screen, AfterShowEvent.class, afterShowEvent);
     }
 
     @Override
