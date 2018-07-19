@@ -36,8 +36,8 @@ public interface Frame
         extends ExpandingLayout,
                 OrderedContainer,
                 Component.BelongToFrame,
-        HasSpacing,
-        HasMargin,
+                HasSpacing,
+                HasMargin,
                 ActionsHolder,
                 Component.HasIcon,
                 Component.HasCaption {
@@ -255,7 +255,7 @@ public interface Frame
     /**
      * Load a frame registered in {@code screens.xml} and optionally show it inside a parent component of this
      * frame.
-     * @param parent        if specified, all parent's subcomponents will be removed and the frame will be added
+     * @param parent        if specified, all parent's sub components will be removed and the frame will be added
      * @param windowAlias   frame ID as defined in {@code screens.xml}
      * @return              frame's controller instance
      */
@@ -264,7 +264,7 @@ public interface Frame
     /**
      * Load a frame registered in {@code screens.xml} and optionally show it inside a parent component of this
      * frame.
-     * @param parent        if specified, all parent's subcomponents will be removed and the frame will be added
+     * @param parent        if specified, all parent's sub components will be removed and the frame will be added
      * @param windowAlias   frame ID as defined in {@code screens.xml}
      * @param params        parameters to be passed into the frame's controller {@code init} method
      * @return              frame's controller instance

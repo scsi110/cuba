@@ -64,8 +64,11 @@ public class WebWindowManager implements WindowManager {
     @Inject
     protected ScreenViewsLoader screenViewsLoader;
 
-    @Inject
     protected AppUI ui;
+
+    public WebWindowManager(AppUI ui) {
+        this.ui = ui;
+    }
 
     @Override
     public <T extends Screen> T create(Class<T> requiredScreenClass, LaunchMode launchMode, ScreenOptions options) {
@@ -229,8 +232,12 @@ public class WebWindowManager implements WindowManager {
 
     protected Window createWindow(WindowInfo windowInfo, Class<? extends Screen> screenClass, LaunchMode launchMode) {
         // todo here we should create TabWindow / DialogWindow / TopLevelWindow UI components depending on launchMode
+        Window window = componentsFactory.createComponent(Window.class);
+        if (launchMode == OpenMode.TOP_LEVEL) {
+            window.setSizeFull();
+        }
 
-        return componentsFactory.createComponent(Window.class);
+        return window;
     }
 
     protected void checkMultiOpen(Screen screen) {

@@ -544,7 +544,6 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
         void beforeCloseWithShortcut(BeforeCloseWithShortcutEvent event);
     }
 
-
     /**
      * An event that is fired before a screen is closed with {@link ClientConfig#getCloseShortcut()}.
      */

@@ -296,8 +296,7 @@ public abstract class App {
      * Called on each browser tab initialization.
      */
     public void createTopLevelWindow(AppUI ui) {
-        WindowManager wm = beanLocator.getPrototype(WindowManager.NAME);
-        // todo set UI to WM
+        WindowManager wm = beanLocator.getPrototype(WindowManager.NAME, ui);
         ui.setWindowManager(wm);
 
 //        String topLevelWindowId = routeTopLevelWindowId();
