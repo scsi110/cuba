@@ -260,13 +260,13 @@ public class WebWindowManager implements WindowManager {
     }
 
     protected WindowInfo getScreenInfo(Class<? extends Screen> screenClass) {
-        UIController uiController = screenClass.getAnnotation(UIController.class);
+        ScreenController screenController = screenClass.getAnnotation(ScreenController.class);
         // todo legacy screens
-        if (uiController == null) {
-            throw new IllegalArgumentException("No @UIController annotation for class " + screenClass);
+        if (screenController == null) {
+            throw new IllegalArgumentException("No @ScreenController annotation for class " + screenClass);
         }
 
-        String screenId = UIControllerUtils.getInferredScreenId(uiController, screenClass);
+        String screenId = UIControllerUtils.getInferredScreenId(screenController, screenClass);
 
         return windowConfig.getWindowInfo(screenId);
     }

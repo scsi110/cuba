@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2008-2016 Haulmont.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package com.haulmont.cuba.web.app.ui.demo.login;
 
 import com.haulmont.bali.util.URLEncodeUtils;
@@ -5,10 +21,10 @@ import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.components.*;
-import com.haulmont.cuba.gui.screen.Design;
 import com.haulmont.cuba.gui.screen.InitEvent;
+import com.haulmont.cuba.gui.screen.ScreenController;
+import com.haulmont.cuba.gui.screen.ScreenXml;
 import com.haulmont.cuba.gui.screen.Subscribe;
-import com.haulmont.cuba.gui.screen.UIController;
 import com.haulmont.cuba.security.app.UserManagementService;
 import com.haulmont.cuba.security.auth.AbstractClientCredentials;
 import com.haulmont.cuba.security.auth.Credentials;
@@ -31,12 +47,13 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Locale;
 
-@UIController("demo-loginWindow")
-@Design("demo-login.xml")
+@ScreenController("demo-loginWindow")
+@ScreenXml("demo-login.xml")
 public class DemoLoginScreen extends Screen {
 
     private static final Logger log = LoggerFactory.getLogger(AppLoginWindow.class);
 
+    // todo replace with normal navigation with parameter #
     protected static final ThreadLocal<AuthInfo> authInfoThreadLocal = new ThreadLocal<>();
 
     public static final String COOKIE_REMEMBER_ME = "rememberMe";

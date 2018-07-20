@@ -24,10 +24,10 @@ import com.haulmont.cuba.core.global.Metadata;
 import com.haulmont.cuba.core.global.Resources;
 import com.haulmont.cuba.core.global.Scripting;
 import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.gui.screen.Design;
+import com.haulmont.cuba.gui.screen.ScreenXml;
 import com.haulmont.cuba.gui.NoSuchScreenException;
 import com.haulmont.cuba.gui.Screen;
-import com.haulmont.cuba.gui.screen.UIController;
+import com.haulmont.cuba.gui.screen.ScreenController;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.sys.UIControllerUtils;
 import com.haulmont.cuba.gui.sys.UIControllersConfiguration;
@@ -131,12 +131,12 @@ public class WindowConfig {
         if (windowInfo.getScreenClassName() != null) {
             Class<? extends Screen> screenClass = loadDefinedScreenClass(windowInfo.getScreenClassName());
 
-            UIController uiController = screenClass.getAnnotation(UIController.class);
-            if (uiController == null) {
+            ScreenController screenController = screenClass.getAnnotation(ScreenController.class);
+            if (screenController == null) {
                 // default is false
                 return false;
             }
-            return uiController.multipleOpen();
+            return screenController.multipleOpen();
         }
 
         throw new IllegalStateException("Neither screen class nor descriptor is set for WindowInfo");
@@ -152,7 +152,7 @@ public class WindowConfig {
         if (windowInfo.getScreenClassName() != null) {
             Class<? extends Screen> screenClass = loadDefinedScreenClass(windowInfo.getScreenClassName());
 
-            Design annotation = screenClass.getAnnotation(Design.class);
+            ScreenXml annotation = screenClass.getAnnotation(ScreenXml.class);
             if (annotation == null) {
                 return null;
             }
@@ -193,10 +193,14 @@ public class WindowConfig {
     }
 
     protected void init() {
+        long startTime = System.currentTimeMillis();
+
         screens.clear();
 
         loadScreenConfigurations();
         loadScreensXml();
+
+        log.info("WindowConfig initialized in {} ms", System.currentTimeMillis() - startTime);
     }
 
     protected void loadScreenConfigurations() {

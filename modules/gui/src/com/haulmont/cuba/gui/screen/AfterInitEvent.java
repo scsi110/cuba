@@ -8,7 +8,7 @@ import java.util.EventObject;
 /**
  * JavaDoc
  *
- * Used by UI components to perform actions after UIController initialized
+ * Used by UI components to perform actions after ScreenController initialized
  */
 public class AfterInitEvent extends EventObject {
     protected final ScreenOptions options;

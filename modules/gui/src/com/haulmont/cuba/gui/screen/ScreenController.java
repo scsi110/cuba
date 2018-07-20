@@ -11,10 +11,12 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Design {
-    @AliasFor("path")
+public @interface ScreenController {
+    @AliasFor("id")
     String value() default "";
 
     @AliasFor("value")
-    String path() default "";
+    String id() default "";
+
+    boolean multipleOpen() default false;
 }

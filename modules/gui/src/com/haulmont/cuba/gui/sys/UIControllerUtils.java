@@ -3,11 +3,9 @@ package com.haulmont.cuba.gui.sys;
 import com.google.common.base.Strings;
 import com.haulmont.cuba.core.global.DevelopmentException;
 import com.haulmont.cuba.gui.Screen;
-import com.haulmont.cuba.gui.screen.Design;
+import com.haulmont.cuba.gui.screen.ScreenXml;
 import com.haulmont.cuba.gui.screen.Subscribe;
-import com.haulmont.cuba.gui.screen.UIController;
-
-import javax.annotation.Nullable;
+import com.haulmont.cuba.gui.screen.ScreenController;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
@@ -16,30 +14,30 @@ public final class UIControllerUtils {
     private UIControllerUtils() {
     }
 
-    public static String getInferredScreenId(UIController uiController, Class<? extends Screen> annotatedScreenClass) {
-        checkNotNullArgument(uiController);
+    public static String getInferredScreenId(ScreenController screenController, Class<? extends Screen> annotatedScreenClass) {
+        checkNotNullArgument(screenController);
 
-        String id = uiController.value();
+        String id = screenController.value();
         if (Strings.isNullOrEmpty(id)) {
-            id = uiController.id();
+            id = screenController.id();
 
             if (Strings.isNullOrEmpty(id)) {
-                throw new DevelopmentException("Screen class annotated with @UIController without id " + annotatedScreenClass);
+                throw new DevelopmentException("Screen class annotated with @ScreenController without id " + annotatedScreenClass);
             }
         }
 
         return id;
     }
 
-    public static String getInferredDesignTemplate(Design design, Class<? extends Screen> annotatedScreenClass) {
-        checkNotNullArgument(design);
+    public static String getInferredDesignTemplate(ScreenXml screenXml, Class<? extends Screen> annotatedScreenClass) {
+        checkNotNullArgument(screenXml);
 
-        String templateLocation = design.value();
+        String templateLocation = screenXml.value();
         if (Strings.isNullOrEmpty(templateLocation)) {
-            templateLocation = design.path();
+            templateLocation = screenXml.path();
 
             if (Strings.isNullOrEmpty(templateLocation)) {
-                throw new DevelopmentException("Screen class annotated with @Design without template: " + annotatedScreenClass);
+                throw new DevelopmentException("Screen class annotated with @ScreenXml without template: " + annotatedScreenClass);
             }
         }
 

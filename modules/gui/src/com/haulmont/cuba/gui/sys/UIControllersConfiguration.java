@@ -2,7 +2,7 @@ package com.haulmont.cuba.gui.sys;
 
 import com.haulmont.cuba.core.global.Scripting;
 import com.haulmont.cuba.gui.Screen;
-import com.haulmont.cuba.gui.screen.UIController;
+import com.haulmont.cuba.gui.screen.ScreenController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -51,12 +51,12 @@ public class UIControllersConfiguration {
                     @SuppressWarnings("unchecked")
                     Class<? extends Screen> screenClass = (Class<? extends Screen>) scripting.loadClassNN(className);
 
-                    UIController uiController = screenClass.getAnnotation(UIController.class);
-                    if (uiController == null) {
-                        throw new RuntimeException("Screen class does not have @UIController : " + screenClass);
+                    ScreenController screenController = screenClass.getAnnotation(ScreenController.class);
+                    if (screenController == null) {
+                        throw new RuntimeException("Screen class does not have @ScreenController : " + screenClass);
                     }
 
-                    String id = UIControllerUtils.getInferredScreenId(uiController, screenClass);
+                    String id = UIControllerUtils.getInferredScreenId(screenController, screenClass);
 
                     return new UIControllerDefinition(id, className);
                 })
@@ -67,7 +67,7 @@ public class UIControllersConfiguration {
         // Don't pull default filters (@Component, etc.):
         ClassPathScanningCandidateComponentProvider provider
                 = new ClassPathScanningCandidateComponentProvider(false);
-        provider.addIncludeFilter(new AnnotationTypeFilter(UIController.class));
+        provider.addIncludeFilter(new AnnotationTypeFilter(ScreenController.class));
         return provider;
     }
 
