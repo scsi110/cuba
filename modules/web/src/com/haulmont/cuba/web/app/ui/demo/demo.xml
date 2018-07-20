@@ -1,5 +1,0 @@
-<window xmlns="http://schemas.haulmont.com/cuba/window.xsd">
-    <layout>
-        <button caption="Hello World!"/>
-    </layout>
-</window>

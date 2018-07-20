@@ -463,7 +463,12 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
     /**
      * Marker interface implemented by top-level windows of the application: login window and main window. Only one
      * top-level window exists at a time, depending on the connection state.
+     *
+     * todo create separate interface for UI component
+     *
+     * @deprecated Is not required for screen controllers anymore
      */
+    @Deprecated
     interface TopLevelWindow extends Window {
     }
 
@@ -482,6 +487,7 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
         FoldersPane getFoldersPane();
     }
 
+    // todo remove extends TopLevelWindow
     interface MainWindow extends TopLevelWindow, HasWorkArea, HasUserIndicator, HasFoldersPane {
     }
 

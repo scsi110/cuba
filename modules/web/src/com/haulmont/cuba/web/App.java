@@ -23,7 +23,6 @@ import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowConfig;
-import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.executors.IllegalConcurrentAccessException;
 import com.haulmont.cuba.gui.settings.SettingsClient;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
@@ -32,7 +31,7 @@ import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
-import com.haulmont.cuba.web.app.ui.demo.DemoScreen;
+import com.haulmont.cuba.web.app.ui.demo.login.DemoLoginScreen;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
 import com.haulmont.cuba.web.exception.ExceptionHandlers;
@@ -245,7 +244,7 @@ public abstract class App {
 
         VaadinServlet vaadinServlet = VaadinServlet.getCurrent();
         ServletContext sc = vaadinServlet.getServletContext();
-        String resourcesTimestamp = sc.getInitParameter("webResourcesTs");
+        String resourcesTimestamp = sc.getInitParameter("webResourcesTs"); // todo get rid of it
         if (StringUtils.isNotEmpty(resourcesTimestamp)) {
             this.webResourceTimestamp = resourcesTimestamp;
         }
@@ -302,12 +301,10 @@ public abstract class App {
 //        String topLevelWindowId = routeTopLevelWindowId();
 //        WindowInfo windowInfo = windowConfig.getWindowInfo(topLevelWindowId);
 
-        DemoScreen screen = wm.create(DemoScreen.class, OpenMode.TOP_LEVEL);
+        DemoLoginScreen screen = wm.create(DemoLoginScreen.class, OpenMode.TOP_LEVEL);
         wm.show(screen);
 
-        /*WebWindowManagerImpl wm = AppBeans.getPrototype(WebWindowManagerImpl.NAME);
-        wm.setUi(ui);
-
+        /*
         String topLevelWindowId = routeTopLevelWindowId();
         wm.createTopLevelWindow(windowConfig.getWindowInfo(topLevelWindowId));*/
     }

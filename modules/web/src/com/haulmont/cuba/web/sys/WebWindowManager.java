@@ -16,6 +16,7 @@
  */
 package com.haulmont.cuba.web.sys;
 
+import com.haulmont.bali.events.EventHub;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.WindowManager;
@@ -102,8 +103,6 @@ public class WebWindowManager implements WindowManager {
         InitEvent initEvent = new InitEvent(controller, options);
         WindowManagerUtils.fireEvent(controller, InitEvent.class, initEvent);
 
-        // todo post init tasks for compatibility
-        // componentLoaderContext.executePostInitTasks();
         AfterInitEvent afterInitEvent = new AfterInitEvent(controller, options);
         WindowManagerUtils.fireEvent(controller, AfterInitEvent.class, afterInitEvent);
 
@@ -134,6 +133,12 @@ public class WebWindowManager implements WindowManager {
             // todo load datasources here
 
             windowLoader.loadComponent();
+
+            EventHub eventHub = WindowManagerUtils.getEventHub(controller);
+            eventHub.subscribe(AfterInitEvent.class, event -> {
+                componentLoaderContext.setFrame(window);
+                componentLoaderContext.executePostInitTasks();
+            });
         }
     }
 
@@ -169,10 +174,12 @@ public class WebWindowManager implements WindowManager {
     public void show(Screen screen) {
         checkMultiOpen(screen);
 
+        // todo load and apply settings
+
+        // todo UI security
+
         BeforeShowEvent beforeShowEvent = new BeforeShowEvent(screen);
         WindowManagerUtils.fireEvent(screen, BeforeShowEvent.class, beforeShowEvent);
-
-        // todo show
 
         WindowImplementation windowImpl = (WindowImplementation) screen.getWindow();
 
@@ -187,20 +194,18 @@ public class WebWindowManager implements WindowManager {
                     break;
 
                 case DIALOG:
+                    // todo
                     break;
 
                 case NEW_WINDOW:
                 case NEW_TAB:
+                    // todo
                     break;
 
                 default:
-                    break;
+                    throw new UnsupportedOperationException("Unsupported OpenMode " + openMode);
             }
         }
-
-        // todo load and apply settings
-
-        // todo UI security
 
         AfterShowEvent afterShowEvent = new AfterShowEvent(screen);
         WindowManagerUtils.fireEvent(screen, AfterShowEvent.class, afterShowEvent);

@@ -31,6 +31,7 @@ import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.*;
 import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
 import com.haulmont.cuba.gui.components.sys.ValuePathHelper;
+import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.data.Datasource;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -350,6 +351,14 @@ public abstract class ComponentsHelper {
                 return window instanceof Window.Wrapper ? ((Window.Wrapper) window).getWrappedWindow() : window;
             }
             frame = frame.getFrame();
+        }
+        return null;
+    }
+
+    // todo support legacy Frame
+    public static Screen getUIController(Frame frame) {
+        if (frame instanceof WindowImplementation) {
+            return ((WindowImplementation) frame).getController();
         }
         return null;
     }

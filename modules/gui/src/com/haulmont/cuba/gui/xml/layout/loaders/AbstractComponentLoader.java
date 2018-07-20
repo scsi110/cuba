@@ -18,7 +18,6 @@ package com.haulmont.cuba.gui.xml.layout.loaders;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.haulmont.bali.util.Dom4j;
 import com.haulmont.bali.util.ReflectionHelper;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.chile.core.model.MetaProperty;
@@ -315,7 +314,7 @@ public abstract class AbstractComponentLoader<T extends Component> implements Co
     }
 
     protected void loadHeight(Component component, Element element, @Nullable String defaultValue) {
-        final String height = element.attributeValue("height");
+        String height = element.attributeValue("height");
         if ("auto".equalsIgnoreCase(height)) {
             component.setHeight(Component.AUTO_SIZE);
         } else if (!StringUtils.isBlank(height)) {
@@ -517,7 +516,7 @@ public abstract class AbstractComponentLoader<T extends Component> implements Co
         if (actionsEl == null)
             return;
 
-        for (Element actionEl : Dom4j.elements(actionsEl, "action")) {
+        for (Element actionEl : actionsEl.elements("action")) {
             actionsHolder.addAction(loadDeclarativeAction(actionsHolder, actionEl));
         }
     }

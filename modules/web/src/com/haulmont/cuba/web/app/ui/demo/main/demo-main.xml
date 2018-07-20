@@ -1,0 +1,47 @@
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        xmlns:main="http://schemas.haulmont.com/cuba/mainwindow.xsd"
+        caption="mainMsg://application.caption">
+
+    <layout expand="spacer">
+
+        <hbox id="titleBar"
+              stylename="c-app-menubar"
+              expand="mainMenu"
+              width="100%"
+              height="AUTO"
+              spacing="true"
+              margin="false;false;false;true">
+
+            <image id="logoImage"
+                   align="MIDDLE_LEFT"
+                   scaleMode="SCALE_DOWN"
+                   stylename="c-app-icon"/>
+
+            <main:menu id="mainMenu"
+                       align="MIDDLE_LEFT"/>
+
+            <main:ftsField id="ftsField"
+                           align="MIDDLE_LEFT"/>
+
+            <main:userIndicator id="userIndicator"
+                                align="MIDDLE_LEFT"/>
+
+            <main:timeZoneIndicator id="timeZoneIndicator"
+                                    align="MIDDLE_LEFT"/>
+
+            <hbox id="mainButtonsBox"
+                  stylename="c-main-buttons"
+                  align="MIDDLE_LEFT">
+                <main:newWindowButton id="newWindowButton"
+                                      icon="app/images/new-window.png"
+                                      description="msg://newWindowBtnDescription"/>
+
+                <main:logoutButton id="logoutButton"
+                                   icon="app/images/exit.png"
+                                   description="msg://logoutBtnDescription"/>
+            </hbox>
+        </hbox>
+
+        <label id="spacer"/>
+    </layout>
+</window>

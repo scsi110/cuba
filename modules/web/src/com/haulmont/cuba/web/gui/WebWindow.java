@@ -72,6 +72,7 @@ import java.util.*;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
+// todo create multiple implementations of Window: TabWindow / DialogWindow / MainWindow
 public class WebWindow implements Window, Component.Wrapper,
                                   Component.HasXmlDescriptor, WrappedWindow, Component.Disposable,
                                   SecuredActionsHolder, Component.HasIcon,
@@ -120,12 +121,14 @@ public class WebWindow implements Window, Component.Wrapper,
     protected WebFrameActionsHolder actionsHolder = new WebFrameActionsHolder();
     protected final ActionsPermissions actionsPermissions = new ActionsPermissions(this);
 
+    // todo use injection here
     protected Messages messages = AppBeans.get(Messages.NAME);
     protected Icons icons = AppBeans.get(Icons.NAME);
 
     protected boolean disposed = false;
     protected DialogOptions dialogOptions = new WebDialogOptions();
 
+    // todo remove
     private EventRouter eventRouter;
 
     protected ContentSwitchMode contentSwitchMode = ContentSwitchMode.DEFAULT;
@@ -881,7 +884,7 @@ public class WebWindow implements Window, Component.Wrapper,
             }
         }
 
-        Component[] childComponents = ownComponents.toArray(new Component[ownComponents.size()]);
+        Component[] childComponents = ownComponents.toArray(new Component[0]);
         ownComponents.clear();
 
         for (Component ownComponent : childComponents) {
@@ -1281,6 +1284,7 @@ public class WebWindow implements Window, Component.Wrapper,
 
         }
 
+        // todo move to MainWindow component
         if (getWrapper() instanceof TopLevelWindow) {
             Page.getCurrent().setTitle(caption);
         }

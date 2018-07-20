@@ -139,7 +139,7 @@ public class WindowConfig {
             return uiController.multipleOpen();
         }
 
-        throw new IllegalStateException("Neither screen class not descriptor is set for WindowInfo");
+        throw new IllegalStateException("Neither screen class nor descriptor is set for WindowInfo");
     }
 
     @SuppressWarnings("unchecked")
@@ -156,10 +156,19 @@ public class WindowConfig {
             if (annotation == null) {
                 return null;
             }
-            return UIControllerUtils.getInferredDesignTemplate(annotation, screenClass);
+            String template = UIControllerUtils.getInferredDesignTemplate(annotation, screenClass);
+            if (!template.startsWith("/")) {
+                String packageName = screenClass.getPackage().getName();
+                if (StringUtils.isNotEmpty(packageName)) {
+                    String relativePath = packageName.replace('.', '/');
+                    template = "/" + relativePath + "/" + template;
+                }
+            }
+
+            return template;
         }
 
-        throw new IllegalStateException("Neither screen class not descriptor is set for WindowInfo");
+        throw new IllegalStateException("Neither screen class nor descriptor is set for WindowInfo");
     }
 
     @SuppressWarnings("unchecked")
