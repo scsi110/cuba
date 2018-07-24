@@ -18,10 +18,6 @@
 package com.haulmont.cuba.gui.sys;
 
 import com.google.common.base.Strings;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
 import com.haulmont.bali.events.EventHub;
 import com.haulmont.cuba.client.ClientConfiguration;
 import com.haulmont.cuba.core.config.Config;
@@ -30,7 +26,10 @@ import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.core.global.DevelopmentException;
 import com.haulmont.cuba.core.global.Events;
 import com.haulmont.cuba.gui.*;
-import com.haulmont.cuba.gui.components.*;
+import com.haulmont.cuba.gui.WindowManager.ScreenOptions;
+import com.haulmont.cuba.gui.components.Action;
+import com.haulmont.cuba.gui.components.Component;
+import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.components.sys.EventHubOwner;
 import com.haulmont.cuba.gui.data.DataSupplier;
 import com.haulmont.cuba.gui.data.Datasource;
@@ -50,14 +49,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.EventListener;
-import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.reflect.*;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -67,41 +63,22 @@ import static com.google.common.base.Preconditions.checkState;
 /**
  * Wires {@link Inject}, {@link Named}, {@link WindowParam} fields/setters and {@link EventListener} methods.
  */
-@org.springframework.stereotype.Component(UIControllerDependencyInjector.NAME)
+@org.springframework.stereotype.Component(ScreenDependencyInjector.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class UIControllerDependencyInjector {
+public class ScreenDependencyInjector {
 
     public static final String NAME = "cuba_UIControllerDependencyInjector";
 
-    protected final LoadingCache<Class<?>, List<Method>> eventListenerMethodsCache =
-            CacheBuilder.newBuilder()
-                    .weakKeys()
-                    .build(new CacheLoader<Class<?>, List<Method>>() {
-                        @Override
-                        public List<Method> load(@Nonnull Class<?> concreteClass) {
-                            return getAnnotatedListenerMethodsNotCached(concreteClass);
-                        }
-                    });
-
-    protected final LoadingCache<Class<?>, List<Method>> subscribeMethodsCache =
-            CacheBuilder.newBuilder()
-                    .weakKeys()
-                    .build(new CacheLoader<Class<?>, List<Method>>() {
-                        @Override
-                        public List<Method> load(@Nonnull Class<?> concreteClass) {
-                            return getAnnotatedSubscribeMethodsNotCached(concreteClass);
-                        }
-                    });
-
     protected Screen screen;
-    protected WindowManager.ScreenOptions options;
+    protected ScreenOptions options;
 
     // todo get rif of legacy here
     protected Map<String, Object> params;
 
     protected BeanLocator beanLocator;
+    protected ScreenReflectionInspector screenReflectionInspector;
 
-    public UIControllerDependencyInjector(Screen screen, WindowManager.ScreenOptions options) {
+    public ScreenDependencyInjector(Screen screen, ScreenOptions options) {
         this.screen = screen;
         this.options = options;
     }
@@ -109,6 +86,11 @@ public class UIControllerDependencyInjector {
     @Inject
     public void setBeanLocator(BeanLocator beanLocator) {
         this.beanLocator = beanLocator;
+    }
+
+    @Inject
+    public void setScreenReflectionInspector(ScreenReflectionInspector screenReflectionInspector) {
+        this.screenReflectionInspector = screenReflectionInspector;
     }
 
     public void inject() {
@@ -157,23 +139,18 @@ public class UIControllerDependencyInjector {
     protected void subscribeListenerMethods(Screen screen) {
         Class<? extends Screen> clazz = screen.getClass();
 
-        List<Method> eventListenerMethods = getAnnotatedSubscribeMethods(clazz);
+        List<Method> eventListenerMethods = screenReflectionInspector.getAnnotatedSubscribeMethods(clazz);
         EventHub screenEvents = WindowManagerUtils.getEventHub(screen);
 
         for (Method method : eventListenerMethods) {
             Subscribe annotation = method.getAnnotation(Subscribe.class);
             checkState(annotation != null);
 
-            Parameter parameter = method.getParameters()[0];
-            Consumer listener = event -> {
-                try {
-                    method.invoke(screen, event);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException("Unhandled exception in UI controller", e);
-                }
-            };
+            Consumer listener = new DeclarativeSubscribeExecutor(screen, method);
 
-            String target = UIControllerUtils.getInferredSubscribeTarget(annotation);
+            String target = ScreenUtils.getInferredSubscribeTarget(annotation);
+
+            Parameter parameter = method.getParameters()[0];
             Class<?> parameterType = parameter.getType();
 
             if (Strings.isNullOrEmpty(target)) {
@@ -198,7 +175,7 @@ public class UIControllerDependencyInjector {
     protected void subscribeUiEventListeners(Screen screen) {
         Class<? extends Screen> clazz = screen.getClass();
 
-        List<Method> eventListenerMethods = getAnnotatedListenerMethods(clazz);
+        List<Method> eventListenerMethods = screenReflectionInspector.getAnnotatedListenerMethods(clazz);
 
         if (!eventListenerMethods.isEmpty()) {
             Events events = beanLocator.get(Events.NAME);
@@ -210,51 +187,6 @@ public class UIControllerDependencyInjector {
             // todo implement UiEvent listeners
             // ((Screen) screen).setUiEventListeners(listeners);
         }
-    }
-
-    protected List<Method> getAnnotatedSubscribeMethods(Class<?> clazz) {
-        return subscribeMethodsCache.getUnchecked(clazz);
-    }
-
-    protected List<Method> getAnnotatedListenerMethods(Class<?> clazz) {
-        if (clazz == AbstractWindow.class
-                || clazz == AbstractEditor.class
-                || clazz == AbstractLookup.class
-                || clazz == AbstractFrame.class) {
-            return Collections.emptyList();
-        }
-
-        return eventListenerMethodsCache.getUnchecked(clazz);
-    }
-
-    protected List<Method> getAnnotatedListenerMethodsNotCached(Class<?> clazz) {
-        Method[] methods = ReflectionUtils.getUniqueDeclaredMethods(clazz);
-
-        List<Method> eventListenerMethods = Arrays.stream(methods)
-                .filter(m -> m.getAnnotation(EventListener.class) != null)
-                .collect(Collectors.toList());
-
-        if (eventListenerMethods.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return ImmutableList.copyOf(eventListenerMethods);
-    }
-
-    protected List<Method> getAnnotatedSubscribeMethodsNotCached(Class<?> clazz) {
-        Method[] methods = ReflectionUtils.getUniqueDeclaredMethods(clazz);
-
-        List<Method> eventListenerMethods = Arrays.stream(methods)
-                .filter(m -> m.getAnnotation(Subscribe.class) != null)
-                .filter(m -> m.getParameterCount() == 1)
-                .filter(m -> EventObject.class.isAssignableFrom(m.getParameterTypes()[0]))
-                .collect(Collectors.toList());
-
-        if (eventListenerMethods.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return ImmutableList.copyOf(eventListenerMethods);
     }
 
     protected List<Field> getAllFields(List<Class<?>> classes) {
@@ -338,7 +270,7 @@ public class UIControllerDependencyInjector {
                         type, name, declaringClass.getCanonicalName(), frameClass.getCanonicalName());
             }
 
-            Logger log = LoggerFactory.getLogger(UIControllerDependencyInjector.class);
+            Logger log = LoggerFactory.getLogger(ScreenDependencyInjector.class);
             log.warn(msg);
         }
     }
@@ -435,6 +367,33 @@ public class UIControllerDependencyInjector {
                 throw new RuntimeException("CDI - Unable to assign value through setter "
                         + ((Method) element).getName(), e);
             }
+        }
+    }
+
+    public static class DeclarativeSubscribeExecutor implements Consumer {
+        protected final Object owner;
+        protected final Method method;
+
+        public DeclarativeSubscribeExecutor(Object owner, Method method) {
+            this.method = method;
+            this.owner = owner;
+        }
+
+        @Override
+        public void accept(Object event) {
+            try {
+                method.invoke(owner, event);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Unhandled exception in UI controller", e);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "DeclarativeSubscribeExecutor{" +
+                    "owner=" + owner.getClass() +
+                    ", method=" + method +
+                    '}';
         }
     }
 }

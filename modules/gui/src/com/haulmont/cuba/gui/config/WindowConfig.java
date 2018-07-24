@@ -29,9 +29,9 @@ import com.haulmont.cuba.gui.NoSuchScreenException;
 import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.screen.ScreenController;
 import com.haulmont.cuba.gui.components.Window;
-import com.haulmont.cuba.gui.sys.UIControllerUtils;
-import com.haulmont.cuba.gui.sys.UIControllersConfiguration;
-import com.haulmont.cuba.gui.sys.UIControllersConfiguration.UIControllerDefinition;
+import com.haulmont.cuba.gui.sys.ScreenUtils;
+import com.haulmont.cuba.gui.sys.ScreensConfiguration;
+import com.haulmont.cuba.gui.sys.ScreensConfiguration.UIControllerDefinition;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringTokenizer;
@@ -78,7 +78,7 @@ public class WindowConfig {
     @Inject
     protected Metadata metadata;
     @Inject
-    protected List<UIControllersConfiguration> uiControllersConfigurations;
+    protected List<ScreensConfiguration> screensConfigurations;
 
     protected volatile boolean initialized;
 
@@ -156,7 +156,7 @@ public class WindowConfig {
             if (annotation == null) {
                 return null;
             }
-            String template = UIControllerUtils.getInferredDesignTemplate(annotation, screenClass);
+            String template = ScreenUtils.getInferredDesignTemplate(annotation, screenClass);
             if (!template.startsWith("/")) {
                 String packageName = screenClass.getPackage().getName();
                 if (StringUtils.isNotEmpty(packageName)) {
@@ -204,7 +204,7 @@ public class WindowConfig {
     }
 
     protected void loadScreenConfigurations() {
-        for (UIControllersConfiguration provider : uiControllersConfigurations) {
+        for (ScreensConfiguration provider : screensConfigurations) {
             List<UIControllerDefinition> uiControllers = provider.getUIControllers();
 
             for (UIControllerDefinition definition : uiControllers) {

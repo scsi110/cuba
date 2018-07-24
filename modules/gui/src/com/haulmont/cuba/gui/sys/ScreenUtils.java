@@ -9,9 +9,9 @@ import com.haulmont.cuba.gui.screen.ScreenController;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
-public final class UIControllerUtils {
+public final class ScreenUtils {
 
-    private UIControllerUtils() {
+    private ScreenUtils() {
     }
 
     public static String getInferredScreenId(ScreenController screenController, Class<? extends Screen> annotatedScreenClass) {

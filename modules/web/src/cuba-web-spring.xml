@@ -60,7 +60,8 @@
 
     <!-- todo custom XSD for screen configuration: scanning/defining screens -->
 
-    <bean id="cuba_web_UIControllersConfiguration" class="com.haulmont.cuba.gui.sys.UIControllersConfiguration">
+    <bean id="cuba_web_ScreensConfiguration"
+          class="com.haulmont.cuba.gui.sys.ScreensConfiguration">
         <property name="packages">
             <list>
                 <value>com.haulmont.cuba.gui.app</value>

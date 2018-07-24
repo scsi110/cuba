@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 /**
  * JavaDoc
  */
-public class UIControllersConfiguration {
-    private static final Logger log = LoggerFactory.getLogger(UIControllersConfiguration.class);
+public class ScreensConfiguration {
+    private static final Logger log = LoggerFactory.getLogger(ScreensConfiguration.class);
 
     @Inject
     protected Scripting scripting;
@@ -26,7 +26,7 @@ public class UIControllersConfiguration {
 
     // todo add explicit exports
 
-    public UIControllersConfiguration() {
+    public ScreensConfiguration() {
     }
 
     public List<String> getPackages() {
@@ -53,10 +53,10 @@ public class UIControllersConfiguration {
 
                     ScreenController screenController = screenClass.getAnnotation(ScreenController.class);
                     if (screenController == null) {
-                        throw new RuntimeException("Screen class does not have @ScreenController : " + screenClass);
+                        throw new RuntimeException("Screen class does not have @ScreenController annotation : " + screenClass);
                     }
 
-                    String id = UIControllerUtils.getInferredScreenId(screenController, screenClass);
+                    String id = ScreenUtils.getInferredScreenId(screenController, screenClass);
 
                     return new UIControllerDefinition(id, className);
                 })

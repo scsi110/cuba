@@ -27,8 +27,8 @@ import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.sys.ScreenViewsLoader;
-import com.haulmont.cuba.gui.sys.UIControllerDependencyInjector;
-import com.haulmont.cuba.gui.sys.UIControllerUtils;
+import com.haulmont.cuba.gui.sys.ScreenDependencyInjector;
+import com.haulmont.cuba.gui.sys.ScreenUtils;
 import com.haulmont.cuba.gui.xml.layout.*;
 import com.haulmont.cuba.gui.xml.layout.loaders.ComponentLoaderContext;
 import com.haulmont.cuba.security.entity.PermissionType;
@@ -96,8 +96,8 @@ public class WebWindowManager implements WindowManager {
 
         // todo legacy datasource layer
 
-        UIControllerDependencyInjector dependencyInjector =
-                beanLocator.getPrototype(UIControllerDependencyInjector.NAME, controller, options);
+        ScreenDependencyInjector dependencyInjector =
+                beanLocator.getPrototype(ScreenDependencyInjector.NAME, controller, options);
         dependencyInjector.inject();
 
         InitEvent initEvent = new InitEvent(controller, options);
@@ -266,7 +266,7 @@ public class WebWindowManager implements WindowManager {
             throw new IllegalArgumentException("No @ScreenController annotation for class " + screenClass);
         }
 
-        String screenId = UIControllerUtils.getInferredScreenId(screenController, screenClass);
+        String screenId = ScreenUtils.getInferredScreenId(screenController, screenClass);
 
         return windowConfig.getWindowInfo(screenId);
     }
