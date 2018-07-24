@@ -33,6 +33,9 @@ import org.perf4j.StopWatch;
 import org.perf4j.slf4j.Slf4JStopWatch;
 import org.slf4j.LoggerFactory;
 
+/**
+ * todo rename to WindowPartLoader
+ */
 public class FrameComponentLoader extends ContainerLoader<Frame> {
 
     protected String frameId;
@@ -134,7 +137,7 @@ public class FrameComponentLoader extends ContainerLoader<Frame> {
     protected void loadAliases() {
         if (frameLoader instanceof FrameLoader) {
             ComponentLoaderContext frameLoaderInnerContext = ((FrameLoader) frameLoader).getInnerContext();
-            for (Element aliasElement : Dom4j.elements(element, "dsAlias")) {
+            for (Element aliasElement : element.elements("dsAlias")) {
                     String aliasDatasourceId = aliasElement.attributeValue("alias");
                     String originalDatasourceId = aliasElement.attributeValue("datasource");
                     if (StringUtils.isNotBlank(aliasDatasourceId) && StringUtils.isNotBlank(originalDatasourceId)) {

@@ -20,10 +20,12 @@ import com.haulmont.chile.core.datatypes.impl.EnumClass;
 import com.haulmont.chile.core.model.Instance;
 import com.haulmont.chile.core.model.utils.InstanceUtils;
 import com.haulmont.cuba.gui.FrameContext;
-import com.haulmont.cuba.gui.components.*;
-import com.haulmont.cuba.gui.components.compatibility.ComponentValueListenerWrapper;
+import com.haulmont.cuba.gui.components.Component;
+import com.haulmont.cuba.gui.components.Frame;
+import com.haulmont.cuba.gui.components.HasValue;
+import com.haulmont.cuba.gui.components.HasValue.ValueChangeListener;
+import com.haulmont.cuba.gui.components.ListComponent;
 import com.haulmont.cuba.gui.components.sys.ValuePathHelper;
-import com.haulmont.cuba.gui.data.ValueListener;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
@@ -36,8 +38,6 @@ public class FrameContextImpl implements FrameContext {
     public FrameContextImpl(Frame window, Map<String, Object> params) {
         this.frame = window;
         this.params = params;
-
-        frame.getComponents();
     }
 
     public Collection<String> getParameterNames() {
@@ -63,6 +63,7 @@ public class FrameContextImpl implements FrameContext {
         return params;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getParamValue(String param) {
         return (T) params.get(param);
@@ -70,7 +71,7 @@ public class FrameContextImpl implements FrameContext {
 
     @Override
     public <T> T getValue(String property) {
-        final String[] elements = ValuePathHelper.parse(property);
+        String[] elements = ValuePathHelper.parse(property);
         String[] path = elements;
 
         Component component = frame.getComponent(property);
@@ -98,8 +99,8 @@ public class FrameContextImpl implements FrameContext {
             //noinspection unchecked
             return (T) value;
         } else {
-            final java.util.List<String> propertyPath = Arrays.asList(elements).subList(path.length, elements.length);
-            final String[] properties = propertyPath.toArray(new String[0]);
+            List<String> propertyPath = Arrays.asList(elements).subList(path.length, elements.length);
+            String[] properties = propertyPath.toArray(new String[0]);
 
             if (value instanceof Instance) {
                 //noinspection RedundantTypeArguments
@@ -117,6 +118,7 @@ public class FrameContextImpl implements FrameContext {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected <T> T getValue(Component component) {
         if (component instanceof HasValue) {
             //noinspection RedundantTypeArguments
@@ -130,6 +132,7 @@ public class FrameContextImpl implements FrameContext {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void setValue(String property, Object value) {
         final Component component = frame.getComponent(property);
@@ -141,17 +144,7 @@ public class FrameContextImpl implements FrameContext {
     }
 
     @Override
-    public void addValueListener(String componentName, ValueListener listener) {
-        addValueChangeListener(componentName, new ComponentValueListenerWrapper(listener));
-    }
-
-    @Override
-    public void removeValueListener(String componentName, ValueListener listener) {
-        removeValueChangeListener(componentName, new ComponentValueListenerWrapper(listener));
-    }
-
-    @Override
-    public void addValueChangeListener(String componentName, HasValue.ValueChangeListener listener) {
+    public void addValueChangeListener(String componentName, ValueChangeListener listener) {
         Component component = frame.getComponent(componentName);
         if (component == null)
             throw new RuntimeException("Component not found: " + componentName);
@@ -165,7 +158,7 @@ public class FrameContextImpl implements FrameContext {
     }
 
     @Override
-    public void removeValueChangeListener(String componentName, HasValue.ValueChangeListener listener) {
+    public void removeValueChangeListener(String componentName, ValueChangeListener listener) {
         Component component = frame.getComponent(componentName);
         if (component == null)
             throw new RuntimeException("Component not found: " + componentName);

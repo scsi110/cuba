@@ -18,6 +18,7 @@ package com.haulmont.cuba.gui;
 
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.HasValue;
+import com.haulmont.cuba.gui.components.compatibility.ComponentValueListenerWrapper;
 import com.haulmont.cuba.gui.data.ValueListener;
 
 import java.util.Map;
@@ -68,11 +69,15 @@ public interface FrameContext {
 
     /** Add the value listener to the specified component */
     @Deprecated
-    void addValueListener(String componentName, ValueListener listener);
+    default void addValueListener(String componentName, ValueListener listener) {
+        addValueChangeListener(componentName, new ComponentValueListenerWrapper(listener));
+    }
 
     /** Remove the value listener from the specified component */
     @Deprecated
-    void removeValueListener(String componentName, ValueListener listener);
+    default void removeValueListener(String componentName, ValueListener listener) {
+        removeValueChangeListener(componentName, new ComponentValueListenerWrapper(listener));
+    }
 
     /** Add the value listener to the specified component */
     void addValueChangeListener(String componentName, HasValue.ValueChangeListener listener);
