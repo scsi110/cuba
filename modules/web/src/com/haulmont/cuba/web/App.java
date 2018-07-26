@@ -18,11 +18,13 @@
 package com.haulmont.cuba.web;
 
 import com.haulmont.cuba.core.global.*;
+import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.components.Frame;
-import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.components.RootWindow;
 import com.haulmont.cuba.gui.config.WindowConfig;
+import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.executors.IllegalConcurrentAccessException;
 import com.haulmont.cuba.gui.settings.SettingsClient;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
@@ -31,7 +33,6 @@ import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.NoUserSessionException;
 import com.haulmont.cuba.security.global.UserSession;
-import com.haulmont.cuba.web.app.ui.demo.login.DemoLoginScreen;
 import com.haulmont.cuba.web.auth.WebAuthConfig;
 import com.haulmont.cuba.web.controllers.ControllerUtils;
 import com.haulmont.cuba.web.exception.ExceptionHandlers;
@@ -89,31 +90,24 @@ public abstract class App {
 
     @Inject
     protected GlobalConfig globalConfig;
-
     @Inject
     protected WebConfig webConfig;
-
     @Inject
     protected WebAuthConfig webAuthConfig;
 
     @Inject
     protected WindowConfig windowConfig;
-
     @Inject
     protected ThemeConstantsRepository themeConstantsRepository;
-
     @Inject
     protected UserSessionService userSessionService;
-
     @Inject
     protected MessageTools messageTools;
-
     @Inject
     protected SettingsClient settingsClient;
 
     @Inject
     protected Events events;
-
     @Inject
     protected BeanLocator beanLocator;
 
@@ -180,7 +174,7 @@ public abstract class App {
     /**
      * @return currently displayed top-level window
      */
-    public Window.TopLevelWindow getTopLevelWindow() {
+    public RootWindow getTopLevelWindow() {
         return getAppUI().getTopLevelWindow();
     }
 
@@ -298,15 +292,11 @@ public abstract class App {
         WindowManager wm = beanLocator.getPrototype(WindowManager.NAME, ui);
         ui.setWindowManager(wm);
 
-//        String topLevelWindowId = routeTopLevelWindowId();
-//        WindowInfo windowInfo = windowConfig.getWindowInfo(topLevelWindowId);
-
-        DemoLoginScreen screen = wm.create(DemoLoginScreen.class, OpenMode.TOP_LEVEL);
-        wm.show(screen);
-
-        /*
         String topLevelWindowId = routeTopLevelWindowId();
-        wm.createTopLevelWindow(windowConfig.getWindowInfo(topLevelWindowId));*/
+        WindowInfo windowInfo = windowConfig.getWindowInfo(topLevelWindowId);
+
+        Screen screen = wm.create(windowInfo.getScreenClass(), OpenMode.ROOT);
+        wm.show(screen);
     }
 
     protected abstract String routeTopLevelWindowId();
@@ -405,7 +395,7 @@ public abstract class App {
         }
 
         // todo change this, WindowManager should be bound to UI
-        Window.TopLevelWindow topLevelWindow = getTopLevelWindow();
+        RootWindow topLevelWindow = getTopLevelWindow();
 
         return topLevelWindow != null ? (WebWindowManagerImpl) topLevelWindow.getWindowManager() : null;
     }
@@ -492,16 +482,18 @@ public abstract class App {
         try {
             for (AppUI ui : getAppUIs()) {
                 ui.accessSynchronously(() -> {
-                    // todo WindowManager should belong to UI
-                    Window.TopLevelWindow topLevelWindow = getTopLevelWindow();
-                    if (topLevelWindow != null) {
-                        WebWindowManagerImpl webWindowManager = (WebWindowManagerImpl) topLevelWindow.getWindowManager();
-                        webWindowManager.setDisableSavingScreenHistory(true);
-                        webWindowManager.closeAll();
+                    WindowManager wm = ui.getWindowManager();
+                    if (wm != null) {
+                        //  todo implement
+                        wm.removeAll();
+
+//                        WebWindowManagerImpl webWindowManager = (WebWindowManagerImpl) topLevelWindow.getWindowManager();
+//                        webWindowManager.setDisableSavingScreenHistory(true);
+//                        webWindowManager.closeAll();
                     }
 
                     // also remove all native Vaadin windows, that is not under CUBA control
-                    for (com.vaadin.ui.Window win : new ArrayList<>(ui.getWindows())) {
+                    for (com.vaadin.ui.Window win : ui.getWindows().toArray(new com.vaadin.ui.Window[0])) {
                         ui.removeWindow(win);
                     }
                 });
@@ -531,7 +523,7 @@ public abstract class App {
      */
     public void logout(@Nullable Runnable runWhenLoggedOut) {
         try {
-            Window.TopLevelWindow topLevelWindow = getTopLevelWindow();
+            RootWindow topLevelWindow = getTopLevelWindow();
             if (topLevelWindow != null) {
                 topLevelWindow.saveSettings();
 

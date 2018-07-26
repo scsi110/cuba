@@ -20,6 +20,7 @@ package com.haulmont.cuba.web;
 import com.haulmont.cuba.client.ClientUserSession;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
+import com.haulmont.cuba.gui.components.RootWindow;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.events.sys.UiEventsMulticaster;
 import com.haulmont.cuba.gui.sys.TestIdManager;
@@ -113,7 +114,7 @@ public class AppUI extends CubaUI
 
     protected CubaHistoryControl historyControl;
 
-    protected Window.TopLevelWindow topLevelWindow;
+    protected RootWindow topLevelWindow;
 
     protected WindowManager windowManager;
 
@@ -359,7 +360,7 @@ public class AppUI extends CubaUI
     /**
      * @return currently displayed top-level window
      */
-    public Window.TopLevelWindow getTopLevelWindow() {
+    public RootWindow getTopLevelWindow() {
         return topLevelWindow;
     }
 
@@ -367,7 +368,7 @@ public class AppUI extends CubaUI
      * INTERNAL.
      * Set currently displayed top-level window.
      */
-    public void setTopLevelWindow(Window.TopLevelWindow window) {
+    public void setTopLevelWindow(RootWindow window) {
         if (this.topLevelWindow != window) {
             this.topLevelWindow = window;
 

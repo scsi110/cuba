@@ -670,7 +670,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
     }
 
     protected WebAppWorkArea getConfiguredWorkArea(@Nullable WorkAreaContext workAreaContext) {
-        Window.TopLevelWindow topLevelWindow = ui.getTopLevelWindow();
+        RootWindow topLevelWindow = ui.getTopLevelWindow();
 
         if (topLevelWindow instanceof Window.MainWindow) {
             AppWorkArea workArea = ((Window.MainWindow) topLevelWindow).getWorkArea();
@@ -1598,17 +1598,17 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
 
         String template = windowInfo.getTemplate();
 
-        Window.TopLevelWindow topLevelWindow;
+        RootWindow topLevelWindow;
 
         Map<String, Object> params = Collections.emptyMap();
         if (template != null) {
             //noinspection unchecked
-            topLevelWindow = (Window.TopLevelWindow) createWindow(windowInfo, OpenType.NEW_TAB, params, true);
+            topLevelWindow = (RootWindow) createWindow(windowInfo, OpenType.NEW_TAB, params, true);
         } else {
             Class screenClass = windowInfo.getScreenClass();
             if (screenClass != null) {
                 //noinspection unchecked
-                topLevelWindow = (Window.TopLevelWindow) createWindowByScreenClass(windowInfo, params);
+                topLevelWindow = (RootWindow) createWindowByScreenClass(windowInfo, params);
             } else {
                 throw new DevelopmentException("Unable to load top level window");
             }
@@ -1666,7 +1666,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
     }
 
     protected void initTabShortcuts() {
-        Window.TopLevelWindow topLevelWindow = ui.getTopLevelWindow();
+        RootWindow topLevelWindow = ui.getTopLevelWindow();
         CubaOrderedActionsLayout actionsLayout = topLevelWindow.unwrap(CubaOrderedActionsLayout.class);
 
         if (getConfiguredWorkArea(createWorkAreaContext(topLevelWindow)).getMode() == Mode.TABBED) {
@@ -1680,7 +1680,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
         return !ui.getWindows().isEmpty();
     }
 
-    public ShortcutListener createCloseShortcut(Window.TopLevelWindow topLevelWindow) {
+    public ShortcutListener createCloseShortcut(RootWindow topLevelWindow) {
         String closeShortcut = clientConfig.getCloseShortcut();
         KeyCombination combination = KeyCombination.create(closeShortcut);
 
@@ -1691,7 +1691,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
                 );
     }
 
-    protected void closeWindowByShortcut(Window.TopLevelWindow topLevelWindow) {
+    protected void closeWindowByShortcut(RootWindow topLevelWindow) {
         WebAppWorkArea workArea = getConfiguredWorkArea(createWorkAreaContext(topLevelWindow));
         if (workArea.getState() != AppWorkArea.State.WINDOW_CONTAINER) {
             return;
@@ -1817,7 +1817,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
         return false;
     }
 
-    public ShortcutListener createNextWindowTabShortcut(Window.TopLevelWindow topLevelWindow) {
+    public ShortcutListener createNextWindowTabShortcut(RootWindow topLevelWindow) {
         String nextTabShortcut = clientConfig.getNextTabShortcut();
         KeyCombination combination = KeyCombination.create(nextTabShortcut);
 
@@ -1844,7 +1844,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
         });
     }
 
-    public ShortcutListener createPreviousWindowTabShortcut(Window.TopLevelWindow topLevelWindow) {
+    public ShortcutListener createPreviousWindowTabShortcut(RootWindow topLevelWindow) {
         String previousTabShortcut = clientConfig.getPreviousTabShortcut();
         KeyCombination combination = KeyCombination.create(previousTabShortcut);
 

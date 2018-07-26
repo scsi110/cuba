@@ -483,7 +483,7 @@ public class FieldGroupLoader extends AbstractComponentLoader<FieldGroup> {
             // load nested component defined as inline
             Element customFieldElement = customElements.get(0);
 
-            LayoutLoader loader = new LayoutLoader(context, factory, layoutLoaderConfig);
+            LayoutLoader loader = beanLocator.getPrototype(LayoutLoader.NAME, context);
             loader.setLocale(getLocale());
             loader.setMessagesPack(getMessagesPack());
 

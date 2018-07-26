@@ -189,10 +189,11 @@ public class DefaultApp extends App implements StateChangeListener, UserSubstitu
 
     @Override
     protected String routeTopLevelWindowId() {
+        // todo demo only
         if (connection.isAuthenticated()) {
-            return "mainWindow";
+            return "demo-mainWindow";
         } else {
-            return "loginWindow";
+            return "demo-loginWindow";
         }
     }
 

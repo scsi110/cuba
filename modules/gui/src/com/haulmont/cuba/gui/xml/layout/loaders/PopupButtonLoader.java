@@ -16,7 +16,6 @@
  */
 package com.haulmont.cuba.gui.xml.layout.loaders;
 
-import com.haulmont.bali.util.Dom4j;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.PopupButton;
 import com.haulmont.cuba.gui.components.PopupButton.PopupOpenDirection;
@@ -126,11 +125,11 @@ public class PopupButtonLoader extends AbstractComponentLoader<PopupButton> {
 
     protected void createContent() {
         if (element != null && element.element("popup") != null) {
-            LayoutLoader loader = new LayoutLoader(context, factory, layoutLoaderConfig);
+            LayoutLoader loader = beanLocator.getPrototype(LayoutLoader.NAME, context);
             loader.setLocale(getLocale());
             loader.setMessagesPack(getMessagesPack());
 
-            List<Element> elements = Dom4j.elements(element.element("popup"));
+            List<Element> elements = element.element("popup").elements();
             if (elements.size() != 0) {
                 Element innerElement = elements.get(0);
                 if (innerElement != null) {

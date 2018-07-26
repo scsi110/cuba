@@ -18,7 +18,7 @@
         xmlns:main="http://schemas.haulmont.com/cuba/mainwindow.xsd"
         caption="mainMsg://application.caption">
 
-    <layout expand="spacer">
+    <layout expand="foldersSplit">
 
         <hbox id="titleBar"
               stylename="c-app-menubar"
@@ -58,6 +58,14 @@
             </hbox>
         </hbox>
 
-        <label id="spacer"/>
+        <split id="foldersSplit" width="100%" orientation="horizontal" pos="200px">
+            <main:foldersPane id="foldersPane" width="100%" height="100%"/>
+
+            <main:workArea id="workArea" width="100%" height="100%">
+                <main:initialLayout spacing="true" margin="true">
+
+                </main:initialLayout>
+            </main:workArea>
+        </split>
     </layout>
 </window>

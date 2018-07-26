@@ -53,7 +53,7 @@ public class RuntimePropertiesFrameLoader extends ContainerLoader<Frame> {
         }
         frameId = screenPath;
 
-        LayoutLoader layoutLoader = new LayoutLoader(context, factory, layoutLoaderConfig);
+        LayoutLoader layoutLoader = beanLocator.getPrototype(LayoutLoader.NAME, context);
         layoutLoader.setLocale(getLocale());
         layoutLoader.setMessagesPack(getMessagesPack());
 

@@ -49,6 +49,11 @@ public interface WindowManager {
     /**
      * JavaDoc
      */
+    void removeAll();
+
+    /**
+     * JavaDoc
+     */
     interface ScreenOptions {
     }
 
@@ -82,7 +87,7 @@ public interface WindowManager {
         /**
          * In Web Client opens a screen as main
          */
-        TOP_LEVEL
+        ROOT
     }
 
     ScreenOptions NO_OPTIONS = new ScreenOptions() {

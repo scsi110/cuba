@@ -21,14 +21,17 @@ import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerUtils;
+import com.haulmont.cuba.gui.components.DialogWindow;
+import com.haulmont.cuba.gui.components.RootWindow;
+import com.haulmont.cuba.gui.components.TabWindow;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.screen.*;
-import com.haulmont.cuba.gui.sys.ScreenViewsLoader;
 import com.haulmont.cuba.gui.sys.ScreenDependencyInjector;
 import com.haulmont.cuba.gui.sys.ScreenUtils;
+import com.haulmont.cuba.gui.sys.ScreenViewsLoader;
 import com.haulmont.cuba.gui.xml.layout.*;
 import com.haulmont.cuba.gui.xml.layout.loaders.ComponentLoaderContext;
 import com.haulmont.cuba.security.entity.PermissionType;
@@ -58,8 +61,6 @@ public class WebWindowManager implements WindowManager {
     protected BeanLocator beanLocator;
     @Inject
     protected ScreenXmlLoader screenXmlLoader;
-    @Inject
-    protected LayoutLoaderConfig layoutLoaderConfig;
     @Inject
     protected UserSessionSource userSessionSource;
     @Inject
@@ -146,7 +147,7 @@ public class WebWindowManager implements WindowManager {
                                            ComponentLoader.Context context) {
         String descriptorPath = windowInfo.getTemplate();
 
-        LayoutLoader layoutLoader = new LayoutLoader(context, componentsFactory, layoutLoaderConfig);
+        LayoutLoader layoutLoader = beanLocator.getPrototype(LayoutLoader.NAME, context);
         layoutLoader.setLocale(getLocale());
 
         // todo should we load messages depending on Class ?
@@ -187,19 +188,21 @@ public class WebWindowManager implements WindowManager {
             OpenMode openMode = (OpenMode) windowImpl.getLaunchMode();
 
             switch (openMode) {
-                case TOP_LEVEL:
-                    // todo
-                    ui.setTopLevelWindow((Window.TopLevelWindow) screen.getWindow());
-
+                case ROOT:
+                    showRootWindow(screen);
                     break;
 
-                case DIALOG:
-                    // todo
+                case THIS_TAB:
+                    showThisTabWindow(screen);
                     break;
 
                 case NEW_WINDOW:
                 case NEW_TAB:
-                    // todo
+                    showNewTabWindow(screen);
+                    break;
+
+                case DIALOG:
+                    showDialogWindow(screen);
                     break;
 
                 default:
@@ -211,9 +214,66 @@ public class WebWindowManager implements WindowManager {
         WindowManagerUtils.fireEvent(screen, AfterShowEvent.class, afterShowEvent);
     }
 
+    protected void showRootWindow(Screen screen) {
+        // todo
+        /*if (topLevelWindow instanceof AbstractMainWindow) {
+            AbstractMainWindow mainWindow = (AbstractMainWindow) topLevelWindow;
+
+            // bind system UI components to AbstractMainWindow
+            ComponentsHelper.walkComponents(windowImpl, component -> {
+                if (component instanceof AppWorkArea) {
+                    mainWindow.setWorkArea((AppWorkArea) component);
+                } else if (component instanceof UserIndicator) {
+                    mainWindow.setUserIndicator((UserIndicator) component);
+                } else if (component instanceof FoldersPane) {
+                    mainWindow.setFoldersPane((FoldersPane) component);
+                }
+
+                return false;
+            });
+        }*/
+
+        ui.setTopLevelWindow((RootWindow) screen.getWindow());
+
+        // todo
+        /*if (screen instanceof Window.HasWorkArea) {
+            AppWorkArea workArea = ((Window.HasWorkArea) screen).getWorkArea();
+            if (workArea != null) {
+                workArea.addStateChangeListener(new AppWorkArea.StateChangeListener() {
+                    @Override
+                    public void stateChanged(AppWorkArea.State newState) {
+                        if (newState == AppWorkArea.State.WINDOW_CONTAINER) {
+                            initTabShortcuts();
+
+                            // listener used only once
+                            getConfiguredWorkArea(createWorkAreaContext(topLevelWindow)).removeStateChangeListener(this);
+                        }
+                    }
+                });
+            }
+        }*/
+    }
+
+    protected void showThisTabWindow(Screen screen) {
+        // todo
+    }
+
+    protected void showNewTabWindow(Screen screen) {
+        // todo
+    }
+
+    protected void showDialogWindow(Screen screen) {
+        // todo
+    }
+
     @Override
     public void remove(Screen screen) {
         // todo remove event
+    }
+
+    @Override
+    public void removeAll() {
+        // todo implement
     }
 
     protected <T extends Screen> T createController(WindowInfo windowInfo, Window window,
@@ -222,7 +282,7 @@ public class WebWindowManager implements WindowManager {
         try {
             constructor = screenClass.getConstructor();
         } catch (NoSuchMethodException e) {
-            throw new DevelopmentException("No public constructor for screen class " + screenClass);
+            throw new DevelopmentException("No accessible constructor for screen class " + screenClass);
         }
 
         T controller;
@@ -236,10 +296,28 @@ public class WebWindowManager implements WindowManager {
     }
 
     protected Window createWindow(WindowInfo windowInfo, Class<? extends Screen> screenClass, LaunchMode launchMode) {
-        // todo here we should create TabWindow / DialogWindow / TopLevelWindow UI components depending on launchMode
-        Window window = componentsFactory.createComponent(Window.class);
-        if (launchMode == OpenMode.TOP_LEVEL) {
-            window.setSizeFull();
+        Window window;
+        if (launchMode instanceof OpenMode) {
+            OpenMode openMode = (OpenMode) launchMode;
+            switch (openMode) {
+                case ROOT:
+                    window = componentsFactory.createComponent(RootWindow.NAME);
+                    break;
+
+                case THIS_TAB:
+                case NEW_TAB:
+                    window = componentsFactory.createComponent(TabWindow.NAME);
+                    break;
+
+                case DIALOG:
+                    window = componentsFactory.createComponent(DialogWindow.NAME);
+                    break;
+
+                default:
+                    throw new UnsupportedOperationException("Unsupported launch mode");
+            }
+        } else {
+            throw new UnsupportedOperationException("Unsupported launch mode");
         }
 
         return window;
@@ -250,8 +328,8 @@ public class WebWindowManager implements WindowManager {
     }
 
     protected void checkPermissions(LaunchMode launchMode, WindowInfo windowInfo) {
-        // TOP_LEVEL windows are always permitted
-        if (launchMode != OpenMode.TOP_LEVEL) {
+        // ROOT windows are always permitted
+        if (launchMode != OpenMode.ROOT) {
             boolean permitted = security.isScreenPermitted(windowInfo.getId());
             if (!permitted) {
                 throw new AccessDeniedException(PermissionType.SCREEN, windowInfo.getId());

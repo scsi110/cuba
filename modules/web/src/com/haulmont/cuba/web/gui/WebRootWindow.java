@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017 Haulmont.
+ * Copyright (c) 2008-2018 Haulmont.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.haulmont.cuba.gui.components.mainwindow;
+package com.haulmont.cuba.web.gui;
 
 import com.haulmont.cuba.gui.components.RootWindow;
 
-// todo remove
-public interface TopLevelWindowAttachListener {
-    void topLevelWindowAttached(RootWindow window);
+public class WebRootWindow extends WebWindow implements RootWindow {
+    public WebRootWindow() {
+        setSizeFull();
+    }
 }

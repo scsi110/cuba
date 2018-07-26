@@ -38,13 +38,6 @@ import java.util.List;
  * Represents an independent screen opened inside the main application window.
  */
 public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
-
-    /**
-     * Name that is used to register a client type specific screen implementation in
-     * {@link com.haulmont.cuba.gui.xml.layout.ComponentsFactory}
-     */
-    String NAME = "window";
-
     /**
      * Constant that should be passed to {@link #close(String)} and {@link #close(String, boolean)} methods when
      * the screen is closed after commit of changes. Propagated to {@link CloseListener#windowClosed}.
@@ -488,6 +481,7 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
     }
 
     // todo remove extends TopLevelWindow
+    // todo move to separate file
     interface MainWindow extends TopLevelWindow, HasWorkArea, HasUserIndicator, HasFoldersPane {
     }
 

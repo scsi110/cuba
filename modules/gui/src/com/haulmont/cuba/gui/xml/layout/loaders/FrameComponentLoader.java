@@ -65,7 +65,7 @@ public class FrameComponentLoader extends ContainerLoader<Frame> {
             frameId = element.attributeValue("id");
         }
 
-        LayoutLoader layoutLoader = new LayoutLoader(context, factory, layoutLoaderConfig);
+        LayoutLoader layoutLoader = beanLocator.getPrototype(LayoutLoader.NAME, context);
         layoutLoader.setLocale(getLocale());
         layoutLoader.setMessagesPack(getMessagesPack());
 

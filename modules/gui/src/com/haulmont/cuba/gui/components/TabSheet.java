@@ -16,6 +16,7 @@
  */
 package com.haulmont.cuba.gui.components;
 
+import com.haulmont.cuba.gui.data.impl.compatibility.CompatibleTabSheetSelectedTabChangeListener;
 import com.haulmont.cuba.gui.xml.layout.ComponentLoader;
 import org.dom4j.Element;
 
@@ -140,16 +141,24 @@ public interface TabSheet extends ComponentContainer, Component.BelongToFrame, C
     /**
      * Add a listener that will be notified when a selected tab is changed.
      *
+     * todo remove
+     *
      * @deprecated Use {@link TabSheet#addSelectedTabChangeListener(SelectedTabChangeListener)} instead
      */
     @Deprecated
-    void addListener(TabChangeListener listener);
+    default void addListener(TabChangeListener listener) {
+        addSelectedTabChangeListener(new CompatibleTabSheetSelectedTabChangeListener(listener));
+    }
 
     /**
+     * todo remove
+     *
      * @deprecated Use {@link TabSheet#removeSelectedTabChangeListener(SelectedTabChangeListener)} instead
      */
     @Deprecated
-    void removeListener(TabChangeListener listener);
+    default void removeListener(TabChangeListener listener) {
+        removeSelectedTabChangeListener(new CompatibleTabSheetSelectedTabChangeListener(listener));
+    }
 
     /**
      * Tab interface.
@@ -208,6 +217,8 @@ public interface TabSheet extends ComponentContainer, Component.BelongToFrame, C
 
     /**
      * Listener that will be notified when a selected tab is changed.
+     *
+     * todo remove
      *
      * @deprecated Use {@link SelectedTabChangeListener} instead
      */

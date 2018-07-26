@@ -18,19 +18,27 @@ package com.haulmont.cuba.gui.xml.layout;
 
 import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.cuba.core.global.AppBeans;
+import com.haulmont.cuba.core.global.BeanLocator;
 import com.haulmont.cuba.gui.GuiDevelopmentException;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.xml.layout.loaders.FrameLoader;
 import com.haulmont.cuba.gui.xml.layout.loaders.WindowLoader;
 import org.dom4j.Element;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 import java.util.Map;
 
-// todo convert to bean
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
+@Component(LayoutLoader.NAME)
 public class LayoutLoader {
+
+    public static final String NAME = "cuba_LayoutLoader";
 
     protected ComponentLoader.Context context;
     protected ComponentsFactory factory;
@@ -39,9 +47,24 @@ public class LayoutLoader {
     protected Locale locale;
     protected String messagesPack;
 
-    public LayoutLoader(ComponentLoader.Context context, ComponentsFactory factory, LayoutLoaderConfig config) {
+    protected BeanLocator beanLocator;
+
+    public LayoutLoader(ComponentLoader.Context context) {
         this.context = context;
+    }
+
+    @Inject
+    public void setBeanLocator(BeanLocator beanLocator) {
+        this.beanLocator = beanLocator;
+    }
+
+    @Inject
+    public void setFactory(ComponentsFactory factory) {
         this.factory = factory;
+    }
+
+    @Inject
+    public void setConfig(LayoutLoaderConfig config) {
         this.config = config;
     }
 
@@ -80,16 +103,18 @@ public class LayoutLoader {
 
         try {
             loader = constructor.newInstance();
-
-            loader.setLocale(locale);
-            loader.setMessagesPack(messagesPack);
-            loader.setContext(context);
-            loader.setLayoutLoaderConfig(config);
-            loader.setFactory(factory);
-            loader.setElement(element);
         } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
             throw new GuiDevelopmentException("Loader instantiation error: " + e, context.getFullFrameId());
         }
+
+        loader.setBeanLocator(beanLocator);
+
+        loader.setLocale(locale);
+        loader.setMessagesPack(messagesPack);
+        loader.setContext(context);
+        loader.setLayoutLoaderConfig(config);
+        loader.setFactory(factory);
+        loader.setElement(element);
 
         return loader;
     }

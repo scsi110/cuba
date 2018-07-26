@@ -496,6 +496,8 @@ public abstract class WindowManagerImpl {
 
     protected LayoutLoaderConfig layoutLoaderConfig = AppBeans.get(LayoutLoaderConfig.NAME);
 
+    protected BeanLocator beanLocator = AppBeans.get(BeanLocator.NAME);
+
     protected List<WindowCloseListener> listeners = new ArrayList<>();
 
     protected WindowManagerImpl() {
@@ -610,7 +612,7 @@ public abstract class WindowManagerImpl {
                                            ComponentLoader.Context context) {
         String descriptorPath = windowInfo.getTemplate();
 
-        LayoutLoader layoutLoader = new LayoutLoader(context, AppConfig.getFactory(), layoutLoaderConfig);
+        LayoutLoader layoutLoader = beanLocator.getPrototype(LayoutLoader.NAME, context);
         layoutLoader.setLocale(getLocale());
         if (!StringUtils.isEmpty(descriptorPath)) {
             if (descriptorPath.contains("/")) {
@@ -962,7 +964,7 @@ public abstract class WindowManagerImpl {
         context.setFullFrameId(windowInfo.getId());
         context.setCurrentFrameId(windowInfo.getId());
 
-        LayoutLoader loader = new LayoutLoader(context, AppConfig.getFactory(), layoutLoaderConfig); // todo get factory as bean
+        LayoutLoader loader = beanLocator.getPrototype(LayoutLoader.NAME, context);
         loader.setLocale(getLocale());
         loader.setMessagesPack(parentFrame.getMessagesPack());
 

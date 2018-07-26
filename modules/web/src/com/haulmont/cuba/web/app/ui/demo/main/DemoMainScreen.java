@@ -18,15 +18,16 @@ package com.haulmont.cuba.web.app.ui.demo.main;
 
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.Screen;
-import com.haulmont.cuba.gui.components.BoxLayout;
-import com.haulmont.cuba.gui.components.Image;
-import com.haulmont.cuba.gui.components.Label;
-import com.haulmont.cuba.gui.components.ThemeResource;
+import com.haulmont.cuba.gui.components.*;
+import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
+import com.haulmont.cuba.gui.components.mainwindow.FoldersPane;
 import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.theme.HaloTheme;
+import com.haulmont.cuba.web.widgets.CubaHorizontalSplitPanel;
+import com.vaadin.server.Sizeable;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
@@ -42,8 +43,15 @@ public class DemoMainScreen extends Screen {
     protected Messages messages;
     @Inject
     protected WebConfig webConfig;
+
     @Inject
     protected BoxLayout titleBar;
+    @Inject
+    protected SplitPanel foldersSplit;
+    @Inject
+    protected FoldersPane foldersPane;
+    @Inject
+    protected AppWorkArea workArea;
 
     @Subscribe
     public void init(InitEvent event) {
@@ -52,7 +60,7 @@ public class DemoMainScreen extends Screen {
         label.setIconFromSet(CubaIcon.MONEY);
         label.addStyleName(HaloTheme.LABEL_H2);
 
-        getWindow().add(label, 0);
+//        getWindow().add(label, 0);
 
         String logoImagePath = messages.getMainMessage("application.logoImage");
         if (StringUtils.isNotBlank(logoImagePath) && !"application.logoImage".equals(logoImagePath)) {
@@ -61,6 +69,31 @@ public class DemoMainScreen extends Screen {
 
         if (webConfig.getUseInverseHeader()) {
             titleBar.setStyleName("c-app-menubar c-inverse-header");
+        }
+
+        if (webConfig.getFoldersPaneEnabled()) {
+            if (webConfig.getFoldersPaneVisibleByDefault()) {
+                foldersSplit.setSplitPosition(webConfig.getFoldersPaneDefaultWidth(), SizeUnit.PIXELS);
+            } else {
+                foldersSplit.setSplitPosition(0);
+            }
+
+            CubaHorizontalSplitPanel vSplitPanel = foldersSplit.unwrap(CubaHorizontalSplitPanel.class);
+            vSplitPanel.setDefaultPosition(webConfig.getFoldersPaneDefaultWidth() + "px");
+            vSplitPanel.setMaxSplitPosition(50, Sizeable.Unit.PERCENTAGE);
+            vSplitPanel.setDockable(true);
+        } else {
+            foldersPane.setEnabled(false);
+            foldersPane.setVisible(false);
+
+            foldersSplit.remove(workArea);
+
+            int foldersSplitIndex = getWindow().indexOf(foldersSplit);
+
+            getWindow().remove(foldersSplit);
+            getWindow().add(workArea, foldersSplitIndex);
+
+            getWindow().expand(workArea);
         }
     }
 
