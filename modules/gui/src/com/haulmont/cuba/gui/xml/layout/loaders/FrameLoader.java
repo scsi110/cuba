@@ -17,8 +17,10 @@
 package com.haulmont.cuba.gui.xml.layout.loaders;
 
 import com.haulmont.bali.util.ReflectionHelper;
-import com.haulmont.cuba.core.global.AppBeans;
-import com.haulmont.cuba.gui.*;
+import com.haulmont.cuba.gui.AppConfig;
+import com.haulmont.cuba.gui.ComponentsHelper;
+import com.haulmont.cuba.gui.FrameContext;
+import com.haulmont.cuba.gui.GuiDevelopmentException;
 import com.haulmont.cuba.gui.components.AbstractFrame;
 import com.haulmont.cuba.gui.components.AbstractWindow;
 import com.haulmont.cuba.gui.components.Frame;
@@ -44,15 +46,13 @@ public class FrameLoader<T extends Frame> extends ContainerLoader<T> {
 
     protected String frameId;
 
-    private ScreenViewsLoader screenViewsLoader = AppBeans.get(ScreenViewsLoader.NAME);
-
     protected Frame wrapByCustomClass(Frame frame) {
         String screenClass = element.attributeValue("class");
         if (StringUtils.isBlank(screenClass)) {
             screenClass = AbstractFrame.class.getName();
         }
 
-        Class<?> aClass = scripting.loadClass(screenClass);
+        Class<?> aClass = getScripting().loadClass(screenClass);
         if (aClass == null) {
             aClass = ReflectionHelper.getClass(screenClass);
         }
@@ -85,7 +85,7 @@ public class FrameLoader<T extends Frame> extends ContainerLoader<T> {
         if (element != null) {
             String className = element.attributeValue("class");
             if (!StringUtils.isBlank(className)) {
-                Class aClass = scripting.loadClassNN(className);
+                Class aClass = getScripting().loadClassNN(className);
                 Object companion;
                 try {
                     companion = aClass.newInstance();
@@ -109,6 +109,10 @@ public class FrameLoader<T extends Frame> extends ContainerLoader<T> {
             frame.setMessagesPack(this.messagesPack);
             setMessagesPack(this.messagesPack);
         }
+    }
+
+    protected ScreenViewsLoader getScreenViewsLoader() {
+        return beanLocator.get(ScreenViewsLoader.NAME);
     }
 
     @Override
@@ -148,7 +152,7 @@ public class FrameLoader<T extends Frame> extends ContainerLoader<T> {
 
     @Override
     public void loadComponent() {
-        screenViewsLoader.deployViews(element);
+        getScreenViewsLoader().deployViews(element); // todo get rid of this in new screens
 
         Element dsContextElement = element.element("dsContext");
         DsContextLoader contextLoader = new DsContextLoader(context.getDsContext().getDataSupplier());
@@ -238,7 +242,7 @@ public class FrameLoader<T extends Frame> extends ContainerLoader<T> {
                         LoggerFactory.getLogger(UIPerformanceLogger.class));
 
                 ControllerDependencyInjector dependencyInjector =
-                        AppBeans.getPrototype(ControllerDependencyInjector.NAME, wrappingFrame, params);
+                        beanLocator.getPrototype(ControllerDependencyInjector.NAME, wrappingFrame, params);
                 dependencyInjector.inject();
 
                 injectStopWatch.stop();

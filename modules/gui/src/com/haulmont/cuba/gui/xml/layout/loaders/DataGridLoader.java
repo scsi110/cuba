@@ -22,7 +22,6 @@ import com.haulmont.chile.core.model.MetaPropertyPath;
 import com.haulmont.cuba.core.app.dynamicattributes.DynamicAttributesUtils;
 import com.haulmont.cuba.core.entity.CategoryAttribute;
 import com.haulmont.cuba.core.entity.LocaleHelper;
-import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.MetadataTools;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.GuiDevelopmentException;
@@ -39,36 +38,19 @@ import org.dom4j.Element;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
-
-    protected MetadataTools metadataTools = AppBeans.get(MetadataTools.NAME);
-    protected DynamicAttributesGuiTools dynamicAttributesGuiTools = AppBeans.get(DynamicAttributesGuiTools.NAME);
 
     protected ComponentLoader buttonsPanelLoader;
     protected Element panelElement;
 
     @Override
     public void createComponent() {
-        resultComponent = (DataGrid) factory.createComponent(DataGrid.NAME);
+        resultComponent = factory.createComponent(DataGrid.NAME);
         loadId(resultComponent, element);
         createButtonsPanel(resultComponent, element);
-    }
-
-    protected void createButtonsPanel(HasButtonsPanel dataGrid, Element element) {
-        panelElement = element.element("buttonsPanel");
-        if (panelElement != null) {
-            ButtonsPanelLoader loader = (ButtonsPanelLoader) getLoader(panelElement, ButtonsPanel.NAME);
-            loader.createComponent();
-            ButtonsPanel panel = loader.getResultComponent();
-
-            dataGrid.setButtonsPanel(panel);
-
-            buttonsPanelLoader = loader;
-        }
     }
 
     @Override
@@ -147,6 +129,27 @@ public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
         loadSelectionMode(resultComponent, element);
         loadFrozenColumnCount(resultComponent, element);
         loadTabIndex(resultComponent, element);
+    }
+
+    protected MetadataTools getMetadataTools() {
+        return beanLocator.get(MetadataTools.NAME);
+    }
+
+    protected DynamicAttributesGuiTools getDynamicAttributesGuiTools() {
+        return beanLocator.get(DynamicAttributesGuiTools.NAME);
+    }
+
+    protected void createButtonsPanel(HasButtonsPanel dataGrid, Element element) {
+        panelElement = element.element("buttonsPanel");
+        if (panelElement != null) {
+            ButtonsPanelLoader loader = (ButtonsPanelLoader) getLoader(panelElement, ButtonsPanel.NAME);
+            loader.createComponent();
+            ButtonsPanel panel = loader.getResultComponent();
+
+            dataGrid.setButtonsPanel(panel);
+
+            buttonsPanelLoader = loader;
+        }
     }
 
     protected void loadEditorEnabled(DataGrid component, Element element) {
@@ -301,8 +304,7 @@ public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
 
         Column column;
         if (property != null) {
-            MetaPropertyPath metaPropertyPath = AppBeans.get(MetadataTools.NAME, MetadataTools.class)
-                    .resolveMetaPropertyPath(ds.getMetaClass(), property);
+            MetaPropertyPath metaPropertyPath = getMetadataTools().resolveMetaPropertyPath(ds.getMetaClass(), property);
             column = component.addColumn(id, metaPropertyPath);
         } else {
             column = component.addColumn(id, null);
@@ -363,8 +365,8 @@ public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
                             categoryAttribute.getLocaleName() :
                             StringUtils.capitalize(categoryAttribute.getName());
                 } else {
-                    MetaClass propertyMetaClass = metadataTools.getPropertyEnclosingMetaClass(column.getPropertyPath());
-                    columnCaption = messageTools.getPropertyCaption(propertyMetaClass, propertyName);
+                    MetaClass propertyMetaClass = getMetadataTools().getPropertyEnclosingMetaClass(column.getPropertyPath());
+                    columnCaption = getMessageTools().getPropertyCaption(propertyMetaClass, propertyName);
                 }
             } else {
                 Class<?> declaringClass = ds.getMetaClass().getJavaClass();
@@ -373,7 +375,7 @@ public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
                 if (i > -1) {
                     className = className.substring(i + 1);
                 }
-                columnCaption = messages.getMessage(declaringClass, className + "." + id);
+                columnCaption = getMessages().getMessage(declaringClass, className + "." + id);
             }
             column.setCaption(columnCaption);
         } else {
@@ -422,7 +424,8 @@ public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
                 // Only integer allowed in XML
                 return Integer.parseInt(width);
             } catch (NumberFormatException e) {
-                throw new GuiDevelopmentException("Property '" + propertyName + "' must contain only numeric value",
+                throw new GuiDevelopmentException(
+                        String.format("Property '%s' must contain only numeric value", propertyName),
                         context.getCurrentFrameId(), propertyName, element.attributeValue("width"));
             }
         }
@@ -430,9 +433,9 @@ public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
     }
 
     protected void addDynamicAttributes(DataGrid component, Datasource ds, List<Column> availableColumns) {
-        if (metadataTools.isPersistent(ds.getMetaClass())) {
+        if (getMetadataTools().isPersistent(ds.getMetaClass())) {
             Set<CategoryAttribute> attributesToShow =
-                    dynamicAttributesGuiTools.getAttributesToShowOnTheScreen(ds.getMetaClass(),
+                    getDynamicAttributesGuiTools().getAttributesToShowOnTheScreen(ds.getMetaClass(),
                             context.getFullFrameId(), component.getId());
             if (CollectionUtils.isNotEmpty(attributesToShow)) {
                 ds.setLoadDynamicAttributes(true);
@@ -458,7 +461,7 @@ public class DataGridLoader extends ActionsHolderLoader<DataGrid> {
                 }
             }
 
-            dynamicAttributesGuiTools.listenDynamicAttributesChanges(ds);
+            getDynamicAttributesGuiTools().listenDynamicAttributesChanges(ds);
         }
     }
 

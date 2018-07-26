@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package com.haulmont.cuba.gui.components;
+package com.haulmont.cuba.gui;
+
+import com.haulmont.bali.events.EventHub;
 
 /**
  * JavaDoc
  */
-public interface WindowPart extends Frame {
-    /**
-     * Name that is used to register a client type specific screen implementation in
-     * {@link com.haulmont.cuba.gui.xml.layout.ComponentsFactory}
-     */
-    String NAME = "windowPart";
+public abstract class ScreenFragment {
 
+    private EventHub eventHub = new EventHub();
+
+    // todo
+
+    protected EventHub getEventHub() {
+        return eventHub;
+    }
+
+    protected <E> void fireEvent(Class<E> eventType, E event) {
+        eventHub.publish(eventType, event);
+    }
 }

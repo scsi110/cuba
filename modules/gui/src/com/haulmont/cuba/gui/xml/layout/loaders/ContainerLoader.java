@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public abstract class ContainerLoader<T extends Component> extends AbstractComponentLoader<T> {

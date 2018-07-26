@@ -17,8 +17,6 @@
 package com.haulmont.cuba.gui.xml.layout.loaders;
 
 import com.haulmont.bali.datastruct.Pair;
-import com.haulmont.bali.util.Dom4j;
-import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.GuiDevelopmentException;
 import com.haulmont.cuba.gui.components.Frame;
@@ -41,6 +39,10 @@ public class FrameComponentLoader extends ContainerLoader<Frame> {
     protected String frameId;
     protected ComponentLoader frameLoader;
 
+    protected WindowConfig getWindowConfig() {
+        return beanLocator.get(WindowConfig.NAME);
+    }
+
     @Override
     public void createComponent() {
         String src = element.attributeValue("src");
@@ -49,8 +51,7 @@ public class FrameComponentLoader extends ContainerLoader<Frame> {
             throw new GuiDevelopmentException("Either 'src' or 'screen' must be specified for 'frame'", context.getFullFrameId());
         }
         if (src == null) {
-            WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-            WindowInfo windowInfo = windowConfig.getWindowInfo(screenId);
+            WindowInfo windowInfo = getWindowConfig().getWindowInfo(screenId);
             src = windowInfo.getTemplate();
             if (src == null) {
                 throw new GuiDevelopmentException(
@@ -138,11 +139,11 @@ public class FrameComponentLoader extends ContainerLoader<Frame> {
         if (frameLoader instanceof FrameLoader) {
             ComponentLoaderContext frameLoaderInnerContext = ((FrameLoader) frameLoader).getInnerContext();
             for (Element aliasElement : element.elements("dsAlias")) {
-                    String aliasDatasourceId = aliasElement.attributeValue("alias");
-                    String originalDatasourceId = aliasElement.attributeValue("datasource");
-                    if (StringUtils.isNotBlank(aliasDatasourceId) && StringUtils.isNotBlank(originalDatasourceId)) {
-                        frameLoaderInnerContext.getAliasesMap().put(aliasDatasourceId, originalDatasourceId);
-                    }
+                String aliasDatasourceId = aliasElement.attributeValue("alias");
+                String originalDatasourceId = aliasElement.attributeValue("datasource");
+                if (StringUtils.isNotBlank(aliasDatasourceId) && StringUtils.isNotBlank(originalDatasourceId)) {
+                    frameLoaderInnerContext.getAliasesMap().put(aliasDatasourceId, originalDatasourceId);
+                }
             }
         }
     }
