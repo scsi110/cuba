@@ -22,8 +22,8 @@ import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.screen.InitEvent;
-import com.haulmont.cuba.gui.screen.ScreenController;
-import com.haulmont.cuba.gui.screen.ScreenXml;
+import com.haulmont.cuba.gui.screen.UiController;
+import com.haulmont.cuba.gui.screen.UiDescriptor;
 import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.security.app.UserManagementService;
 import com.haulmont.cuba.security.auth.AbstractClientCredentials;
@@ -47,8 +47,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Locale;
 
-@ScreenController("demo-loginWindow")
-@ScreenXml("demo-login.xml")
+@UiController("demo-loginWindow")
+@UiDescriptor("demo-login.xml")
 public class DemoLoginScreen extends Screen {
 
     private static final Logger log = LoggerFactory.getLogger(AppLoginWindow.class);

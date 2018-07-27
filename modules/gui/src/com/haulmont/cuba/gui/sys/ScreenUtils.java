@@ -3,9 +3,9 @@ package com.haulmont.cuba.gui.sys;
 import com.google.common.base.Strings;
 import com.haulmont.cuba.core.global.DevelopmentException;
 import com.haulmont.cuba.gui.Screen;
-import com.haulmont.cuba.gui.screen.ScreenXml;
+import com.haulmont.cuba.gui.screen.UiDescriptor;
 import com.haulmont.cuba.gui.screen.Subscribe;
-import com.haulmont.cuba.gui.screen.ScreenController;
+import com.haulmont.cuba.gui.screen.UiController;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
@@ -14,30 +14,30 @@ public final class ScreenUtils {
     private ScreenUtils() {
     }
 
-    public static String getInferredScreenId(ScreenController screenController, Class<? extends Screen> annotatedScreenClass) {
-        checkNotNullArgument(screenController);
+    public static String getInferredScreenId(UiController uiController, Class<? extends Screen> annotatedScreenClass) {
+        checkNotNullArgument(uiController);
 
-        String id = screenController.value();
+        String id = uiController.value();
         if (Strings.isNullOrEmpty(id)) {
-            id = screenController.id();
+            id = uiController.id();
 
             if (Strings.isNullOrEmpty(id)) {
-                throw new DevelopmentException("Screen class annotated with @ScreenController without id " + annotatedScreenClass);
+                throw new DevelopmentException("Screen class annotated with @UiController without id " + annotatedScreenClass);
             }
         }
 
         return id;
     }
 
-    public static String getInferredDesignTemplate(ScreenXml screenXml, Class<? extends Screen> annotatedScreenClass) {
-        checkNotNullArgument(screenXml);
+    public static String getInferredDesignTemplate(UiDescriptor uiDescriptor, Class<? extends Screen> annotatedScreenClass) {
+        checkNotNullArgument(uiDescriptor);
 
-        String templateLocation = screenXml.value();
+        String templateLocation = uiDescriptor.value();
         if (Strings.isNullOrEmpty(templateLocation)) {
-            templateLocation = screenXml.path();
+            templateLocation = uiDescriptor.path();
 
             if (Strings.isNullOrEmpty(templateLocation)) {
-                throw new DevelopmentException("Screen class annotated with @ScreenXml without template: " + annotatedScreenClass);
+                throw new DevelopmentException("Screen class annotated with @UiDescriptor without template: " + annotatedScreenClass);
             }
         }
 

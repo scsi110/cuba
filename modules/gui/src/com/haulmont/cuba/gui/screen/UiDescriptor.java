@@ -11,7 +11,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ScreenXml {
+public @interface UiDescriptor {
     @AliasFor("path")
     String value() default "";
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2016 Haulmont.
+ * Copyright (c) 2008-2018 Haulmont.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,21 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package com.haulmont.cuba.gui;
+package com.haulmont.cuba.gui.screen;
+
+import com.haulmont.cuba.gui.components.Window.HasWorkArea;
+
+import static com.haulmont.cuba.gui.components.Window.HasFoldersPane;
+import static com.haulmont.cuba.gui.components.Window.HasUserIndicator;
 
 /**
- * Provides current client specific WindowManagerImpl
- *
+ * JavaDoc
  */
-public interface WindowManagerProvider {
+public interface MainScreen extends HasWorkArea, HasUserIndicator, HasFoldersPane {
 
-    String NAME = "cuba_WindowManagerProvider";
-
-    // todo fix
-    WindowManagerImpl get();
-
-    WindowManager getWm();
 }

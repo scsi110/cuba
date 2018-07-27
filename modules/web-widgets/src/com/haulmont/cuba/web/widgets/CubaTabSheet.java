@@ -431,6 +431,11 @@ public class CubaTabSheet extends DDTabSheet implements Action.Container, HasTab
         }
 
         @Override
+        public Iterator<Component> getTabComponents() {
+            return tabSheet.iterator();
+        }
+
+        @Override
         public void setSelectedTab(Component component) {
             tabSheet.setSelectedTab(component);
         }

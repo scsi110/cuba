@@ -17,6 +17,7 @@
 
 package com.haulmont.cuba.desktop;
 
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.WindowManagerProvider;
 
@@ -37,5 +38,11 @@ public class DesktopWindowManagerProvider implements WindowManagerProvider {
         TopLevelFrame topFrame = App.getInstance().getMainFrame();
 
         return topFrame.getWindowManager();
+    }
+
+    @Override
+    public WindowManager getWm() {
+        // todo
+        return null;
     }
 }

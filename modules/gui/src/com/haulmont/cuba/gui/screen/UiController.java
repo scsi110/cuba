@@ -11,12 +11,13 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ScreenController {
+public @interface UiController {
     @AliasFor("id")
     String value() default "";
 
     @AliasFor("value")
     String id() default "";
 
+    // todo move to separate annotation
     boolean multipleOpen() default false;
 }

@@ -19,14 +19,14 @@ package com.haulmont.cuba.web.sys;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.gui.ComponentsHelper;
-import com.haulmont.cuba.gui.sys.TestIdManager;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
+import com.haulmont.cuba.gui.sys.TestIdManager;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.gui.WebWindow;
-import com.haulmont.cuba.web.widgets.CubaButton;
 import com.haulmont.cuba.web.gui.icons.IconResolver;
+import com.haulmont.cuba.web.widgets.CubaButton;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
@@ -45,21 +45,22 @@ public class WindowBreadCrumbs extends CssLayout {
     protected boolean visibleExplicitly = true;
     protected Label label;
 
-    public interface Listener {
-        void windowClick(Window window);
+    @FunctionalInterface
+    public interface WindowNavigateListener {
+        void windowNavigate(Window window);
     }
 
     protected boolean tabbedMode;
 
-    protected LinkedList<Window> windows = new LinkedList<>();
+    protected Deque<Window> windows = new ArrayDeque<>(2);
 
     protected Layout logoLayout;
     protected Layout linksLayout;
     protected Button closeBtn;
 
-    protected Map<Button, Window> btn2win = new HashMap<>();
+    protected Map<Button, Window> btn2win = new HashMap<>(4);
 
-    protected List<Listener> listeners = new ArrayList<>();
+    protected List<WindowNavigateListener> listeners = new ArrayList<>(2);
 
     public WindowBreadCrumbs(AppWorkArea workArea) {
         setWidth(100, Unit.PERCENTAGE);
@@ -161,8 +162,10 @@ public class WindowBreadCrumbs extends CssLayout {
     public void addWindow(Window window) {
         windows.add(window);
         update();
-        if (windows.size() > 1 && tabbedMode)
+
+        if (windows.size() > 1 && tabbedMode) {
             super.setVisible(visibleExplicitly);
+        }
 
         if (getParent() != null) {
             adjustParentStyles();
@@ -174,8 +177,10 @@ public class WindowBreadCrumbs extends CssLayout {
             windows.removeLast();
             update();
         }
-        if (windows.size() <= 1 && tabbedMode)
+
+        if (windows.size() <= 1 && tabbedMode) {
             super.setVisible(false);
+        }
 
         if (getParent() != null) {
             adjustParentStyles();
@@ -201,13 +206,13 @@ public class WindowBreadCrumbs extends CssLayout {
         }
     }
 
-    public void addListener(Listener listener) {
+    public void addWindowNavigateListener(WindowNavigateListener listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
     }
 
-    public void removeListener(Listener listener) {
+    public void removeWindowNavigateListener(WindowNavigateListener listener) {
         listeners.remove(listener);
     }
 
@@ -216,8 +221,8 @@ public class WindowBreadCrumbs extends CssLayout {
     }
 
     protected void fireListeners(Window window) {
-        for (Listener listener : listeners.toArray(new Listener[listeners.size()])) {
-            listener.windowClick(window);
+        for (WindowNavigateListener listener : listeners.toArray(new WindowNavigateListener[0])) {
+            listener.windowNavigate(window);
         }
     }
 
@@ -271,5 +276,9 @@ public class WindowBreadCrumbs extends CssLayout {
             if (win != null)
                 fireListeners(win);
         }
+    }
+
+    public Deque<Window> getWindows() {
+        return windows;
     }
 }

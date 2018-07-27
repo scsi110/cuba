@@ -38,6 +38,8 @@ public class WindowInfo {
     private final Element descriptor;
     private final String screenClassName;
 
+    // todo enum Type { SCREEN / FRAGMENT } field
+
     public WindowInfo(String id, WindowAttributesProvider windowAttributesProvider, Element descriptor) {
         checkNotNullArgument(id);
         checkNotNullArgument(descriptor);

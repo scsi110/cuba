@@ -28,10 +28,7 @@ import com.haulmont.cuba.web.widgets.client.addons.dragdroplayouts.ui.LayoutDrag
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -651,6 +648,11 @@ public class CubaManagedTabSheet extends CubaTabSheetCssLayout
         @Override
         public Component getSelectedTab() {
             return ((TabImpl) tabSheet.selected).getComponent();
+        }
+
+        @Override
+        public Iterator<Component> getTabComponents() {
+            return tabSheet.tabComponents.iterator();
         }
 
         @Override

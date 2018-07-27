@@ -27,6 +27,7 @@ import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
 import com.haulmont.cuba.gui.components.mainwindow.FoldersPane;
 import com.haulmont.cuba.gui.components.mainwindow.UserIndicator;
 import com.haulmont.cuba.gui.data.Datasource;
+import com.haulmont.cuba.gui.screen.MainScreen;
 import com.haulmont.cuba.gui.settings.Settings;
 
 import javax.annotation.Nullable;
@@ -480,9 +481,11 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
         FoldersPane getFoldersPane();
     }
 
-    // todo remove extends TopLevelWindow
-    // todo move to separate file
-    interface MainWindow extends TopLevelWindow, HasWorkArea, HasUserIndicator, HasFoldersPane {
+    /**
+     * @deprecated Use {@link MainScreen}
+     */
+    @Deprecated
+    interface MainWindow extends MainScreen {
     }
 
     /**

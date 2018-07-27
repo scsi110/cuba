@@ -24,10 +24,10 @@ import com.haulmont.cuba.core.global.Metadata;
 import com.haulmont.cuba.core.global.Resources;
 import com.haulmont.cuba.core.global.Scripting;
 import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.gui.screen.ScreenXml;
+import com.haulmont.cuba.gui.screen.UiController;
+import com.haulmont.cuba.gui.screen.UiDescriptor;
 import com.haulmont.cuba.gui.NoSuchScreenException;
 import com.haulmont.cuba.gui.Screen;
-import com.haulmont.cuba.gui.screen.ScreenController;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.sys.ScreenUtils;
 import com.haulmont.cuba.gui.sys.ScreensConfiguration;
@@ -131,12 +131,12 @@ public class WindowConfig {
         if (windowInfo.getScreenClassName() != null) {
             Class<? extends Screen> screenClass = loadDefinedScreenClass(windowInfo.getScreenClassName());
 
-            ScreenController screenController = screenClass.getAnnotation(ScreenController.class);
-            if (screenController == null) {
+            UiController uiController = screenClass.getAnnotation(UiController.class);
+            if (uiController == null) {
                 // default is false
                 return false;
             }
-            return screenController.multipleOpen();
+            return uiController.multipleOpen();
         }
 
         throw new IllegalStateException("Neither screen class nor descriptor is set for WindowInfo");
@@ -152,7 +152,7 @@ public class WindowConfig {
         if (windowInfo.getScreenClassName() != null) {
             Class<? extends Screen> screenClass = loadDefinedScreenClass(windowInfo.getScreenClassName());
 
-            ScreenXml annotation = screenClass.getAnnotation(ScreenXml.class);
+            UiDescriptor annotation = screenClass.getAnnotation(UiDescriptor.class);
             if (annotation == null) {
                 return null;
             }

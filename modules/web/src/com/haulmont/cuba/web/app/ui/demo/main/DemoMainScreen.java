@@ -30,11 +30,12 @@ import com.haulmont.cuba.web.widgets.CubaHorizontalSplitPanel;
 import com.vaadin.server.Sizeable;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-@ScreenController("demo-mainWindow")
-@ScreenXml("demo-main.xml")
-public class DemoMainScreen extends Screen {
+@UiController("demo-mainWindow")
+@UiDescriptor("demo-main.xml")
+public class DemoMainScreen extends Screen implements Window.HasWorkArea {
     @Inject
     protected ComponentsFactory componentsFactory;
     @Inject
@@ -103,5 +104,11 @@ public class DemoMainScreen extends Screen {
         label.setValue("It is shown");
 
 //        getWindow().add(label);
+    }
+
+    @Nullable
+    @Override
+    public AppWorkArea getWorkArea() {
+        return workArea;
     }
 }

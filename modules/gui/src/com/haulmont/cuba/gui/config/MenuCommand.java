@@ -21,12 +21,12 @@ import com.haulmont.cuba.core.app.DataService;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.gui.WindowManagerImpl;
+import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.WindowManagerImpl.OpenType;
 import com.haulmont.cuba.gui.WindowManagerProvider;
 import com.haulmont.cuba.gui.WindowParams;
-import com.haulmont.cuba.gui.components.Window;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.dom4j.Element;
@@ -155,16 +155,22 @@ public class MenuCommand {
 
             WindowInfo windowInfo = AppBeans.get(WindowConfig.class).getWindowInfo(screen);
 
-            final String id = windowInfo.getId();
+            String id = windowInfo.getId();
 
-            WindowManagerImpl wm = AppBeans.get(WindowManagerProvider.class).get();
+            // todo demo
+            WindowManager wm = AppBeans.get(WindowManagerProvider.class).getWm();
+
+            Screen screen = wm.create(windowInfo.getScreenClass(), OpenMode.NEW_TAB);
+            wm.show(screen);
+
+            /*WindowManagerImpl wm = AppBeans.get(WindowManagerProvider.class).get();
             if (id.endsWith(Window.CREATE_WINDOW_SUFFIX)
                     || id.endsWith(Window.EDITOR_WINDOW_SUFFIX)) {
                 Entity entityItem;
                 if (params.containsKey("item")) {
                     entityItem = (Entity) params.get("item");
                 } else {
-                    final String[] strings = id.split("[.]");
+                    String[] strings = id.split("[.]");
                     String metaClassName;
                     if (strings.length == 2) {
                         metaClassName = strings[0];
@@ -179,7 +185,7 @@ public class MenuCommand {
                 wm.openEditor(windowInfo, entityItem, openType, params);
             } else {
                 wm.openWindow(windowInfo, openType, params);
-            }
+            }*/
         }
 
         @Override

@@ -2,7 +2,9 @@ package com.haulmont.cuba.gui;
 
 import com.haulmont.bali.events.EventHub;
 import com.haulmont.bali.events.Subscription;
+import com.haulmont.cuba.gui.WindowManager.ScreenOptions;
 import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.screen.AfterInitEvent;
 import com.haulmont.cuba.gui.screen.InitEvent;
 
@@ -15,6 +17,9 @@ import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
  */
 public abstract class Screen {
     private String id;
+
+    private WindowInfo windowInfo;
+    private ScreenOptions screenOptions;
 
     private Window window;
 
@@ -44,6 +49,22 @@ public abstract class Screen {
             throw new IllegalStateException("Screen already has Window");
         }
         this.window = window;
+    }
+
+    protected void setWindowInfo(WindowInfo windowInfo) {
+        this.windowInfo = windowInfo;
+    }
+
+    protected WindowInfo getWindowInfo() {
+        return windowInfo;
+    }
+
+    protected void setScreenOptions(ScreenOptions screenOptions) {
+        this.screenOptions = screenOptions;
+    }
+
+    protected ScreenOptions getScreenOptions() {
+        return screenOptions;
     }
 
     protected <E> void fireEvent(Class<E> eventType, E event) {

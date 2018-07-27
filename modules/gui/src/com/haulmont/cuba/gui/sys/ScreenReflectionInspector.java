@@ -71,22 +71,34 @@ public class ScreenReflectionInspector {
             return Collections.emptyList();
         }
 
+        for (Method method : eventListenerMethods) {
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
+        }
+
         return ImmutableList.copyOf(eventListenerMethods);
     }
 
     protected List<Method> getAnnotatedSubscribeMethodsNotCached(Class<?> clazz) {
         Method[] methods = ReflectionUtils.getUniqueDeclaredMethods(clazz);
 
-        List<Method> eventListenerMethods = Arrays.stream(methods)
+        List<Method> subscribeMethods = Arrays.stream(methods)
                 .filter(m -> m.getAnnotation(Subscribe.class) != null)
                 .filter(m -> m.getParameterCount() == 1)
                 .filter(m -> EventObject.class.isAssignableFrom(m.getParameterTypes()[0]))
                 .collect(Collectors.toList());
 
-        if (eventListenerMethods.isEmpty()) {
+        if (subscribeMethods.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return ImmutableList.copyOf(eventListenerMethods);
+        for (Method method : subscribeMethods) {
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
+        }
+
+        return ImmutableList.copyOf(subscribeMethods);
     }
 }

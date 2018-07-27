@@ -450,10 +450,10 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
 
     protected Component showWindowNewTab(final Window window, final boolean multipleOpen) {
         final WindowBreadCrumbs breadCrumbs = createWindowBreadCrumbs(window);
-        breadCrumbs.addListener(
-                new WindowBreadCrumbs.Listener() {
+        breadCrumbs.addWindowNavigateListener(
+                new WindowBreadCrumbs.WindowNavigateListener() {
                     @Override
-                    public void windowClick(final Window window) {
+                    public void windowNavigate(final Window window) {
                         Runnable op = new Runnable() {
                             @Override
                             public void run() {
