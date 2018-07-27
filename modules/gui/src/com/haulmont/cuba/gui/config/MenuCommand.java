@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+// todo convert to bean MenuCommandExecutor
 public class MenuCommand {
 
     protected MenuItem item;
@@ -163,6 +164,7 @@ public class MenuCommand {
             Screen screen = wm.create(windowInfo.getScreenClass(), OpenMode.NEW_TAB);
             wm.show(screen);
 
+            // todo implement
             /*WindowManagerImpl wm = AppBeans.get(WindowManagerProvider.class).get();
             if (id.endsWith(Window.CREATE_WINDOW_SUFFIX)
                     || id.endsWith(Window.EDITOR_WINDOW_SUFFIX)) {

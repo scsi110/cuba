@@ -32,7 +32,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Layout;
-import com.vaadin.v7.ui.themes.BaseTheme;
+import com.vaadin.ui.themes.ValoTheme;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -46,8 +46,8 @@ public class WindowBreadCrumbs extends CssLayout {
     protected Label label;
 
     @FunctionalInterface
-    public interface WindowNavigateListener {
-        void windowNavigate(Window window);
+    public interface WindowNavigateHandler {
+        void windowNavigate(WindowBreadCrumbs breadCrumbs, Window window);
     }
 
     protected boolean tabbedMode;
@@ -60,7 +60,7 @@ public class WindowBreadCrumbs extends CssLayout {
 
     protected Map<Button, Window> btn2win = new HashMap<>(4);
 
-    protected List<WindowNavigateListener> listeners = new ArrayList<>(2);
+    protected WindowNavigateHandler windowNavigateHandler = null;
 
     public WindowBreadCrumbs(AppWorkArea workArea) {
         setWidth(100, Unit.PERCENTAGE);
@@ -206,23 +206,13 @@ public class WindowBreadCrumbs extends CssLayout {
         }
     }
 
-    public void addWindowNavigateListener(WindowNavigateListener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
-    }
-
-    public void removeWindowNavigateListener(WindowNavigateListener listener) {
-        listeners.remove(listener);
-    }
-
-    public void clearListeners() {
-        listeners.clear();
+    public void setWindowNavigateHandler(WindowNavigateHandler handler) {
+        this.windowNavigateHandler = handler;
     }
 
     protected void fireListeners(Window window) {
-        for (WindowNavigateListener listener : listeners.toArray(new WindowNavigateListener[0])) {
-            listener.windowNavigate(window);
+        if (windowNavigateHandler != null) {
+            windowNavigateHandler.windowNavigate(this, window);
         }
     }
 
@@ -236,7 +226,7 @@ public class WindowBreadCrumbs extends CssLayout {
             Window window = it.next();
             Button button = new CubaButton(StringUtils.trimToEmpty(window.getCaption()), new BtnClickListener());
             button.setSizeUndefined();
-            button.setStyleName(BaseTheme.BUTTON_LINK);
+            button.setStyleName(ValoTheme.BUTTON_LINK);
             button.setTabIndex(-1);
 
             if (isTestMode) {

@@ -449,11 +449,11 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
     }
 
     protected Component showWindowNewTab(final Window window, final boolean multipleOpen) {
-        final WindowBreadCrumbs breadCrumbs = createWindowBreadCrumbs(window);
-        breadCrumbs.addWindowNavigateListener(
-                new WindowBreadCrumbs.WindowNavigateListener() {
+        WindowBreadCrumbs breadCrumbs = createWindowBreadCrumbs(window);
+        breadCrumbs.setWindowNavigateHandler(
+                new WindowBreadCrumbs.WindowNavigateHandler() {
                     @Override
-                    public void windowNavigate(final Window window) {
+                    public void windowNavigate(WindowBreadCrumbs breadCrumbs, Window window) {
                         Runnable op = new Runnable() {
                             @Override
                             public void run() {
@@ -1047,7 +1047,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
 
                 WindowBreadCrumbs windowBreadCrumbs = tabs.get(layout);
                 if (windowBreadCrumbs != null) {
-                    windowBreadCrumbs.clearListeners();
+                    windowBreadCrumbs.setWindowNavigateHandler(null);
                     windowBreadCrumbs.removeWindow();
                 }
 

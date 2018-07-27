@@ -49,6 +49,7 @@ import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.gui.components.mainwindow.WebAppWorkArea;
 import com.haulmont.cuba.web.gui.icons.IconResolver;
 import com.haulmont.cuba.web.widgets.ContentSwitchMode;
+import com.haulmont.cuba.web.widgets.HasTabSheetBehaviour;
 import com.haulmont.cuba.web.widgets.TabSheetBehaviour;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Layout;
@@ -438,25 +439,8 @@ public class WebWindowManager implements WindowManager {
         }
 
         // work with new window
-        WindowBreadCrumbs breadCrumbs = createWindowBreadCrumbs(screen);
-        breadCrumbs.addWindowNavigateListener(window -> {
-            Runnable op = new Runnable() {
-                @Override
-                public void run() {
-                    Window currentWindow = breadCrumbs.getCurrentWindow();
 
-                    if (currentWindow != null && window != currentWindow) {
-                        if (!isCloseWithCloseButtonPrevented(currentWindow)) {
-                            currentWindow.closeAndRun(CLOSE_ACTION_ID, this);
-                        }
-                    }
-                }
-            };
-            op.run();
-        });
-        breadCrumbs.addWindow(screen.getWindow());
-
-        createNewTabLayout(screen, breadCrumbs);
+        createNewTabLayout(screen);
     }
 
     protected WindowBreadCrumbs createWindowBreadCrumbs(Screen screen) {
@@ -469,7 +453,11 @@ public class WebWindowManager implements WindowManager {
         return windowBreadCrumbs;
     }
 
-    protected void createNewTabLayout(Screen screen, WindowBreadCrumbs breadCrumbs) {
+    protected void createNewTabLayout(Screen screen) {
+        WindowBreadCrumbs breadCrumbs = createWindowBreadCrumbs(screen);
+        breadCrumbs.setWindowNavigateHandler(this::handleWindowBreadCrumbsNavigate);
+        breadCrumbs.addWindow(screen.getWindow());
+
         WindowContainer windowContainer = new WindowContainer();
         windowContainer.setPrimaryStyleName("c-app-window-wrap");
         windowContainer.setSizeFull();
@@ -527,20 +515,7 @@ public class WebWindowManager implements WindowManager {
 
             tabSheet.setTabIcon(tabId, iconResolver.getIconResource(window.getIcon()));
             tabSheet.setTabClosable(tabId, true);
-            tabSheet.setTabCloseHandler(windowContainer, (targetTabSheet, tabContent) -> {
-                //noinspection SuspiciousMethodCalls
-                WindowBreadCrumbs tabBreadCrumbs = ((WindowContainer) tabContent).getBreadCrumbs();
-
-                if (!canWindowBeClosed(tabBreadCrumbs.getCurrentWindow())) {
-                    return;
-                }
-
-                Runnable closeTask = new TabCloseTask(tabBreadCrumbs);
-                closeTask.run();
-
-                // it is needed to force redraw tabsheet if it has a lot of tabs and part of them are hidden
-                targetTabSheet.markAsDirty();
-            });
+            tabSheet.setTabCloseHandler(windowContainer, this::handleTabWindowClose);
             tabSheet.setSelectedTab(windowContainer);
         } else {
             windowContainer.addStyleName("c-app-single-window");
@@ -590,6 +565,36 @@ public class WebWindowManager implements WindowManager {
         } else {
             return Strings.nullToEmpty(caption);
         }
+    }
+
+    protected void handleWindowBreadCrumbsNavigate(WindowBreadCrumbs breadCrumbs, Window window) {
+        Runnable op = new Runnable() {
+            @Override
+            public void run() {
+                Window currentWindow = breadCrumbs.getCurrentWindow();
+
+                if (currentWindow != null && window != currentWindow) {
+                    if (!isCloseWithCloseButtonPrevented(currentWindow)) {
+                        currentWindow.closeAndRun(CLOSE_ACTION_ID, this);
+                    }
+                }
+            }
+        };
+        op.run();
+    }
+
+    protected void handleTabWindowClose(HasTabSheetBehaviour targetTabSheet, com.vaadin.ui.Component tabContent) {
+        WindowBreadCrumbs tabBreadCrumbs = ((WindowContainer) tabContent).getBreadCrumbs();
+
+        if (!canWindowBeClosed(tabBreadCrumbs.getCurrentWindow())) {
+            return;
+        }
+
+        Runnable closeTask = new TabCloseTask(tabBreadCrumbs);
+        closeTask.run();
+
+        // it is needed to force redraw tabsheet if it has a lot of tabs and part of them are hidden
+        targetTabSheet.markAsDirty();
     }
 
     public class TabCloseTask implements Runnable {
