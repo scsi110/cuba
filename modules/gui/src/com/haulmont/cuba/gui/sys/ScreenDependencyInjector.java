@@ -39,6 +39,7 @@ import com.haulmont.cuba.gui.export.ExportDisplay;
 import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.ScreenUtils;
 import com.haulmont.cuba.gui.screen.Subscribe;
+import com.haulmont.cuba.gui.screen.Target;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
 import com.haulmont.cuba.gui.theme.ThemeConstantsManager;
 import org.apache.commons.lang3.ClassUtils;
@@ -152,14 +153,23 @@ public class ScreenDependencyInjector {
 
             Consumer listener = new DeclarativeSubscribeExecutor(screen, method);
 
-            String target = com.haulmont.cuba.gui.sys.ScreenUtils.getInferredSubscribeTarget(annotation);
+            String target = com.haulmont.cuba.gui.sys.ScreenUtils.getInferredSubscribeId(annotation);
 
             Parameter parameter = method.getParameters()[0];
             Class<?> parameterType = parameter.getType();
 
             if (Strings.isNullOrEmpty(target)) {
-                // controller event
-                screenEvents.subscribe(parameterType, listener);
+                if (annotation.target() == Target.CONTROLLER) {
+                    // controller event
+                    screenEvents.subscribe(parameterType, listener);
+                } else if (annotation.target() == Target.FRAME) {
+                    // window or fragment event
+                    EventHub windowEvents = ((EventHubOwner) screen.getWindow()).getEventHub();
+                    windowEvents.subscribe(parameterType, listener);
+                } else if (annotation.target() == Target.LAYOUT) {
+                    // layout event
+                    // todo implement layout events
+                }
             } else {
                 // component event
                 Component component = screen.getWindow().getComponent(target);

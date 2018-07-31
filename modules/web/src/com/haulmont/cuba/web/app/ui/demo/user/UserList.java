@@ -61,4 +61,9 @@ public class UserList extends Screen {
         );
         getWindow().expand(spacer);
     }
+
+    /*@Subscribe
+    protected void onResize(Page.BrowserWindowResizeEvent event) {
+
+    }*/
 }

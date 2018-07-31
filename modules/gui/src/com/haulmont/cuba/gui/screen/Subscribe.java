@@ -13,8 +13,11 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subscribe {
     @AliasFor("value")
-    String target() default "";
+    Target target() default Target.COMPONENT;
 
     @AliasFor("target")
     String value() default "";
+
+    @AliasFor("value")
+    String id() default "";
 }

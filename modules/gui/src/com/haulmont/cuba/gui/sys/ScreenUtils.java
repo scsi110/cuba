@@ -44,12 +44,12 @@ public final class ScreenUtils {
         return templateLocation;
     }
 
-    public static String getInferredSubscribeTarget(Subscribe subscribe) {
+    public static String getInferredSubscribeId(Subscribe subscribe) {
         checkNotNullArgument(subscribe);
 
         String target = subscribe.value();
         if (Strings.isNullOrEmpty(target)) {
-            target = subscribe.target();
+            target = subscribe.id();
         }
 
         return target;
