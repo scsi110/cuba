@@ -17,14 +17,12 @@
 package com.haulmont.cuba.gui.components;
 
 import com.haulmont.cuba.client.ClientConfig;
-import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.core.global.DevelopmentException;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.FrameContext;
 import com.haulmont.cuba.gui.WindowManagerImpl;
-import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.icons.Icons;
 import com.haulmont.cuba.gui.screen.LegacyScreen;
@@ -33,7 +31,10 @@ import org.springframework.context.ApplicationListener;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Base class for frame controllers.
@@ -401,6 +402,11 @@ public class AbstractFrame implements Frame, Frame.Wrapper, Component.Wrapper, O
         return frame.validateAll();
     }
 
+    @Override
+    public WindowManagerImpl getWindowManager() {
+        return frame.getWindowManager();
+    }
+
     /**
      * Show validation errors alert. Can be overriden in subclasses.
      *
@@ -458,131 +464,6 @@ public class AbstractFrame implements Frame, Frame.Wrapper, Component.Wrapper, O
     /** INTERNAL. Don't call from application code. */
     public void setUiEventListeners(List<ApplicationListener> uiEventListeners) {
         this.uiEventListeners = uiEventListeners;
-    }
-
-    @Override
-    public AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        return (AbstractWindow) frame.openWindow(windowAlias, openType, params);
-    }
-
-    @Override
-    public AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType) {
-        return (AbstractWindow) frame.openWindow(windowAlias, openType);
-    }
-
-    @Override
-    public AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType) {
-        return (AbstractEditor) frame.openEditor(item, openType);
-    }
-
-    @Override
-    public AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        return (AbstractEditor) frame.openEditor(item, openType,params);
-    }
-
-    @Override
-    public AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params, Datasource parentDs) {
-        return (AbstractEditor) frame.openEditor(item, openType, params, parentDs);
-    }
-
-    @Override
-    public AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params, Datasource parentDs) {
-        return (AbstractEditor) frame.openEditor(windowAlias, item, openType, params, parentDs);
-    }
-
-    @Override
-    public AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        return (AbstractEditor) frame.openEditor(windowAlias, item, openType, params);
-    }
-
-    @Override
-    public AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Datasource parentDs) {
-        return (AbstractEditor) frame.openEditor(windowAlias, item, openType, Collections.emptyMap(), parentDs);
-    }
-
-    @Override
-    public AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType) {
-        return (AbstractEditor) frame.openEditor(windowAlias, item, openType, Collections.emptyMap());
-    }
-
-    @Override
-    public AbstractLookup openLookup(Class<? extends Entity>  entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType) {
-        return (AbstractLookup) frame.openLookup(entityClass, handler, openType);
-    }
-
-    @Override
-    public AbstractLookup openLookup(Class<? extends Entity>  entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        return (AbstractLookup) frame.openLookup(entityClass, handler, openType, params);
-    }
-
-    @Override
-    public AbstractLookup openLookup(
-            String windowAlias, Window.Lookup.Handler handler,
-            WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        return (AbstractLookup) frame.openLookup(windowAlias, handler, openType, params);
-    }
-
-    @Override
-    public AbstractLookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType) {
-        return (AbstractLookup) frame.openLookup(windowAlias, handler, openType, Collections.emptyMap());
-    }
-
-    /**
-     * Load a frame registered in {@code screens.xml} and optionally show it inside a parent component of this frame.
-     * @param parent        if specified, all parent's subcomponents will be removed and the frame will be added
-     * @param windowAlias   frame ID as defined in {@code screens.xml}
-     * @return              frame's controller instance
-     */
-    @Override
-    public AbstractFrame openFrame(@Nullable Component parent, String windowAlias) {
-        return (AbstractFrame) frame.openFrame(parent, windowAlias);
-    }
-
-    /**
-     * Load a frame registered in {@code screens.xml} and optionally show it inside a parent component of this frame.
-     * @param parent        if specified, all parent's subcomponents will be removed and the frame will be added
-     * @param windowAlias   frame ID as defined in {@code screens.xml}
-     * @param params        parameters to be passed into the frame's controller {@code init} method
-     * @return              frame's controller instance
-     */
-    @Override
-    public AbstractFrame openFrame(@Nullable Component parent, String windowAlias, Map<String, Object> params) {
-        return (AbstractFrame) frame.openFrame(parent, windowAlias, params);
-    }
-
-    @Override
-    public void showMessageDialog(String title, String message, MessageType messageType) {
-        frame.showMessageDialog(title, message, messageType);
-    }
-
-    @Override
-    public void showOptionDialog(String title, String message, MessageType messageType, Action[] actions) {
-        frame.showOptionDialog(title, message, messageType, actions);
-    }
-
-    @Override
-    public void showOptionDialog(String title, String message, MessageType messageType, java.util.List<Action> actions) {
-        frame.showOptionDialog(title, message, messageType, actions);
-    }
-
-    @Override
-    public void showNotification(String caption) {
-        frame.showNotification(caption);
-    }
-
-    @Override
-    public void showNotification(String caption, NotificationType type) {
-        frame.showNotification(caption, type);
-    }
-
-    @Override
-    public void showNotification(String caption, String description, NotificationType type) {
-        frame.showNotification(caption, description, type);
-    }
-
-    @Override
-    public void showWebPage(String url, @Nullable Map<String, Object> params) {
-        frame.showWebPage(url, params);
     }
 
     @Override

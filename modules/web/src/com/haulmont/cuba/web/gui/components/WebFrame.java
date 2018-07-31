@@ -16,20 +16,13 @@
  */
 package com.haulmont.cuba.web.gui.components;
 
-import com.haulmont.cuba.core.entity.Entity;
-import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.FrameContext;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.components.*;
-import com.haulmont.cuba.gui.config.WindowConfig;
-import com.haulmont.cuba.gui.config.WindowInfo;
-import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.events.sys.UiEventsMulticaster;
-import com.haulmont.cuba.web.App;
 import com.haulmont.cuba.web.AppUI;
-import com.haulmont.cuba.web.sys.WebWindowManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -56,6 +49,9 @@ public class WebFrame extends WebVBoxLayout implements Frame, WrappedFrame {
     protected Map<String, com.haulmont.cuba.gui.components.Component> allComponents = new HashMap<>();
 
     protected WebFrameActionsHolder actionsHolder = new WebFrameActionsHolder();
+
+    // todo assign WindowManager
+    protected WindowManagerImpl windowManager;
 
     public WebFrame() {
         component.addActionHandler(new com.vaadin.event.Action.Handler() {
@@ -269,6 +265,11 @@ public class WebFrame extends WebVBoxLayout implements Frame, WrappedFrame {
         return handleValidationErrors(errors);
     }
 
+    @Override
+    public WindowManagerImpl getWindowManager() {
+        return windowManager;
+    }
+
     protected boolean handleValidationErrors(ValidationErrors errors) {
         if (errors.isEmpty())
             return true;
@@ -281,170 +282,6 @@ public class WebFrame extends WebVBoxLayout implements Frame, WrappedFrame {
         WebComponentsHelper.focusProblemComponent(errors);
 
         return false;
-    }
-
-    @Override
-    public Window openWindow(String windowAlias, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openWindow(windowInfo, openType, params);
-    }
-
-    @Override
-    public Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo editorScreen = windowConfig.getEditorScreen(item);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openEditor(editorScreen, item, openType);
-    }
-
-    @Override
-    public Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo editorScreen = windowConfig.getEditorScreen(item);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openEditor(editorScreen, item, openType, params);
-    }
-
-    @Override
-    public Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params, Datasource parentDs) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo editorScreen = windowConfig.getEditorScreen(item);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openEditor(editorScreen, item, openType, params, parentDs);
-    }
-
-    @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params, Datasource parentDs) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openEditor(windowInfo, item, openType, params, parentDs);
-    }
-
-    @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openEditor(windowInfo, item, openType, params);
-    }
-
-    @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Datasource parentDs) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openEditor(windowInfo, item, openType, parentDs);
-    }
-
-    @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openEditor(windowInfo, item, openType);
-    }
-
-    @Override
-    public Window openWindow(String windowAlias, WindowManagerImpl.OpenType openType) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openWindow(windowInfo, openType);
-    }
-
-    @Override
-    public Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openLookup(lookupScreen, handler, openType);
-    }
-
-    @Override
-    public Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openLookup(lookupScreen, handler, openType, params);
-    }
-
-    @Override
-    public Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openLookup(windowInfo, handler, openType, params);
-    }
-
-    @Override
-    public Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        return wm.openLookup(windowInfo, handler, openType);
-    }
-
-    @Override
-    public Frame openFrame(Component parent, String windowAlias) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        Frame wrappedFrame = ((Frame.Wrapper) wrapper).getWrappedFrame();
-        return wm.openFrame(wrappedFrame, parent, windowInfo);
-    }
-
-    @Override
-    public Frame openFrame(Component parent, String windowAlias, Map<String, Object> params) {
-        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
-        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        Frame wrappedFrame = ((Frame.Wrapper) wrapper).getWrappedFrame();
-        return wm.openFrame(wrappedFrame, parent, windowInfo, params);
-    }
-
-    @Override
-    public void showMessageDialog(String title, String message, MessageType messageType) {
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        wm.showMessageDialog(title, message, messageType);
-    }
-
-    @Override
-    public void showOptionDialog(String title, String message, MessageType messageType, Action[] actions) {
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        wm.showOptionDialog(title, message, messageType, actions);
-    }
-
-    @Override
-    public void showOptionDialog(String title, String message, MessageType messageType, List<Action> actions) {
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        wm.showOptionDialog(title, message, messageType, actions.toArray(new Action[actions.size()]));
-    }
-
-    @Override
-    public void showNotification(String caption) {
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        wm.showNotification(caption);
-    }
-
-    @Override
-    public void showNotification(String caption, String description, NotificationType type) {
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        wm.showNotification(caption, description, type);
-    }
-
-    @Override
-    public void showWebPage(String url, @Nullable Map<String, Object> params) {
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        wm.showWebPage(url, params);
-    }
-
-    @Override
-    public void showNotification(String caption, NotificationType type) {
-        WebWindowManagerImpl wm = App.getInstance().getWindowManager();
-        wm.showNotification(caption, type);
     }
 
     @Override

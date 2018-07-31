@@ -18,8 +18,11 @@ package com.haulmont.cuba.gui.components;
 
 import com.haulmont.bali.util.Preconditions;
 import com.haulmont.cuba.core.entity.Entity;
+import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.gui.FrameContext;
 import com.haulmont.cuba.gui.WindowManagerImpl;
+import com.haulmont.cuba.gui.config.WindowConfig;
+import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.screen.FrameOwner;
@@ -110,23 +113,38 @@ public interface Frame
     boolean validateAll();
 
     /**
-     * Open a simple screen.
-     *
-     * @param windowAlias screen ID as defined in {@code screens.xml}
-     * @param openType    how to open the screen
-     * @param params      parameters to pass to {@code init()} method of the screen's controller
-     * @return created window
+     * JavaDoc
      */
-    Window openWindow(String windowAlias, WindowManagerImpl.OpenType openType, Map<String, Object> params);
+    WindowManagerImpl getWindowManager();
 
     /**
      * Open a simple screen.
      *
      * @param windowAlias screen ID as defined in {@code screens.xml}
      * @param openType    how to open the screen
+     * @param params      parameters to pass to {@code init()} method of the screen's controller
      * @return created window
      */
-    Window openWindow(String windowAlias, WindowManagerImpl.OpenType openType);
+    @Deprecated
+    default AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractWindow) getWindowManager().openWindow(windowInfo, openType, params);
+    }
+
+    /**
+     * Open a simple screen.
+     *
+     * @param windowAlias screen ID as defined in {@code screens.xml}
+     * @param openType    how to open the screen
+     * @return created window
+     */
+    @Deprecated
+    default AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractWindow) getWindowManager().openWindow(windowInfo, openType);
+    }
 
     /**
      * Open an edit screen for entity instance.
@@ -135,7 +153,12 @@ public interface Frame
      * @param openType    how to open the screen
      * @return created window
      */
-    Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType);
+    @Deprecated
+    default AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo editorScreen = windowConfig.getEditorScreen(item);
+        return (AbstractEditor) getWindowManager().openEditor(editorScreen, item, openType);
+    }
 
     /**
      * Open an edit screen for entity instance.
@@ -145,8 +168,13 @@ public interface Frame
      * @param params      parameters to pass to {@code init()} method of the screen's controller
      * @return created window
      */
-    Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType,
-                             Map<String, Object> params);
+    @Deprecated
+    default AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType,
+                                     Map<String, Object> params) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo editorScreen = windowConfig.getEditorScreen(item);
+        return (AbstractEditor) getWindowManager().openEditor(editorScreen, item, openType, params);
+    }
 
     /**
      * Open an edit screen for entity instance.
@@ -158,8 +186,13 @@ public interface Frame
      *                    datasource instead of directly to database
      * @return created window
      */
-    Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType,
-                             Map<String, Object> params, Datasource parentDs);
+    @Deprecated
+    default AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType,
+                             Map<String, Object> params, Datasource parentDs) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo editorScreen = windowConfig.getEditorScreen(item);
+        return (AbstractEditor) getWindowManager().openEditor(editorScreen, item, openType, params, parentDs);
+    }
 
     /**
      * Open an edit screen.
@@ -172,8 +205,13 @@ public interface Frame
      *                    datasource instead of directly to database
      * @return created window
      */
-    Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
-                             Map<String, Object> params, Datasource parentDs);
+    @Deprecated
+    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
+                             Map<String, Object> params, Datasource parentDs) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType, params, parentDs);
+    }
 
     /**
      * Open an edit screen.
@@ -184,8 +222,13 @@ public interface Frame
      * @param params      parameters to pass to {@code init()} method of the screen's controller
      * @return created window
      */
-    Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
-                             Map<String, Object> params);
+    @Deprecated
+    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
+                                     Map<String, Object> params) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType, params);
+    }
 
     /**
      * Open an edit screen.
@@ -197,7 +240,13 @@ public interface Frame
      *                    datasource instead of directly to database
      * @return created window
      */
-    Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Datasource parentDs);
+    @Deprecated
+    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
+                                     Datasource parentDs) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType, parentDs);
+    }
 
     /**
      * Open an edit screen.
@@ -207,7 +256,12 @@ public interface Frame
      * @param openType    how to open the screen
      * @return created window
      */
-    Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType);
+    @Deprecated
+    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType);
+    }
 
     /**
      * Open a lookup screen.
@@ -217,7 +271,13 @@ public interface Frame
      * @param openType    how to open the screen
      * @return created window
      */
-    Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType);
+    @Deprecated
+    default AbstractLookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler,
+                                     WindowManagerImpl.OpenType openType) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
+        return (AbstractLookup) getWindowManager().openLookup(lookupScreen, handler, openType);
+    }
 
     /**
      * Open a lookup screen.
@@ -228,8 +288,12 @@ public interface Frame
      * @param params      parameters to pass to {@code init()} method of the screen's controller
      * @return created window
      */
-    Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType,
-                             Map<String, Object> params);
+    default AbstractLookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler,
+                                     WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
+        return (AbstractLookup) getWindowManager().openLookup(lookupScreen, handler, openType, params);
+    }
 
     /**
      * Open a lookup screen.
@@ -240,8 +304,12 @@ public interface Frame
      * @param params      parameters to pass to {@code init()} method of the screen's controller
      * @return created window
      */
-    Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType,
-                                    Map<String, Object> params);
+    default AbstractLookup openLookup(String windowAlias, Window.Lookup.Handler handler,
+                                     WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractLookup) getWindowManager().openLookup(windowInfo, handler, openType, params);
+    }
 
     /**
      * Open a lookup screen.
@@ -251,7 +319,12 @@ public interface Frame
      * @param openType    how to open the screen
      * @return created window
      */
-    Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType);
+    default AbstractLookup openLookup(String windowAlias, Window.Lookup.Handler handler,
+                                     WindowManagerImpl.OpenType openType) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractLookup) getWindowManager().openLookup(windowInfo, handler, openType);
+    }
 
     /**
      * Load a frame registered in {@code screens.xml} and optionally show it inside a parent component of this
@@ -260,7 +333,11 @@ public interface Frame
      * @param windowAlias   frame ID as defined in {@code screens.xml}
      * @return              frame's controller instance
      */
-    Frame openFrame(@Nullable Component parent, String windowAlias);
+    default AbstractFrame openFrame(@Nullable Component parent, String windowAlias) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractFrame) getWindowManager().openFrame(this, parent, windowInfo);
+    }
 
     /**
      * Load a frame registered in {@code screens.xml} and optionally show it inside a parent component of this
@@ -270,7 +347,11 @@ public interface Frame
      * @param params        parameters to be passed into the frame's controller {@code init} method
      * @return              frame's controller instance
      */
-    Frame openFrame(@Nullable Component parent, String windowAlias, Map<String, Object> params);
+    default AbstractFrame openFrame(@Nullable Component parent, String windowAlias, Map<String, Object> params) {
+        WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
+        WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
+        return (AbstractFrame) getWindowManager().openFrame(this, parent, windowInfo, params);
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -516,7 +597,10 @@ public interface Frame
      * @param messageType defines how to display the dialog.
      *                    Don't forget to escape data from the database in case of {@code *_HTML} types!
      */
-    void showMessageDialog(String title, String message, MessageType messageType);
+    @Deprecated
+    default void showMessageDialog(String title, String message, MessageType messageType) {
+        getWindowManager().showMessageDialog(title, message, messageType);
+    }
 
     /**
      * Show options dialog with title and message. <br>
@@ -529,7 +613,10 @@ public interface Frame
      * @param actions     array of actions that represent options. For standard options consider use of
      *                    {@link DialogAction} instances.
      */
-    void showOptionDialog(String title, String message, MessageType messageType, Action[] actions);
+    @Deprecated
+    default void showOptionDialog(String title, String message, MessageType messageType, Action[] actions) {
+        getWindowManager().showOptionDialog(title, message, messageType, actions);
+    }
 
     /**
      * Show options dialog with title and message. <br>
@@ -542,7 +629,10 @@ public interface Frame
      * @param actions     list of actions that represent options. For standard options consider use of
      *                    {@link DialogAction} instances.
      */
-    void showOptionDialog(String title, String message, MessageType messageType, List<Action> actions);
+    @Deprecated
+    default void showOptionDialog(String title, String message, MessageType messageType, List<Action> actions) {
+        getWindowManager().showOptionDialog(title, message, messageType, actions.toArray(new Action[0]));
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -578,7 +668,10 @@ public interface Frame
      *
      * @param caption notification text
      */
-    void showNotification(String caption);
+    @Deprecated
+    default void showNotification(String caption) {
+        getWindowManager().showNotification(caption);
+    }
 
     /**
      * Show notification. <br>
@@ -588,7 +681,10 @@ public interface Frame
      * @param type    defines how to display the notification.
      *                Don't forget to escape data from the database in case of {@code *_HTML} types!
      */
-    void showNotification(String caption, NotificationType type);
+    @Deprecated
+    default void showNotification(String caption, NotificationType type) {
+        getWindowManager().showNotification(caption, type);
+    }
 
     /**
      * Show notification with caption and description. <br>
@@ -599,7 +695,10 @@ public interface Frame
      * @param type        defines how to display the notification.
      *                    Don't forget to escape data from the database in case of {@code *_HTML} types!
      */
-    void showNotification(String caption, String description, NotificationType type);
+    @Deprecated
+    default void showNotification(String caption, String description, NotificationType type) {
+        getWindowManager().showNotification(caption, description, type);
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -619,7 +718,10 @@ public interface Frame
      *               <p>
      *               Desktop client doesn't support any parameters and just ignores them.
      */
-    void showWebPage(String url, @Nullable Map<String, Object> params);
+    @Deprecated
+    default void showWebPage(String url, @Nullable Map<String, Object> params) {
+        getWindowManager().showWebPage(url, params);
+    }
 
     interface Wrapper extends FrameOwner {
         Frame getWrappedFrame();

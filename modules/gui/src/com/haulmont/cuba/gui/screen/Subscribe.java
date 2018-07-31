@@ -12,10 +12,9 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subscribe {
-    @AliasFor("value")
     Target target() default Target.COMPONENT;
 
-    @AliasFor("target")
+    @AliasFor("id")
     String value() default "";
 
     @AliasFor("value")
