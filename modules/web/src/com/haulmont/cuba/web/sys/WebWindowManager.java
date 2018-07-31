@@ -18,12 +18,12 @@ package com.haulmont.cuba.web.sys;
 
 import com.google.common.base.Strings;
 import com.haulmont.bali.events.EventHub;
+import com.haulmont.cuba.client.ClientConfig;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
-import com.haulmont.cuba.gui.components.DialogWindow;
-import com.haulmont.cuba.gui.components.RootWindow;
-import com.haulmont.cuba.gui.components.TabWindow;
-import com.haulmont.cuba.gui.components.Window;
+import com.haulmont.cuba.gui.app.core.dev.LayoutAnalyzer;
+import com.haulmont.cuba.gui.app.core.dev.LayoutTip;
+import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.Window.BeforeCloseWithCloseButtonEvent;
 import com.haulmont.cuba.gui.components.Window.BeforeCloseWithShortcutEvent;
 import com.haulmont.cuba.gui.components.Window.HasWorkArea;
@@ -46,10 +46,14 @@ import com.haulmont.cuba.security.entity.PermissionType;
 import com.haulmont.cuba.web.AppUI;
 import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.gui.components.mainwindow.WebAppWorkArea;
+import com.haulmont.cuba.web.gui.components.util.ShortcutListenerDelegate;
 import com.haulmont.cuba.web.gui.icons.IconResolver;
 import com.haulmont.cuba.web.widgets.ContentSwitchMode;
+import com.haulmont.cuba.web.widgets.CubaWindow;
 import com.haulmont.cuba.web.widgets.HasTabSheetBehaviour;
 import com.haulmont.cuba.web.widgets.TabSheetBehaviour;
+import com.vaadin.event.Action;
+import com.vaadin.event.ShortcutAction;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Layout;
 import com.vaadin.ui.VerticalLayout;
@@ -62,10 +66,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 import static com.haulmont.cuba.gui.ComponentsHelper.walkComponents;
 import static com.haulmont.cuba.gui.components.Window.CLOSE_ACTION_ID;
@@ -100,9 +101,13 @@ public class WebWindowManager implements WindowManager {
     protected ScreenViewsLoader screenViewsLoader;
     @Inject
     protected IconResolver iconResolver;
+    @Inject
+    protected Messages messages;
 
     @Inject
     protected WebConfig webConfig;
+    @Inject
+    protected ClientConfig clientConfig;
 
     protected AppUI ui;
 
@@ -284,6 +289,8 @@ public class WebWindowManager implements WindowManager {
     }
 
     protected Window createWindow(WindowInfo windowInfo, Class<? extends Screen> screenClass, LaunchMode launchMode) {
+        // todo forcibly dialog support
+
         Window window;
         if (launchMode instanceof OpenMode) {
             OpenMode openMode = (OpenMode) launchMode;
@@ -576,7 +583,74 @@ public class WebWindowManager implements WindowManager {
     }
 
     protected void showDialogWindow(Screen screen) {
-        // todo
+        DialogWindow window = (DialogWindow) screen.getWindow();
+
+        CubaWindow vWindow = window.unwrapComposition(CubaWindow.class);
+        vWindow.setErrorHandler(ui);
+        vWindow.addContextActionHandler(new DialogWindowActionHandler(window));
+
+        if (ui.isTestMode()) {
+            String cubaId = "dialog_" + window.getId();
+
+            vWindow.setCubaId(cubaId);
+            vWindow.setId(ui.getTestIdManager().getTestId(cubaId));
+        }
+
+        vWindow.addPreCloseListener(event -> {
+            event.setPreventClose(true);
+            if (!isCloseWithCloseButtonPrevented(window)) {
+                // user has clicked on X
+                window.close(Window.CLOSE_ACTION_ID);
+            }
+        });
+
+        setupDialogShortcuts(window);
+
+        if (hasModalWindow()) {
+            window.setModal(true);
+        }
+
+        // todo forciblyDialog
+
+        // todo default size
+
+        ui.addWindow(vWindow);
+    }
+
+    protected void setupDialogShortcuts(Window window) {
+        CubaWindow vWindow = window.unwrapComposition(CubaWindow.class);
+        String closeShortcut = clientConfig.getCloseShortcut();
+        KeyCombination closeCombination = KeyCombination.create(closeShortcut);
+
+        ShortcutListenerDelegate exitAction = new ShortcutListenerDelegate(
+                "closeShortcutAction",
+                closeCombination.getKey().getCode(),
+                KeyCombination.Modifier.codes(closeCombination.getModifiers())
+        );
+
+        exitAction.withHandler((sender, target) -> {
+            // todo forciblyDialog ?
+            if (vWindow.isClosable()) {
+                if (isCloseWithShortcutPrevented(window)) {
+                    return;
+                }
+                window.close(Window.CLOSE_ACTION_ID);
+            }
+        });
+
+        vWindow.addActionHandler(new Action.Handler() {
+            @Override
+            public Action[] getActions(Object target, Object sender) {
+                return new ShortcutAction[]{exitAction};
+            }
+
+            @Override
+            public void handleAction(Action action, Object sender, Object target) {
+                if (action == exitAction) {
+                    exitAction.handleAction(sender, target);
+                }
+            }
+        });
     }
 
     protected WebAppWorkArea getConfiguredWorkArea() {
@@ -707,6 +781,11 @@ public class WebWindowManager implements WindowManager {
         return null;
     }
 
+    protected boolean hasModalWindow() {
+        return ui.getWindows().stream()
+                .anyMatch(com.vaadin.ui.Window::isModal);
+    }
+
     /**
      * Content of each tab of AppWorkArea TabSheet.
      */
@@ -719,6 +798,65 @@ public class WebWindowManager implements WindowManager {
 
         public void setBreadCrumbs(WindowBreadCrumbs breadCrumbs) {
             this.breadCrumbs = breadCrumbs;
+        }
+    }
+
+    protected class DialogWindowActionHandler implements com.vaadin.event.Action.Handler {
+
+        protected Window window;
+        protected com.vaadin.event.Action saveSettingsAction;
+        protected com.vaadin.event.Action restoreToDefaultsAction;
+
+        protected com.vaadin.event.Action analyzeAction;
+
+        protected boolean initialized = false;
+
+        public DialogWindowActionHandler(Window window) {
+            this.window = window;
+        }
+
+        @Override
+        public com.vaadin.event.Action[] getActions(Object target, Object sender) {
+            if (!initialized) {
+                saveSettingsAction = new com.vaadin.event.Action(messages.getMainMessage("actions.saveSettings"));
+                restoreToDefaultsAction = new com.vaadin.event.Action(messages.getMainMessage("actions.restoreToDefaults"));
+                analyzeAction = new com.vaadin.event.Action(messages.getMainMessage("actions.analyzeLayout"));
+
+                initialized = true;
+            }
+
+            List<Action> actions = new ArrayList<>(3);
+
+            if (clientConfig.getManualScreenSettingsSaving()) {
+                actions.add(saveSettingsAction);
+                actions.add(restoreToDefaultsAction);
+            }
+            if (clientConfig.getLayoutAnalyzerEnabled()) {
+                actions.add(analyzeAction);
+            }
+
+            return actions.toArray(new com.vaadin.event.Action[0]);
+        }
+
+        @Override
+        public void handleAction(com.vaadin.event.Action action, Object sender, Object target) {
+            if (initialized) {
+                if (saveSettingsAction == action) {
+                    window.saveSettings();
+                } else if (restoreToDefaultsAction == action) {
+                    window.deleteSettings();
+                } else if (analyzeAction == action) {
+                    LayoutAnalyzer analyzer = new LayoutAnalyzer();
+                    List<LayoutTip> tipsList = analyzer.analyze(window);
+
+                    // todo implement
+                    /*if (tipsList.isEmpty()) {
+                        window.showNotification("No layout problems found", Frame.NotificationType.HUMANIZED);
+                    } else {
+                        window.openWindow("layoutAnalyzer", WindowManagerImpl.OpenType.DIALOG, ParamsMap.of("tipsList", tipsList));
+                    }*/
+                }
+            }
         }
     }
 }

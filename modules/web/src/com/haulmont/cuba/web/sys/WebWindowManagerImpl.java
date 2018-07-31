@@ -16,6 +16,7 @@
  */
 package com.haulmont.cuba.web.sys;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.haulmont.bali.datastruct.Pair;
 import com.haulmont.bali.util.ParamsMap;
@@ -90,7 +91,6 @@ import static com.haulmont.cuba.gui.components.Frame.MessageType;
 import static com.haulmont.cuba.gui.components.Frame.NotificationType;
 import static com.haulmont.cuba.web.gui.components.WebComponentsHelper.convertNotificationType;
 import static com.vaadin.server.Sizeable.Unit;
-import static java.util.Collections.singletonMap;
 
 @org.springframework.stereotype.Component(WebWindowManagerImpl.NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -710,7 +710,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
                 KeyCombination.Modifier.codes(closeCombination.getModifiers())
         );
 
-        Map<com.vaadin.event.Action, Runnable> actions = singletonMap(exitAction, () -> {
+        Map<com.vaadin.event.Action, Runnable> actions = ImmutableMap.of(exitAction, () -> {
             if (openType.getOpenMode() != OpenMode.DIALOG
                     || BooleanUtils.isNotFalse(window.getDialogOptions().getCloseable())) {
                 if (isCloseWithShortcutPrevented(window)) {

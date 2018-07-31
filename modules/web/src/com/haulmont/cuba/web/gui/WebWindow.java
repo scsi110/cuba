@@ -54,7 +54,6 @@ import com.haulmont.cuba.web.sys.WebWindowManagerImpl;
 import com.haulmont.cuba.web.widgets.CubaSingleModeContainer;
 import com.haulmont.cuba.web.widgets.CubaVerticalActionsLayout;
 import com.vaadin.server.ClientConnector;
-import com.vaadin.server.Page;
 import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.window.WindowMode;
@@ -1141,7 +1140,7 @@ public class WebWindow implements Window, Component.Wrapper,
             return true;
         }
 
-        Configuration configuration = AppBeans.get(Configuration.NAME);
+        Configuration configuration = AppBeans.get(Configuration.NAME); // todo get rid of AppBeans
         ClientConfig clientConfig = configuration.getConfig(ClientConfig.class);
 
         if (!forceClose && isModified()) {
@@ -1402,12 +1401,8 @@ public class WebWindow implements Window, Component.Wrapper,
     public void setIcon(String icon) {
         this.icon = icon;
 
+        // todo remove this code
         if (component.isAttached()) {
-            com.vaadin.ui.Window dialogWindow = asDialogWindow();
-            if (dialogWindow != null) {
-                dialogWindow.setIcon(AppBeans.get(IconResolver.class).getIconResource(icon));
-            }
-
             TabSheet.Tab tabWindow = asTabWindow();
             if (tabWindow != null) {
                 tabWindow.setIcon(AppBeans.get(IconResolver.class).getIconResource(icon));

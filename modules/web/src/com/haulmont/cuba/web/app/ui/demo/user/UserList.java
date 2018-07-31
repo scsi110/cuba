@@ -39,7 +39,7 @@ public class UserList extends Screen {
     @Subscribe
     protected void init(InitEvent event) {
         Label<String> label = componentsFactory.createComponent(Label.NAME);
-        label.setValue("Demo");
+        label.setValue("Demo " + this);
 
         getWindow().setCaption("Users");
 
@@ -47,7 +47,7 @@ public class UserList extends Screen {
         button.setAction(new BaseAction("onClick")
                 .withCaption("Demo")
                 .withHandler(e -> {
-                    UserList newScreen = windowManager.create(UserList.class, OpenMode.THIS_TAB);
+                    UserList newScreen = windowManager.create(UserList.class, OpenMode.DIALOG);
                     windowManager.show(newScreen);
                 })
         );

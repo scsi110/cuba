@@ -26,5 +26,47 @@ public interface DialogWindow extends Window {
      */
     String NAME = "dialogWindow";
 
-    // todo new dialog API
+    // todo new dialog window API
+
+    void setResizable(boolean resizable);
+    boolean isResizable();
+
+    void setDraggable(boolean draggable);
+    boolean isDraggable();
+
+    void setCloseable(boolean closeable);
+    boolean isCloseable();
+
+    void setModal(boolean modal);
+    boolean isModal();
+
+    void setCloseOnClickOutside(boolean closeOnClickOutside);
+    boolean isCloseOnClickOutside();
+
+    void setWindowMode(WindowMode mode);
+    WindowMode getWindowMode();
+
+    void center();
+
+    default void setPosition(int x, int y) {
+        setPositionX(x);
+        setPositionY(y);
+    }
+
+    void setPositionX(int positionX);
+    int getPositionX();
+
+    void setPositionY(int positionY);
+    int getPositionY();
+
+    enum WindowMode {
+        /**
+         * Normal mode. The window size and position is determined by the window state.
+         */
+        NORMAL,
+        /**
+         * Maximized mode. The window is positioned in the top left corner and fills the whole screen.
+         */
+        MAXIMIZED;
+    }
 }

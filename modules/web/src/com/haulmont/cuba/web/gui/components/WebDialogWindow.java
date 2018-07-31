@@ -16,9 +16,145 @@
 
 package com.haulmont.cuba.web.gui.components;
 
+import com.haulmont.cuba.core.global.BeanLocator;
 import com.haulmont.cuba.gui.components.DialogWindow;
 import com.haulmont.cuba.web.gui.WebWindow;
+import com.haulmont.cuba.web.gui.icons.IconResolver;
+import com.haulmont.cuba.web.widgets.CubaWindow;
+import com.vaadin.ui.Component;
+
+import javax.inject.Inject;
 
 public class WebDialogWindow extends WebWindow implements DialogWindow {
+    protected CubaWindow dialogWindow;
 
+    protected BeanLocator beanLocator;
+
+    public WebDialogWindow() {
+        this.dialogWindow = new CubaWindow();
+        this.dialogWindow.setStyleName("c-app-dialog-window");
+
+        this.dialogWindow.setContent(component);
+    }
+
+    @Inject
+    protected void setBeanLocator(BeanLocator beanLocator) {
+        this.beanLocator = beanLocator;
+    }
+
+    @Override
+    public void setIcon(String icon) {
+        super.setIcon(icon);
+
+        if (icon == null) {
+            dialogWindow.setIcon(null);
+        } else {
+            IconResolver iconResolver = beanLocator.get(IconResolver.NAME);
+            dialogWindow.setIcon(iconResolver.getIconResource(icon));
+        }
+    }
+
+    @Override
+    public void setCaption(String caption) {
+        super.setCaption(caption);
+
+        this.dialogWindow.setCaption(caption);
+    }
+
+    @Override
+    public void setDescription(String description) {
+        super.setDescription(description);
+
+        this.dialogWindow.setDescription(description);
+    }
+
+    @Override
+    public Component getComposition() {
+        return dialogWindow;
+    }
+
+    @Override
+    public void setResizable(boolean resizable) {
+        dialogWindow.setResizable(resizable);
+    }
+
+    @Override
+    public boolean isResizable() {
+        return dialogWindow.isResizable();
+    }
+
+    @Override
+    public void setDraggable(boolean draggable) {
+        dialogWindow.setDraggable(draggable);
+    }
+
+    @Override
+    public boolean isDraggable() {
+        return dialogWindow.isDraggable();
+    }
+
+    @Override
+    public void setCloseable(boolean closeable) {
+        dialogWindow.setClosable(closeable);
+    }
+
+    @Override
+    public boolean isCloseable() {
+        return dialogWindow.isClosable();
+    }
+
+    @Override
+    public void setModal(boolean modal) {
+        dialogWindow.setModal(modal);
+    }
+
+    @Override
+    public boolean isModal() {
+        return dialogWindow.isModal();
+    }
+
+    @Override
+    public void setCloseOnClickOutside(boolean closeOnClickOutside) {
+        dialogWindow.setCloseOnClickOutside(closeOnClickOutside);
+    }
+
+    @Override
+    public boolean isCloseOnClickOutside() {
+        return dialogWindow.getCloseOnClickOutside();
+    }
+
+    @Override
+    public void setWindowMode(WindowMode mode) {
+        dialogWindow.setWindowMode(com.vaadin.shared.ui.window.WindowMode.valueOf(mode.name()));
+    }
+
+    @Override
+    public WindowMode getWindowMode() {
+        return WindowMode.valueOf(dialogWindow.getWindowMode().name());
+    }
+
+    @Override
+    public void center() {
+        dialogWindow.center();
+    }
+
+    @Override
+    public void setPositionX(int positionX) {
+        dialogWindow.setPositionX(positionX);
+    }
+
+    @Override
+    public int getPositionX() {
+        return dialogWindow.getPositionX();
+    }
+
+    @Override
+    public void setPositionY(int positionY) {
+        dialogWindow.setPositionY(positionY);
+    }
+
+    @Override
+    public int getPositionY() {
+        return dialogWindow.getPositionY();
+    }
 }
