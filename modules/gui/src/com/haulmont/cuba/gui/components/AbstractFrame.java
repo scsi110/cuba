@@ -27,6 +27,7 @@ import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.icons.Icons;
+import com.haulmont.cuba.gui.screen.LegacyScreen;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationListener;
 
@@ -37,7 +38,7 @@ import java.util.*;
 /**
  * Base class for frame controllers.
  */
-public class AbstractFrame implements Frame, Frame.Wrapper, Component.Wrapper, OrderedContainer {
+public class AbstractFrame implements Frame, Frame.Wrapper, Component.Wrapper, OrderedContainer, LegacyScreen {
 
     protected Frame frame;
     private Object _companion;

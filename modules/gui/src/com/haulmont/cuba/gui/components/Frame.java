@@ -22,6 +22,7 @@ import com.haulmont.cuba.gui.FrameContext;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
+import com.haulmont.cuba.gui.screen.FrameOwner;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -275,6 +276,8 @@ public interface Frame
 
     /**
      * Message dialog type.
+     *
+     * todo deprecate
      */
     final class MessageType {
         /** Confirmation with plain text message */
@@ -618,7 +621,7 @@ public interface Frame
      */
     void showWebPage(String url, @Nullable Map<String, Object> params);
 
-    interface Wrapper {
+    interface Wrapper extends FrameOwner {
         Frame getWrappedFrame();
     }
 }

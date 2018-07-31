@@ -16,6 +16,8 @@
  */
 package com.haulmont.cuba.gui;
 
+import com.haulmont.cuba.gui.screen.Screen;
+
 /**
  * JavaDoc
  */

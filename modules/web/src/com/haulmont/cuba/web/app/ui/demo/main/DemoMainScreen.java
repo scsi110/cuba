@@ -17,7 +17,6 @@
 package com.haulmont.cuba.web.app.ui.demo.main;
 
 import com.haulmont.cuba.core.global.Messages;
-import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
 import com.haulmont.cuba.gui.components.mainwindow.FoldersPane;

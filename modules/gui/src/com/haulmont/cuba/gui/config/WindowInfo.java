@@ -16,7 +16,7 @@
  */
 package com.haulmont.cuba.gui.config;
 
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import org.dom4j.Element;
 
 import javax.annotation.Nonnull;

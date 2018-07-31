@@ -2,7 +2,7 @@ package com.haulmont.cuba.gui.sys;
 
 import com.google.common.base.Strings;
 import com.haulmont.cuba.core.global.DevelopmentException;
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.UiDescriptor;
 import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.screen.UiController;

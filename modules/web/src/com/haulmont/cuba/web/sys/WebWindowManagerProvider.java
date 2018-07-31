@@ -38,6 +38,11 @@ public class WebWindowManagerProvider implements WindowManagerProvider {
 
     @Override
     public WindowManager getWm() {
-        return AppUI.getCurrent().getWindowManager();
+        AppUI ui = AppUI.getCurrent();
+        if (ui == null) {
+            throw new IllegalStateException("Could not get WindowManager without bounded App UI");
+        }
+
+        return ui.getWindowManager();
     }
 }

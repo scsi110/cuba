@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package com.haulmont.cuba.gui.components;
+package com.haulmont.cuba.gui.screen;
 
 /**
- * JavaDoc
+ * Marker interface for legacy screens with datasource infrastructure.
  */
-public interface Fragment extends Frame {
-    /**
-     * Name that is used to register a client type specific screen implementation in
-     * {@link com.haulmont.cuba.gui.xml.layout.ComponentsFactory}
-     */
-    String NAME = "fragment";
+public interface LegacyScreen {
+
 }

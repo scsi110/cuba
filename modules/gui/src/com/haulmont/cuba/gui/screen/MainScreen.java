@@ -17,6 +17,9 @@
 package com.haulmont.cuba.gui.screen;
 
 import com.haulmont.cuba.gui.components.Window.HasWorkArea;
+import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
+import com.haulmont.cuba.gui.components.mainwindow.FoldersPane;
+import com.haulmont.cuba.gui.components.mainwindow.UserIndicator;
 
 import static com.haulmont.cuba.gui.components.Window.HasFoldersPane;
 import static com.haulmont.cuba.gui.components.Window.HasUserIndicator;
@@ -26,4 +29,9 @@ import static com.haulmont.cuba.gui.components.Window.HasUserIndicator;
  */
 public interface MainScreen extends HasWorkArea, HasUserIndicator, HasFoldersPane {
 
+    void setWorkArea(AppWorkArea workArea);
+
+    void setUserIndicator(UserIndicator userIndicator);
+
+    void setFoldersPane(FoldersPane foldersPane);
 }

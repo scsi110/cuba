@@ -18,7 +18,7 @@
 package com.haulmont.cuba.gui.xml;
 
 import com.haulmont.cuba.gui.ComponentsHelper;
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.components.ActionsHolder;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.Frame;

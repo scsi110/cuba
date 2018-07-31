@@ -1,6 +1,5 @@
 package com.haulmont.cuba.gui.screen;
 
-import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.WindowManager.ScreenOptions;
 
 import java.util.EventObject;

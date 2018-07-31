@@ -1,9 +1,10 @@
 package com.haulmont.cuba.gui.screen;
 
-import com.haulmont.cuba.gui.Screen;
-
 import java.util.EventObject;
 
+/**
+ * JavaDoc
+ */
 public class AfterShowEvent extends EventObject {
     public AfterShowEvent(Screen source) {
         super(source);

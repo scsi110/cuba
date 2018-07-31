@@ -1,6 +1,6 @@
 package com.haulmont.cuba.gui.components.sys;
 
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.WindowManager.LaunchMode;
 
 /**

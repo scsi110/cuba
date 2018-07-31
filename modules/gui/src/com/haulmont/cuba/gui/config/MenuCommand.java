@@ -21,7 +21,7 @@ import com.haulmont.cuba.core.app.DataService;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.WindowManagerImpl.OpenType;

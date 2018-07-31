@@ -1,6 +1,6 @@
 package com.haulmont.cuba.gui.config;
 
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

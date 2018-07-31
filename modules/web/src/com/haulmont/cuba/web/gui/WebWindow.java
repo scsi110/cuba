@@ -41,6 +41,7 @@ import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.events.sys.UiEventsMulticaster;
 import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.icons.Icons;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.settings.Settings;
 import com.haulmont.cuba.gui.sys.TestIdManager;
 import com.haulmont.cuba.web.AppUI;
@@ -68,6 +69,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.util.*;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
@@ -121,9 +123,8 @@ public class WebWindow implements Window, Component.Wrapper,
     protected WebFrameActionsHolder actionsHolder = new WebFrameActionsHolder();
     protected final ActionsPermissions actionsPermissions = new ActionsPermissions(this);
 
-    // todo use injection here
-    protected Messages messages = AppBeans.get(Messages.NAME);
-    protected Icons icons = AppBeans.get(Icons.NAME);
+    protected Messages messages;
+    protected Icons icons;
 
     protected boolean disposed = false;
     protected DialogOptions dialogOptions = new WebDialogOptions();
@@ -132,7 +133,7 @@ public class WebWindow implements Window, Component.Wrapper,
     private EventRouter eventRouter;
 
     protected ContentSwitchMode contentSwitchMode = ContentSwitchMode.DEFAULT;
-    private WindowManager.LaunchMode launchMode;
+    protected WindowManager.LaunchMode launchMode;
 
     public WebWindow() {
         component = createLayout();
@@ -157,6 +158,16 @@ public class WebWindow implements Window, Component.Wrapper,
         setupEventListeners();
     }
 
+    @Inject
+    protected void setMessages(Messages messages) {
+        this.messages = messages;
+    }
+
+    @Inject
+    protected void setIcons(Icons icons) {
+        this.icons = icons;
+    }
+
     protected void setupEventListeners() {
         component.addAttachListener(event -> enableEventListeners());
         component.addDetachListener(event -> disableEventListeners());
@@ -167,8 +178,10 @@ public class WebWindow implements Window, Component.Wrapper,
         if (wrapper != null) {
             List<ApplicationListener> uiEventListeners = ((AbstractFrame) wrapper).getUiEventListeners();
             if (uiEventListeners != null) {
+                AppUI ui = AppUI.getCurrent();
+                UiEventsMulticaster multicaster = ui.getUiEventsMulticaster();
+
                 for (ApplicationListener listener : uiEventListeners) {
-                    UiEventsMulticaster multicaster = AppUI.getCurrent().getUiEventsMulticaster();
                     multicaster.removeApplicationListener(listener);
                 }
             }
@@ -180,8 +193,10 @@ public class WebWindow implements Window, Component.Wrapper,
         if (wrapper != null) {
             List<ApplicationListener> uiEventListeners = ((AbstractFrame) wrapper).getUiEventListeners();
             if (uiEventListeners != null) {
+                AppUI ui = AppUI.getCurrent();
+                UiEventsMulticaster multicaster = ui.getUiEventsMulticaster();
+
                 for (ApplicationListener listener : uiEventListeners) {
-                    UiEventsMulticaster multicaster = AppUI.getCurrent().getUiEventsMulticaster();
                     multicaster.addApplicationListener(listener);
                 }
             }
@@ -411,11 +426,11 @@ public class WebWindow implements Window, Component.Wrapper,
                     try {
                         validatable.validate();
                     } catch (ValidationException e) {
-                        if (log.isTraceEnabled())
+                        if (log.isTraceEnabled()) {
                             log.trace("Validation failed", e);
-                        else if (log.isDebugEnabled())
+                        } else if (log.isDebugEnabled()) {
                             log.debug("Validation failed: " + e);
-
+                        }
                         ComponentsHelper.fillErrorMessages(validatable, e, errors);
                     }
                 }
@@ -547,7 +562,7 @@ public class WebWindow implements Window, Component.Wrapper,
 
     @Override
     public void showOptionDialog(String title, String message, MessageType messageType, java.util.List<Action> actions) {
-        getWindowManager().showOptionDialog(title, message, messageType, actions.toArray(new Action[actions.size()]));
+        getWindowManager().showOptionDialog(title, message, messageType, actions.toArray(new Action[0]));
     }
 
     @Override
@@ -1110,13 +1125,13 @@ public class WebWindow implements Window, Component.Wrapper,
     }
 
     @Override
-    public boolean close(final String actionId, boolean force) {
+    public boolean close(String actionId, boolean force) {
         forceClose = force;
         return close(actionId);
     }
 
     @Override
-    public boolean close(final String actionId) {
+    public boolean close(String actionId) {
         if (!forceClose) {
             if (!delegate.preClose(actionId))
                 return false;
@@ -1140,17 +1155,17 @@ public class WebWindow implements Window, Component.Wrapper,
                         new Action[]{
                                 new DialogAction(Type.OK, Status.PRIMARY)
                                     .withCaption(messages.getMainMessage("closeUnsaved.save"))
-                                    .withHandler(event -> {
+                                    .withHandler(event ->
 
-                                    committable.commitAndClose();
-                                }),
+                                        committable.commitAndClose()
+                                ),
                                 new BaseAction("discard")
                                     .withIcon(icons.get(CubaIcon.DIALOG_CANCEL))
                                     .withCaption(messages.getMainMessage("closeUnsaved.discard"))
-                                    .withHandler(event -> {
+                                    .withHandler(event ->
 
-                                    committable.close(actionId, true);
-                                }),
+                                        committable.close(actionId, true)
+                                ),
                                 new DialogAction(Type.CANCEL)
                                     .withIcon(null)
                                     .withHandler(event -> {
@@ -1282,11 +1297,6 @@ public class WebWindow implements Window, Component.Wrapper,
                 }
             }
 
-        }
-
-        // todo move to MainWindow component
-        if (getWrapper() instanceof TopLevelWindow) {
-            Page.getCurrent().setTitle(caption);
         }
     }
 

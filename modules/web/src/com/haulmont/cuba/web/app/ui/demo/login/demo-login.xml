@@ -14,7 +14,8 @@
   ~ limitations under the License.
   ~
   -->
-<window xmlns="http://schemas.haulmont.com/cuba/window.xsd">
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="CUBA Login">
     <actions>
         <action id="submit"
                 shortcut="ENTER"

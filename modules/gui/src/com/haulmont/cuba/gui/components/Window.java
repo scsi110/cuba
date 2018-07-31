@@ -135,6 +135,8 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
     Settings getSettings();
 
     /**
+     * todo move it to Screen controller
+     *
      * Close the screen.
      * <br> If the screen has uncommitted changes in its {@link com.haulmont.cuba.gui.data.DsContext},
      * the confirmation dialog will be shown.
@@ -143,6 +145,8 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
      *                 Use {@link #COMMIT_ACTION_ID} if some changes have just been committed, or
      *                 {@link #CLOSE_ACTION_ID} otherwise. These constants are recognized by various mechanisms of the
      *                 framework.
+     *
+     * todo return Promise object instead of boolean
      */
     boolean close(String actionId);
 
@@ -156,11 +160,15 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
      *                 {@link #CLOSE_ACTION_ID} otherwise. These constants are recognized by various mechanisms of the
      *                 framework.
      * @param force    if true, no confirmation dialog will be shown even if the screen has uncommitted changes
+     *
+     * todo deprecate this, use WindowManager.remove() instead
      */
     boolean close(String actionId, boolean force);
 
     /**
      * INTERNAL. Don't call from application code.
+     *
+     * todo deprecate and use "Promise close()" method instead.
      */
     void closeAndRun(String actionId, Runnable runnable);
 

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.haulmont.cuba.gui;
+package com.haulmont.cuba.gui.screen;
 
 import com.haulmont.bali.events.EventHub;
 
 /**
  * JavaDoc
  */
-public abstract class ScreenFragment {
+public abstract class ScreenFragment implements FrameOwner {
 
     private EventHub eventHub = new EventHub();
 

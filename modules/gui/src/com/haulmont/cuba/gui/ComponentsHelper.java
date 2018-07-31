@@ -33,6 +33,7 @@ import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
 import com.haulmont.cuba.gui.components.sys.ValuePathHelper;
 import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.data.Datasource;
+import com.haulmont.cuba.gui.screen.Screen;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,13 +48,13 @@ import static com.haulmont.cuba.core.entity.BaseEntityInternalAccess.getFiltered
  */
 public abstract class ComponentsHelper {
     @Deprecated
-    public static final String[] UNIT_SYMBOLS = { "px", "pt", "pc", "em", "ex", "mm", "cm", "in", "%" };
+    public static final String[] UNIT_SYMBOLS = {"px", "pt", "pc", "em", "ex", "mm", "cm", "in", "%"};
 
     /**
      * Returns the collection of components within the specified container and all of its children.
      *
      * @param container container to start from
-     * @return          collection of components
+     * @return collection of components
      */
     public static Collection<Component> getComponents(ComponentContainer container) {
         // do not return LinkedHashSet, it uses much more memory than ArrayList

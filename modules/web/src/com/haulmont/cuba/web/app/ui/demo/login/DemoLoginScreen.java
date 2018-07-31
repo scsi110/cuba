@@ -19,7 +19,7 @@ package com.haulmont.cuba.web.app.ui.demo.login;
 import com.haulmont.bali.util.URLEncodeUtils;
 import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.core.global.Messages;
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.screen.InitEvent;
 import com.haulmont.cuba.gui.screen.UiController;

@@ -19,9 +19,7 @@ package com.haulmont.cuba.web.sys;
 import com.google.common.base.Strings;
 import com.haulmont.bali.events.EventHub;
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.gui.Screen;
 import com.haulmont.cuba.gui.WindowManager;
-import com.haulmont.cuba.gui.WindowManagerUtils;
 import com.haulmont.cuba.gui.components.DialogWindow;
 import com.haulmont.cuba.gui.components.RootWindow;
 import com.haulmont.cuba.gui.components.TabWindow;
@@ -30,12 +28,13 @@ import com.haulmont.cuba.gui.components.Window.BeforeCloseWithCloseButtonEvent;
 import com.haulmont.cuba.gui.components.Window.BeforeCloseWithShortcutEvent;
 import com.haulmont.cuba.gui.components.Window.HasWorkArea;
 import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
+import com.haulmont.cuba.gui.components.mainwindow.FoldersPane;
+import com.haulmont.cuba.gui.components.mainwindow.UserIndicator;
 import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.sys.ScreenDependencyInjector;
-import com.haulmont.cuba.gui.sys.ScreenUtils;
 import com.haulmont.cuba.gui.sys.ScreenViewsLoader;
 import com.haulmont.cuba.gui.xml.layout.ComponentLoader;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
@@ -68,6 +67,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.haulmont.cuba.gui.ComponentsHelper.walkComponents;
 import static com.haulmont.cuba.gui.components.Window.CLOSE_ACTION_ID;
 
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -127,9 +127,9 @@ public class WebWindowManager implements WindowManager {
 
         loadScreenXml(windowInfo, window, controller, options);
 
-        WindowManagerUtils.setWindow(controller, window);
-        WindowManagerUtils.setWindowInfo(controller, windowInfo);
-        WindowManagerUtils.setScreenOptions(controller, options);
+        ScreenUtils.setWindow(controller, window);
+        ScreenUtils.setWindowInfo(controller, windowInfo);
+        ScreenUtils.setScreenOptions(controller, options);
 
         WindowImplementation windowImpl = (WindowImplementation) window;
         windowImpl.setController(controller);
@@ -138,14 +138,14 @@ public class WebWindowManager implements WindowManager {
         // todo legacy datasource layer
 
         ScreenDependencyInjector dependencyInjector =
-                beanLocator.getPrototype(ScreenDependencyInjector.NAME, controller, options);
+                beanLocator.getPrototype(ScreenDependencyInjector.NAME, controller, options, this);
         dependencyInjector.inject();
 
         InitEvent initEvent = new InitEvent(controller, options);
-        WindowManagerUtils.fireEvent(controller, InitEvent.class, initEvent);
+        ScreenUtils.fireEvent(controller, InitEvent.class, initEvent);
 
         AfterInitEvent afterInitEvent = new AfterInitEvent(controller, options);
-        WindowManagerUtils.fireEvent(controller, AfterInitEvent.class, afterInitEvent);
+        ScreenUtils.fireEvent(controller, AfterInitEvent.class, afterInitEvent);
 
         return controller;
     }
@@ -166,6 +166,7 @@ public class WebWindowManager implements WindowManager {
                     new ComponentLoaderContext(Collections.emptyMap()); // todo support legacy parameters map
             componentLoaderContext.setFullFrameId(windowInfo.getId());
             componentLoaderContext.setCurrentFrameId(windowInfo.getId());
+            componentLoaderContext.setFrame(window);
 
             ComponentLoader windowLoader = createLayout(windowInfo, window, element, componentLoaderContext);
 
@@ -175,11 +176,10 @@ public class WebWindowManager implements WindowManager {
 
             windowLoader.loadComponent();
 
-            EventHub eventHub = WindowManagerUtils.getEventHub(controller);
-            eventHub.subscribe(AfterInitEvent.class, event -> {
-                componentLoaderContext.setFrame(window);
-                componentLoaderContext.executePostInitTasks();
-            });
+            EventHub eventHub = ScreenUtils.getEventHub(controller);
+            eventHub.subscribe(AfterInitEvent.class, event ->
+                    componentLoaderContext.executePostInitTasks()
+            );
         }
     }
 
@@ -220,7 +220,7 @@ public class WebWindowManager implements WindowManager {
         // todo UI security
 
         BeforeShowEvent beforeShowEvent = new BeforeShowEvent(screen);
-        WindowManagerUtils.fireEvent(screen, BeforeShowEvent.class, beforeShowEvent);
+        ScreenUtils.fireEvent(screen, BeforeShowEvent.class, beforeShowEvent);
 
         WindowImplementation windowImpl = (WindowImplementation) screen.getWindow();
 
@@ -251,7 +251,7 @@ public class WebWindowManager implements WindowManager {
         }
 
         AfterShowEvent afterShowEvent = new AfterShowEvent(screen);
-        WindowManagerUtils.fireEvent(screen, AfterShowEvent.class, afterShowEvent);
+        ScreenUtils.fireEvent(screen, AfterShowEvent.class, afterShowEvent);
     }
 
     @Override
@@ -332,49 +332,48 @@ public class WebWindowManager implements WindowManager {
             throw new IllegalArgumentException("No @UiController annotation for class " + screenClass);
         }
 
-        String screenId = ScreenUtils.getInferredScreenId(uiController, screenClass);
+        String screenId = com.haulmont.cuba.gui.sys.ScreenUtils.getInferredScreenId(uiController, screenClass);
 
         return windowConfig.getWindowInfo(screenId);
     }
 
     protected void showRootWindow(Screen screen) {
-        // todo
-        /*if (topLevelWindow instanceof AbstractMainWindow) {
-            AbstractMainWindow mainWindow = (AbstractMainWindow) topLevelWindow;
+        if (screen instanceof MainScreen) {
+            MainScreen mainScreen = (MainScreen) screen;
 
             // bind system UI components to AbstractMainWindow
-            ComponentsHelper.walkComponents(windowImpl, component -> {
+            walkComponents(screen.getWindow(), component -> {
                 if (component instanceof AppWorkArea) {
-                    mainWindow.setWorkArea((AppWorkArea) component);
+                    mainScreen.setWorkArea((AppWorkArea) component);
                 } else if (component instanceof UserIndicator) {
-                    mainWindow.setUserIndicator((UserIndicator) component);
+                    mainScreen.setUserIndicator((UserIndicator) component);
                 } else if (component instanceof FoldersPane) {
-                    mainWindow.setFoldersPane((FoldersPane) component);
+                    mainScreen.setFoldersPane((FoldersPane) component);
                 }
 
                 return false;
             });
-        }*/
+        }
 
         ui.setTopLevelWindow((RootWindow) screen.getWindow());
 
-        // todo
-        /*if (screen instanceof Window.HasWorkArea) {
+        if (screen instanceof Window.HasWorkArea) {
             AppWorkArea workArea = ((Window.HasWorkArea) screen).getWorkArea();
             if (workArea != null) {
                 workArea.addStateChangeListener(new AppWorkArea.StateChangeListener() {
                     @Override
                     public void stateChanged(AppWorkArea.State newState) {
                         if (newState == AppWorkArea.State.WINDOW_CONTAINER) {
-                            initTabShortcuts();
+//                            todo implement
+//                            initTabShortcuts();
 
                             // listener used only once
-                            getConfiguredWorkArea(createWorkAreaContext(topLevelWindow)).removeStateChangeListener(this);
+                            getConfiguredWorkArea().removeStateChangeListener(this);
                         }
                     }
                 });
             }
-        }*/
+        }
     }
 
     protected void showNewTabWindow(Screen screen) {
@@ -384,8 +383,8 @@ public class WebWindowManager implements WindowManager {
         // close previous windows
         if (workArea.getMode() == AppWorkArea.Mode.SINGLE) {
             VerticalLayout mainLayout = workArea.getSingleWindowContainer();
-            if (mainLayout.iterator().hasNext()) {
-                WindowContainer oldLayout = (WindowContainer) mainLayout.iterator().next();
+            if (mainLayout.getComponentCount() > 0) {
+                WindowContainer oldLayout = (WindowContainer) mainLayout.getComponent(0);
                 WindowBreadCrumbs oldBreadCrumbs = oldLayout.getBreadCrumbs();
                 if (oldBreadCrumbs != null) {
                     Window oldWindow = oldBreadCrumbs.getCurrentWindow();
@@ -439,11 +438,10 @@ public class WebWindowManager implements WindowManager {
         }
 
         // work with new window
-
         createNewTabLayout(screen);
     }
 
-    protected WindowBreadCrumbs createWindowBreadCrumbs(Screen screen) {
+    protected WindowBreadCrumbs createWindowBreadCrumbs(@SuppressWarnings("unused") Screen screen) {
         WebAppWorkArea appWorkArea = getConfiguredWorkArea();
         WindowBreadCrumbs windowBreadCrumbs = new WindowBreadCrumbs(appWorkArea);
 
@@ -479,8 +477,8 @@ public class WebWindowManager implements WindowManager {
 
             String tabId;
 
-            ScreenOptions options = WindowManagerUtils.getScreenOptions(screen);
-            WindowInfo windowInfo = WindowManagerUtils.getWindowInfo(screen);
+            ScreenOptions options = ScreenUtils.getScreenOptions(screen);
+            WindowInfo windowInfo = ScreenUtils.getWindowInfo(screen);
 
             com.vaadin.ui.ComponentContainer tab = findSameWindowTab(window, options);
 
@@ -527,7 +525,54 @@ public class WebWindowManager implements WindowManager {
     }
 
     protected void showThisTabWindow(Screen screen) {
-        // todo
+        WebAppWorkArea workArea = getConfiguredWorkArea();
+        workArea.switchTo(AppWorkArea.State.WINDOW_CONTAINER);
+
+        WindowContainer windowContainer;
+        if (workArea.getMode() == AppWorkArea.Mode.TABBED) {
+            TabSheetBehaviour tabSheet = workArea.getTabbedWindowContainer().getTabSheetBehaviour();
+            windowContainer = (WindowContainer) tabSheet.getSelectedTab();
+        } else {
+            windowContainer = (WindowContainer) workArea.getSingleWindowContainer().getComponent(0);
+        }
+
+        WindowBreadCrumbs breadCrumbs = windowContainer.getBreadCrumbs();
+        if (breadCrumbs == null) {
+            throw new IllegalStateException("BreadCrumbs not found");
+        }
+
+        Window currentWindow = breadCrumbs.getCurrentWindow();
+
+        windowContainer.removeComponent(currentWindow.unwrapComposition(com.vaadin.ui.Layout.class));
+
+        Window newWindow = screen.getWindow();
+        com.vaadin.ui.Component newWindowComposition = newWindow.unwrapComposition(com.vaadin.ui.Component.class);
+
+        windowContainer.addComponent(newWindowComposition);
+
+        breadCrumbs.addWindow(newWindow);
+
+        if (workArea.getMode() == AppWorkArea.Mode.TABBED) {
+            TabSheetBehaviour tabSheet = workArea.getTabbedWindowContainer().getTabSheetBehaviour();
+            String tabId = tabSheet.getTab(windowContainer);
+
+            String formattedCaption = formatTabCaption(newWindow.getCaption(), newWindow.getDescription());
+            tabSheet.setTabCaption(tabId, formattedCaption);
+            String formattedDescription = formatTabDescription(newWindow.getCaption(), newWindow.getDescription());
+
+            if (!Objects.equals(formattedCaption, formattedDescription)) {
+                tabSheet.setTabDescription(tabId, formattedDescription);
+            } else {
+                tabSheet.setTabDescription(tabId, null);
+            }
+
+            tabSheet.setTabIcon(tabId, iconResolver.getIconResource(newWindow.getIcon()));
+
+            ContentSwitchMode contentSwitchMode = ContentSwitchMode.valueOf(newWindow.getContentSwitchMode().name());
+            tabSheet.setContentSwitchMode(tabId, contentSwitchMode);
+        } else {
+            windowContainer.markAsDirtyRecursive();
+        }
     }
 
     protected void showDialogWindow(Screen screen) {

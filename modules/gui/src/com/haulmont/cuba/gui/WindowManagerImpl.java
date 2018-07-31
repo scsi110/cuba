@@ -40,7 +40,6 @@ import com.haulmont.cuba.gui.sys.*;
 import com.haulmont.cuba.gui.xml.data.DsContextLoader;
 import com.haulmont.cuba.gui.xml.layout.ComponentLoader;
 import com.haulmont.cuba.gui.xml.layout.LayoutLoader;
-import com.haulmont.cuba.gui.xml.layout.LayoutLoaderConfig;
 import com.haulmont.cuba.gui.xml.layout.ScreenXmlLoader;
 import com.haulmont.cuba.gui.xml.layout.loaders.ComponentLoaderContext;
 import com.haulmont.cuba.security.entity.PermissionType;
@@ -493,8 +492,6 @@ public abstract class WindowManagerImpl {
     protected ScreenXmlLoader screenXmlLoader = AppBeans.get(ScreenXmlLoader.NAME);
 
     protected ScreenViewsLoader screenViewsLoader = AppBeans.get(ScreenViewsLoader.NAME);
-
-    protected LayoutLoaderConfig layoutLoaderConfig = AppBeans.get(LayoutLoaderConfig.NAME);
 
     protected BeanLocator beanLocator = AppBeans.get(BeanLocator.NAME);
 
@@ -1222,6 +1219,8 @@ public abstract class WindowManagerImpl {
      * Opens default screen. Implemented only for the web module.
      * <p>
      * Default screen can be defined with the {@code cuba.web.defaultScreenId} application property.
+     *
+     * todo move to WindowManagerTools
      */
     public abstract void openDefaultScreen();
 

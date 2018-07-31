@@ -1,7 +1,7 @@
 package com.haulmont.cuba.gui.sys;
 
 import com.haulmont.cuba.core.global.Scripting;
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.UiController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

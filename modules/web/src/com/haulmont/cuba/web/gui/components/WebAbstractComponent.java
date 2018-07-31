@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Objects;
 
 public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
-        extends EventHub
+        extends EventHub // todo remove this inheritance, use composition
         implements Component, Component.Wrapper, Component.HasXmlDescriptor, Component.BelongToFrame, Component.HasIcon,
                    Component.HasCaption, HasDebugId, EventHubOwner {
 

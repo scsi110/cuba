@@ -27,7 +27,7 @@ import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.gui.screen.UiController;
 import com.haulmont.cuba.gui.screen.UiDescriptor;
 import com.haulmont.cuba.gui.NoSuchScreenException;
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.sys.ScreenUtils;
 import com.haulmont.cuba.gui.sys.ScreensConfiguration;

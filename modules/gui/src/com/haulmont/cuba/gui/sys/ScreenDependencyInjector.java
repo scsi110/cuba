@@ -36,6 +36,8 @@ import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.events.sys.UiEventListenerMethodAdapter;
 import com.haulmont.cuba.gui.export.ExportDisplay;
+import com.haulmont.cuba.gui.screen.Screen;
+import com.haulmont.cuba.gui.screen.ScreenUtils;
 import com.haulmont.cuba.gui.screen.Subscribe;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
 import com.haulmont.cuba.gui.theme.ThemeConstantsManager;
@@ -71,6 +73,7 @@ public class ScreenDependencyInjector {
 
     protected Screen screen;
     protected ScreenOptions options;
+    protected WindowManager windowManager;
 
     // todo get rif of legacy here
     protected Map<String, Object> params;
@@ -78,9 +81,10 @@ public class ScreenDependencyInjector {
     protected BeanLocator beanLocator;
     protected ScreenReflectionInspector screenReflectionInspector;
 
-    public ScreenDependencyInjector(Screen screen, ScreenOptions options) {
+    public ScreenDependencyInjector(Screen screen, ScreenOptions options, WindowManager windowManager) {
         this.screen = screen;
         this.options = options;
+        this.windowManager = windowManager;
     }
 
     @Inject
@@ -140,7 +144,7 @@ public class ScreenDependencyInjector {
         Class<? extends Screen> clazz = screen.getClass();
 
         List<Method> eventListenerMethods = screenReflectionInspector.getAnnotatedSubscribeMethods(clazz);
-        EventHub screenEvents = WindowManagerUtils.getEventHub(screen);
+        EventHub screenEvents = ScreenUtils.getEventHub(screen);
 
         for (Method method : eventListenerMethods) {
             Subscribe annotation = method.getAnnotation(Subscribe.class);
@@ -148,7 +152,7 @@ public class ScreenDependencyInjector {
 
             Consumer listener = new DeclarativeSubscribeExecutor(screen, method);
 
-            String target = ScreenUtils.getInferredSubscribeTarget(annotation);
+            String target = com.haulmont.cuba.gui.sys.ScreenUtils.getInferredSubscribeTarget(annotation);
 
             Parameter parameter = method.getParameters()[0];
             Class<?> parameterType = parameter.getType();
@@ -322,7 +326,13 @@ public class ScreenDependencyInjector {
             return configuration.getConfigCached((Class<? extends Config>) type);
 
         } else if (Logger.class == type && element instanceof Field) {
+            // injecting logger
             return LoggerFactory.getLogger(((Field) element).getDeclaringClass());
+
+        } else if (WindowManager.class == type) {
+            // injecting window manager
+            return windowManager;
+
         } else {
             Object instance;
             // Try to find a Spring bean

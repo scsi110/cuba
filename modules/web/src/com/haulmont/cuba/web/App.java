@@ -18,7 +18,7 @@
 package com.haulmont.cuba.web;
 
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.components.Frame;

@@ -21,4 +21,7 @@ import com.haulmont.cuba.web.gui.WebWindow;
 
 public class WebTabWindow extends WebWindow implements TabWindow {
 
+    public WebTabWindow() {
+        setSizeFull();
+    }
 }

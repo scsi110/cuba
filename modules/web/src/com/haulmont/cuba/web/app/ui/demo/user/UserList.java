@@ -16,11 +16,15 @@
 
 package com.haulmont.cuba.web.app.ui.demo.user;
 
-import com.haulmont.cuba.gui.Screen;
+import com.haulmont.cuba.gui.WindowManager;
+import com.haulmont.cuba.gui.WindowManager.OpenMode;
+import com.haulmont.cuba.gui.components.Button;
 import com.haulmont.cuba.gui.components.Label;
+import com.haulmont.cuba.gui.components.actions.BaseAction;
 import com.haulmont.cuba.gui.screen.InitEvent;
-import com.haulmont.cuba.gui.screen.UiController;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.Subscribe;
+import com.haulmont.cuba.gui.screen.UiController;
 import com.haulmont.cuba.gui.xml.layout.ComponentsFactory;
 
 import javax.inject.Inject;
@@ -29,14 +33,32 @@ import javax.inject.Inject;
 public class UserList extends Screen {
     @Inject
     protected ComponentsFactory componentsFactory;
+    @Inject
+    protected WindowManager windowManager;
 
     @Subscribe
     protected void init(InitEvent event) {
         Label<String> label = componentsFactory.createComponent(Label.NAME);
         label.setValue("Demo");
 
-        getWindow().add(label);
-
         getWindow().setCaption("Users");
+
+        Button button = componentsFactory.createComponent(Button.NAME);
+        button.setAction(new BaseAction("onClick")
+                .withCaption("Demo")
+                .withHandler(e -> {
+                    UserList newScreen = windowManager.create(UserList.class, OpenMode.THIS_TAB);
+                    windowManager.show(newScreen);
+                })
+        );
+
+        Label<String> spacer = componentsFactory.createComponent(Label.NAME);
+
+        getWindow().add(
+                label,
+                button,
+                spacer
+        );
+        getWindow().expand(spacer);
     }
 }
