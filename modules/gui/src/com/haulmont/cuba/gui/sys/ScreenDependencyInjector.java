@@ -162,13 +162,10 @@ public class ScreenDependencyInjector {
                 if (annotation.target() == Target.CONTROLLER) {
                     // controller event
                     screenEvents.subscribe(parameterType, listener);
-                } else if (annotation.target() == Target.FRAME) {
+                } else if (annotation.target() == Target.WINDOW) {
                     // window or fragment event
                     EventHub windowEvents = ((EventHubOwner) screen.getWindow()).getEventHub();
                     windowEvents.subscribe(parameterType, listener);
-                } else if (annotation.target() == Target.LAYOUT) {
-                    // layout event
-                    // todo implement layout events
                 }
             } else {
                 // component event

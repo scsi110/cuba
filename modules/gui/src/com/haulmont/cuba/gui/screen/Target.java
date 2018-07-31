@@ -22,7 +22,5 @@ package com.haulmont.cuba.gui.screen;
 public enum Target {
     COMPONENT,
     CONTROLLER,
-
-    FRAME,
-    LAYOUT
+    WINDOW
 }
