@@ -403,8 +403,8 @@ public class AbstractFrame implements Frame, Frame.Wrapper, Component.Wrapper, O
     }
 
     @Override
-    public WindowManagerImpl getWindowManager() {
-        return frame.getWindowManager();
+    public WindowManagerImpl getWindowManagerImpl() {
+        return frame.getWindowManagerImpl();
     }
 
     /**

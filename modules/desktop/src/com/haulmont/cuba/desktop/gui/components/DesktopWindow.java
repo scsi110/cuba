@@ -852,7 +852,7 @@ public class DesktopWindow implements Window, Component.Disposable,
     }
 
     @Override
-    public DesktopWindowManager getWindowManager() {
+    public DesktopWindowManager getWindowManagerImpl() {
         return windowManager;
     }
 
@@ -868,37 +868,37 @@ public class DesktopWindow implements Window, Component.Disposable,
 
     @Override
     public void showMessageDialog(String title, String message, MessageType messageType) {
-        getWindowManager().showMessageDialog(title, message, messageType);
+        getWindowManagerImpl().showMessageDialog(title, message, messageType);
     }
 
     @Override
     public void showOptionDialog(String title, String message, MessageType messageType, Action[] actions) {
-        getWindowManager().showOptionDialog(title, message, messageType, actions);
+        getWindowManagerImpl().showOptionDialog(title, message, messageType, actions);
     }
 
     @Override
     public void showOptionDialog(String title, String message, MessageType messageType, java.util.List<Action> actions) {
-        getWindowManager().showOptionDialog(title, message, messageType, actions.toArray(new Action[actions.size()]));
+        getWindowManagerImpl().showOptionDialog(title, message, messageType, actions.toArray(new Action[actions.size()]));
     }
 
     @Override
     public void showNotification(String caption) {
-        getWindowManager().showNotification(caption);
+        getWindowManagerImpl().showNotification(caption);
     }
 
     @Override
     public void showNotification(String caption, NotificationType type) {
-        getWindowManager().showNotification(caption, type);
+        getWindowManagerImpl().showNotification(caption, type);
     }
 
     @Override
     public void showNotification(String caption, String description, NotificationType type) {
-        getWindowManager().showNotification(caption, description, type);
+        getWindowManagerImpl().showNotification(caption, description, type);
     }
 
     @Override
     public void showWebPage(String url, @Nullable Map<String, Object> params) {
-        getWindowManager().showWebPage(url, params);
+        getWindowManagerImpl().showWebPage(url, params);
     }
 
     @Override

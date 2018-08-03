@@ -95,7 +95,7 @@ public class WebFragment extends WebVBoxLayout implements Fragment {
     }
 
     @Override
-    public WindowManagerImpl getWindowManager() {
+    public WindowManagerImpl getWindowManagerImpl() {
         return null;
     }
 

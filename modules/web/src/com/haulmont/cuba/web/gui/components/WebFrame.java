@@ -46,29 +46,15 @@ public class WebFrame extends WebVBoxLayout implements Frame, WrappedFrame {
 
     protected Frame wrapper;
 
-    protected Map<String, com.haulmont.cuba.gui.components.Component> allComponents = new HashMap<>();
+    protected Map<String, Component> allComponents = new HashMap<>();
 
-    protected WebFrameActionsHolder actionsHolder = new WebFrameActionsHolder();
+    protected WebFrameActionsHolder actionsHolder = new WebFrameActionsHolder(this);
 
     // todo assign WindowManager
     protected WindowManagerImpl windowManager;
 
     public WebFrame() {
-        component.addActionHandler(new com.vaadin.event.Action.Handler() {
-            @Override
-            public com.vaadin.event.Action[] getActions(Object target, Object sender) {
-                return actionsHolder.getActionImplementations();
-            }
-
-            @Override
-            public void handleAction(com.vaadin.event.Action actionImpl, Object sender, Object target) {
-                Action action = actionsHolder.getAction(actionImpl);
-                if (action != null && action.isEnabled() && action.isVisible()) {
-                    action.actionPerform(WebFrame.this);
-                }
-            }
-        });
-
+        component.addActionHandler(actionsHolder);
         setupEventListeners();
     }
 
@@ -266,7 +252,7 @@ public class WebFrame extends WebVBoxLayout implements Frame, WrappedFrame {
     }
 
     @Override
-    public WindowManagerImpl getWindowManager() {
+    public WindowManagerImpl getWindowManagerImpl() {
         return windowManager;
     }
 
@@ -314,13 +300,13 @@ public class WebFrame extends WebVBoxLayout implements Frame, WrappedFrame {
     }
 
     @Override
-    public Collection<com.haulmont.cuba.gui.components.Action> getActions() {
+    public Collection<Action> getActions() {
         return actionsHolder.getActions();
     }
 
     @Override
     @Nullable
-    public com.haulmont.cuba.gui.components.Action getAction(String id) {
+    public Action getAction(String id) {
         return actionsHolder.getAction(id);
     }
 }

@@ -464,7 +464,7 @@ public class FilterEditor extends AbstractWindow {
     public void showComponentName() {
         AbstractCondition item = conditionsDs.getItem();
         String message = (item != null && item.getParam() != null) ? item.getParam().getName() : messages.getMainMessage("filter.editor.showComponentName.conditionIsNotSelected");
-        companion.showComponentName(getWindowManager(), messages.getMainMessage("filter.editor.showComponentName.title"), message);
+        companion.showComponentName(getWindowManagerImpl(), messages.getMainMessage("filter.editor.showComponentName.title"), message);
     }
 
     public FilterEntity getFilterEntity() {

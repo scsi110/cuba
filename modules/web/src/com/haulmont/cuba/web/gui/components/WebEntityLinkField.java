@@ -245,7 +245,7 @@ public class WebEntityLinkField<V> extends WebAbstractField<CubaButtonField, V> 
         if (window == null) {
             throw new IllegalStateException("Please specify Frame for EntityLinkField");
         } else {
-            wm = window.getWindowManager();
+            wm = window.getWindowManagerImpl();
         }
 
         if (entity instanceof SoftDelete && ((SoftDelete) entity).isDeleted()) {

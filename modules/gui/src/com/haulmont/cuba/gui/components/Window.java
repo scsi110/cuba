@@ -21,6 +21,7 @@ import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.validation.groups.UiCrossFieldChecks;
 import com.haulmont.cuba.gui.DialogOptions;
 import com.haulmont.cuba.gui.WindowContext;
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.components.mainwindow.AppWorkArea;
@@ -210,7 +211,14 @@ public interface Window extends Frame, Component.HasCaption, Component.HasIcon {
     /**
      * @return window manager instance
      */
-    WindowManagerImpl getWindowManager();
+    WindowManager getWindowManager();
+
+    /**
+     * todo remove
+     *
+     * @return window manager instance
+     */
+    WindowManagerImpl getWindowManagerImpl();
 
     /**
      * INTERNAL. Don't call from application code.

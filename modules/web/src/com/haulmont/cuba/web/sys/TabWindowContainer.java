@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.haulmont.cuba.gui.screen;
+package com.haulmont.cuba.web.sys;
 
-import com.haulmont.cuba.gui.WindowManagerImpl;
+import com.vaadin.ui.Layout;
 
-/**
- * Marker interface for legacy screens with datasource infrastructure.
- */
-public interface LegacyScreen {
-    WindowManagerImpl getWindowManagerImpl();
+public interface TabWindowContainer extends Layout {
+    WindowBreadCrumbs getBreadCrumbs();
 
-    // todo move legacy screen open methods here
+    void setBreadCrumbs(WindowBreadCrumbs breadCrumbs);
 }

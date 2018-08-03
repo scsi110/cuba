@@ -487,7 +487,7 @@ public class DesktopWindowManager extends WindowManagerImpl {
         window.addAction(new com.haulmont.cuba.gui.components.AbstractAction("onPreviousTab", previousTabShortcut) {
             @Override
             public void actionPerform(Component component) {
-                if (window.getWindowManager() != DesktopWindowManager.this) {
+                if (window.getWindowManagerImpl() != DesktopWindowManager.this) {
                     // detached tab
                     return;
                 }
@@ -508,7 +508,7 @@ public class DesktopWindowManager extends WindowManagerImpl {
         window.addAction(new com.haulmont.cuba.gui.components.AbstractAction("onNextTab", nextTabShortcut) {
             @Override
             public void actionPerform(Component component) {
-                if (window.getWindowManager() != DesktopWindowManager.this) {
+                if (window.getWindowManagerImpl() != DesktopWindowManager.this) {
                     // detached tab
                     return;
                 }

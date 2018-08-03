@@ -865,6 +865,8 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
     /**
      * Check modifications and close all screens in all main windows.
      *
+     * todo rework with OperationResult
+     *
      * @param runIfOk a closure to run after all screens are closed
      */
     public void checkModificationsAndCloseAll(Runnable runIfOk) {
@@ -873,6 +875,8 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
 
     /**
      * Check modifications and close all screens in all main windows.
+     *
+     * todo rework with OperationResult
      *
      * @param runIfOk     a closure to run after all screens are closed
      * @param runIfCancel a closure to run if there were modifications and a user canceled the operation
@@ -992,7 +996,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
      * Close all screens in all main windows (browser tabs).
      */
     public void closeAllWindows() {
-        app.cleanupBackgroundTasks();
+        app.cleanupBackgroundTasks(); // todo do not do here
         app.closeAllWindows();
     }
 
@@ -1015,6 +1019,7 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
 
     protected void closeWindow(Window window, WindowOpenInfo openInfo) {
         if (!disableSavingScreenHistory) {
+            // todo move to close
             screenHistorySupport.saveScreenHistory(window, openInfo.getOpenMode());
         }
 

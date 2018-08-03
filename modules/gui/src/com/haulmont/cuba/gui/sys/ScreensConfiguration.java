@@ -6,6 +6,7 @@ import com.haulmont.cuba.gui.screen.UiController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
@@ -23,6 +24,8 @@ public class ScreensConfiguration {
     protected Scripting scripting;
 
     protected List<String> packages;
+
+    protected ApplicationContext applicationContext;
 
     // todo add explicit exports
 
@@ -67,6 +70,7 @@ public class ScreensConfiguration {
         // Don't pull default filters (@Component, etc.):
         ClassPathScanningCandidateComponentProvider provider
                 = new ClassPathScanningCandidateComponentProvider(false);
+        provider.setResourceLoader(applicationContext);
         provider.addIncludeFilter(new AnnotationTypeFilter(UiController.class));
         return provider;
     }

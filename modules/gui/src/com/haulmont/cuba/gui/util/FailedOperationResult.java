@@ -14,15 +14,32 @@
  * limitations under the License.
  */
 
-package com.haulmont.cuba.gui.screen;
+package com.haulmont.cuba.gui.util;
 
-import com.haulmont.cuba.gui.WindowManagerImpl;
+public final class FailedOperationResult implements OperationResult {
 
-/**
- * Marker interface for legacy screens with datasource infrastructure.
- */
-public interface LegacyScreen {
-    WindowManagerImpl getWindowManagerImpl();
+    public static final OperationResult INSTANCE = new FailedOperationResult();
 
-    // todo move legacy screen open methods here
+    private FailedOperationResult() {
+    }
+
+    @Override
+    public Status getStatus() {
+        return Status.FAIL;
+    }
+
+    @Override
+    public void then(Runnable runnable) {
+        // do nothing
+    }
+
+    @Override
+    public void otherwise(Runnable runnable) {
+        runnable.run();
+    }
+
+    @Override
+    public String toString() {
+        return "{OPERATION FAILED}";
+    }
 }

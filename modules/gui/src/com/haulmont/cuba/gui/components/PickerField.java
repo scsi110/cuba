@@ -302,7 +302,7 @@ public interface PickerField<V extends Entity> extends Field<V>, ActionsHolder, 
 
                     wm = AppBeans.get(WindowManagerProvider.class).get();
                 } else {
-                    wm = window.getWindowManager();
+                    wm = window.getWindowManagerImpl();
                 }
 
                 OpenType openType = getLookupScreenOpenType();
@@ -610,7 +610,7 @@ public interface PickerField<V extends Entity> extends Field<V>, ActionsHolder, 
             if (window == null) {
                 throw new IllegalStateException("Please specify Frame for EntityLinkField");
             } else {
-                wm = window.getWindowManager();
+                wm = window.getWindowManagerImpl();
             }
 
             OpenType openType = getEditScreenOpenType();

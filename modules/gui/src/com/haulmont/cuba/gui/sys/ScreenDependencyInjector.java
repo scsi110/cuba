@@ -159,7 +159,8 @@ public class ScreenDependencyInjector {
             Class<?> parameterType = parameter.getType();
 
             if (Strings.isNullOrEmpty(target)) {
-                if (annotation.target() == Target.CONTROLLER) {
+                if (annotation.target() == Target.COMPONENT // if kept default value
+                        || annotation.target() == Target.CONTROLLER) {
                     // controller event
                     screenEvents.subscribe(parameterType, listener);
                 } else if (annotation.target() == Target.WINDOW) {

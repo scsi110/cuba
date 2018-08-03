@@ -18,7 +18,6 @@
 package com.haulmont.cuba.web;
 
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManager.OpenMode;
 import com.haulmont.cuba.gui.components.Frame;
@@ -26,9 +25,12 @@ import com.haulmont.cuba.gui.components.RootWindow;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
 import com.haulmont.cuba.gui.executors.IllegalConcurrentAccessException;
+import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.settings.SettingsClient;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
 import com.haulmont.cuba.gui.theme.ThemeConstantsRepository;
+import com.haulmont.cuba.gui.util.OperationResult;
+import com.haulmont.cuba.gui.util.UnknownOperationResult;
 import com.haulmont.cuba.security.app.UserSessionService;
 import com.haulmont.cuba.security.global.LoginException;
 import com.haulmont.cuba.security.global.NoUserSessionException;
@@ -39,10 +41,7 @@ import com.haulmont.cuba.web.exception.ExceptionHandlers;
 import com.haulmont.cuba.web.log.AppLog;
 import com.haulmont.cuba.web.security.events.SessionHeartbeatEvent;
 import com.haulmont.cuba.web.settings.WebSettingsClient;
-import com.haulmont.cuba.web.sys.AppCookies;
-import com.haulmont.cuba.web.sys.BackgroundTaskManager;
-import com.haulmont.cuba.web.sys.LinkHandler;
-import com.haulmont.cuba.web.sys.WebWindowManagerImpl;
+import com.haulmont.cuba.web.sys.*;
 import com.vaadin.server.AbstractClientConnector;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
@@ -397,7 +396,7 @@ public abstract class App {
         // todo change this, WindowManager should be bound to UI
         RootWindow topLevelWindow = getTopLevelWindow();
 
-        return topLevelWindow != null ? (WebWindowManagerImpl) topLevelWindow.getWindowManager() : null;
+        return topLevelWindow != null ? (WebWindowManagerImpl) topLevelWindow.getWindowManagerImpl() : null;
     }
 
     public AppLog getAppLog() {
@@ -510,39 +509,45 @@ public abstract class App {
     /**
      * Try to perform logout. If there are unsaved changes in opened windows then logout will not be performed and
      * unsaved changes dialog will appear.
+     *
+     * @deprecated Use {@link #logout()} instead.
+     *
+     * @param runWhenLoggedOut runnable that will be invoked if user decides to logout
      */
-    public void logout() {
-        logout(null);
+    @Deprecated
+    public void logout(@Nullable Runnable runWhenLoggedOut) {
+        logout().then(runWhenLoggedOut);
     }
 
     /**
      * Try to perform logout. If there are unsaved changes in opened windows then logout will not be performed and
      * unsaved changes dialog will appear.
      *
-     * @param runWhenLoggedOut runnable that will be invoked if user decides to logout
+     * @return operation result object
      */
-    public void logout(@Nullable Runnable runWhenLoggedOut) {
+    public OperationResult logout() {
         try {
             RootWindow topLevelWindow = getTopLevelWindow();
             if (topLevelWindow != null) {
                 topLevelWindow.saveSettings();
 
-                WebWindowManagerImpl wm = (WebWindowManagerImpl) topLevelWindow.getWindowManager();
-                wm.checkModificationsAndCloseAll(() -> {
+                WebWindowManager windowManager = (WebWindowManager) topLevelWindow.getWindowManager();
+
+                if (!windowManager.hasUnsavedChanges()) {
+                    closeAllWindows();
+
                     Connection connection = getConnection();
                     connection.logout();
 
-                    if (runWhenLoggedOut != null) {
-                        runWhenLoggedOut.run();
-                    }
-                });
+                    return OperationResult.success();
+                }
+
+                return OperationResult.fail();
             } else {
                 Connection connection = getConnection();
                 connection.logout();
 
-                if (runWhenLoggedOut != null) {
-                    runWhenLoggedOut.run();
-                }
+                return OperationResult.success();
             }
         } catch (Exception e) {
             log.error("Error on logout", e);
@@ -551,6 +556,7 @@ public abstract class App {
             if (ui != null) {
                 ui.getPage().open(url, "_self");
             }
+            return new UnknownOperationResult();
         }
     }
 }

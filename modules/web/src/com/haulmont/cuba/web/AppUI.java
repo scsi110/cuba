@@ -372,7 +372,11 @@ public class AppUI extends CubaUI
         if (this.topLevelWindow != window) {
             this.topLevelWindow = window;
 
-            setContent(topLevelWindow.unwrapComposition(Component.class));
+            if (window != null) {
+                setContent(topLevelWindow.unwrapComposition(Component.class));
+            } else {
+                setContent(null);
+            }
         }
     }
 

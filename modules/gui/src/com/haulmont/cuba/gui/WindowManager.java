@@ -40,9 +40,7 @@ public interface WindowManager {
     void show(Screen screen);
 
     /**
-     * JavaDoc
-     *
-     * Releases all the resources of screen.
+     * Removes window from UI and releases all the resources of screen.
      *
      * @param screen screen
      */
@@ -52,6 +50,8 @@ public interface WindowManager {
      * JavaDoc
      */
     void removeAll();
+
+    boolean hasUnsavedChanges();
 
     /**
      * JavaDoc

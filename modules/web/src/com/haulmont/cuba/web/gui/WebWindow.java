@@ -20,26 +20,21 @@ import com.haulmont.bali.events.EventRouter;
 import com.haulmont.bali.util.Preconditions;
 import com.haulmont.chile.core.model.Instance;
 import com.haulmont.chile.core.model.MetaClass;
-import com.haulmont.cuba.client.ClientConfig;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.AppBeans;
 import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.gui.*;
 import com.haulmont.cuba.gui.components.*;
-import com.haulmont.cuba.gui.components.Action.Status;
 import com.haulmont.cuba.gui.components.Component;
-import com.haulmont.cuba.gui.components.DialogAction.Type;
 import com.haulmont.cuba.gui.components.LookupComponent.LookupSelectionChangeNotifier;
 import com.haulmont.cuba.gui.components.Timer;
 import com.haulmont.cuba.gui.components.Window;
-import com.haulmont.cuba.gui.components.actions.BaseAction;
 import com.haulmont.cuba.gui.components.security.ActionsPermissions;
 import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.data.DsContext;
 import com.haulmont.cuba.gui.events.sys.UiEventsMulticaster;
-import com.haulmont.cuba.gui.icons.CubaIcon;
 import com.haulmont.cuba.gui.icons.Icons;
 import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.settings.Settings;
@@ -49,7 +44,6 @@ import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.gui.components.WebComponentsHelper;
 import com.haulmont.cuba.web.gui.components.WebFrameActionsHolder;
 import com.haulmont.cuba.web.gui.components.WebWrapperUtils;
-import com.haulmont.cuba.web.gui.icons.IconResolver;
 import com.haulmont.cuba.web.sys.WebWindowManagerImpl;
 import com.haulmont.cuba.web.widgets.CubaSingleModeContainer;
 import com.haulmont.cuba.web.widgets.CubaVerticalActionsLayout;
@@ -73,7 +67,6 @@ import java.util.*;
 
 import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 
-// todo create multiple implementations of Window: TabWindow / DialogWindow / MainWindow
 public class WebWindow implements Window, Component.Wrapper,
                                   Component.HasXmlDescriptor, WrappedWindow, Component.Disposable,
                                   SecuredActionsHolder, Component.HasIcon,
@@ -115,12 +108,13 @@ public class WebWindow implements Window, Component.Wrapper,
 
     protected Runnable doAfterClose;
 
-    protected WebWindowManagerImpl windowManager;
+    protected WebWindowManagerImpl windowManagerImpl; // todo remove
+    protected WindowManager windowManager;
 
     protected WindowDelegate delegate;
 
-    protected WebFrameActionsHolder actionsHolder = new WebFrameActionsHolder();
-    protected final ActionsPermissions actionsPermissions = new ActionsPermissions(this);
+    protected WebFrameActionsHolder actionsHolder = new WebFrameActionsHolder(this);
+    protected ActionsPermissions actionsPermissions = new ActionsPermissions(this);
 
     protected Messages messages;
     protected Icons icons;
@@ -138,20 +132,7 @@ public class WebWindow implements Window, Component.Wrapper,
         component = createLayout();
         delegate = createDelegate();
         if (component instanceof com.vaadin.event.Action.Container) {
-            ((com.vaadin.event.Action.Container) component).addActionHandler(new com.vaadin.event.Action.Handler() {
-                @Override
-                public com.vaadin.event.Action[] getActions(Object target, Object sender) {
-                    return actionsHolder.getActionImplementations();
-                }
-
-                @Override
-                public void handleAction(com.vaadin.event.Action actionImpl, Object sender, Object target) {
-                    Action action = actionsHolder.getAction(actionImpl);
-                    if (action != null && action.isEnabled() && action.isVisible()) {
-                        action.actionPerform(WebWindow.this);
-                    }
-                }
-            });
+            ((com.vaadin.event.Action.Container) component).addActionHandler(actionsHolder);
         }
 
         setupEventListeners();
@@ -441,6 +422,15 @@ public class WebWindow implements Window, Component.Wrapper,
         return handleValidationErrors(errors);
     }
 
+    public void setWindowManager(WindowManager windowManager) {
+        this.windowManager = windowManager;
+    }
+
+    @Override
+    public WindowManager getWindowManager() {
+        return windowManager;
+    }
+
     protected void validateAdditionalRules(ValidationErrors errors) {
     }
 
@@ -458,13 +448,13 @@ public class WebWindow implements Window, Component.Wrapper,
     }
 
     @Override
-    public WebWindowManagerImpl getWindowManager() {
-        return windowManager;
+    public WebWindowManagerImpl getWindowManagerImpl() {
+        return windowManagerImpl;
     }
 
     @Override
     public void setWindowManager(WindowManagerImpl windowManager) {
-        this.windowManager = (WebWindowManagerImpl) windowManager;
+        this.windowManagerImpl = (WebWindowManagerImpl) windowManager;
     }
 
     @Override
@@ -644,7 +634,7 @@ public class WebWindow implements Window, Component.Wrapper,
         if (component.isAttached()) {
             attachTimerToUi((WebTimer) timer);
         } else {
-            ClientConnector.AttachListener attachListener = new ClientConnector.AttachListener() {
+            component.addAttachListener(new ClientConnector.AttachListener() {
                 @Override
                 public void attach(ClientConnector.AttachEvent event) {
                     if (timers.contains(timer)) {
@@ -653,12 +643,11 @@ public class WebWindow implements Window, Component.Wrapper,
                     // execute attach listener only once
                     component.removeAttachListener(this);
                 }
-            };
-            component.addAttachListener(attachListener);
+            });
         }
 
         if (timers == null) {
-            timers = new LinkedList<>();
+            timers = new ArrayList<>();
         }
         timers.add(timer);
     }
@@ -1017,6 +1006,7 @@ public class WebWindow implements Window, Component.Wrapper,
 
     @Override
     public boolean close(String actionId) {
+        /*
         if (!forceClose) {
             if (!delegate.preClose(actionId))
                 return false;
@@ -1025,6 +1015,8 @@ public class WebWindow implements Window, Component.Wrapper,
         if (closing) {
             return true;
         }
+
+        // todo move all this to screen !
 
         Configuration configuration = AppBeans.get(Configuration.NAME); // todo get rid of AppBeans
         ClientConfig clientConfig = configuration.getConfig(ClientConfig.class);
@@ -1100,7 +1092,13 @@ public class WebWindow implements Window, Component.Wrapper,
             doAfterClose.run();
         }
         closing = res;
-        return res;
+        */
+
+        // return res;
+
+        windowManager.remove(this.getController());
+
+        return true;
     }
 
     public boolean findAndFocusChildComponent() {
@@ -1173,11 +1171,11 @@ public class WebWindow implements Window, Component.Wrapper,
                 TabSheet.Tab tabWindow = asTabWindow();
                 if (tabWindow != null) {
                     setTabCaptionAndDescription(tabWindow);
-                    windowManager.getBreadCrumbs((com.vaadin.ui.ComponentContainer) tabWindow.getComponent()).update();
+                    windowManagerImpl.getBreadCrumbs((com.vaadin.ui.ComponentContainer) tabWindow.getComponent()).update();
                 } else {
                     Layout singleModeWindow = asSingleWindow();
                     if (singleModeWindow != null) {
-                        windowManager.getBreadCrumbs(singleModeWindow).update();
+                        windowManagerImpl.getBreadCrumbs(singleModeWindow).update();
                     }
                 }
             }
@@ -1202,7 +1200,7 @@ public class WebWindow implements Window, Component.Wrapper,
                 TabSheet.Tab tabWindow = asTabWindow();
                 if (tabWindow != null) {
                     setTabCaptionAndDescription(tabWindow);
-                    windowManager.getBreadCrumbs((com.vaadin.ui.ComponentContainer) tabWindow.getComponent()).update();
+                    windowManagerImpl.getBreadCrumbs((com.vaadin.ui.ComponentContainer) tabWindow.getComponent()).update();
                 }
             }
         }
@@ -1286,14 +1284,6 @@ public class WebWindow implements Window, Component.Wrapper,
     @Override
     public void setIcon(String icon) {
         this.icon = icon;
-
-        // todo remove this code
-        if (component.isAttached()) {
-            TabSheet.Tab tabWindow = asTabWindow();
-            if (tabWindow != null) {
-                tabWindow.setIcon(AppBeans.get(IconResolver.class).getIconResource(icon));
-            }
-        }
     }
 
     @Override
@@ -1613,10 +1603,6 @@ public class WebWindow implements Window, Component.Wrapper,
         @Override
         public void setParentDs(Datasource parentDs) {
             ((EditorWindowDelegate) delegate).setParentDs(parentDs);
-        }
-
-        protected Collection<com.vaadin.v7.ui.Field> getFields() {
-            return WebComponentsHelper.getComponents(getContainer(), com.vaadin.v7.ui.Field.class);
         }
 
         protected MetaClass getMetaClass() {

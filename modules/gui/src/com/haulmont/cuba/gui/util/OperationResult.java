@@ -14,15 +14,28 @@
  * limitations under the License.
  */
 
-package com.haulmont.cuba.gui.screen;
-
-import com.haulmont.cuba.gui.WindowManagerImpl;
+package com.haulmont.cuba.gui.util;
 
 /**
- * Marker interface for legacy screens with datasource infrastructure.
+ * Operation result object
  */
-public interface LegacyScreen {
-    WindowManagerImpl getWindowManagerImpl();
+public interface OperationResult {
+    Status getStatus();
 
-    // todo move legacy screen open methods here
+    void then(Runnable runnable);
+    void otherwise(Runnable runnable);
+
+    enum Status {
+        UNKNOWN,
+        SUCCESS,
+        FAIL
+    }
+
+    static OperationResult fail() {
+        return FailedOperationResult.INSTANCE;
+    }
+
+    static OperationResult success() {
+        return SuccessOperationResult.INSTANCE;
+    }
 }

@@ -610,7 +610,7 @@ public class WebTabSheet extends WebAbstractComponent<CubaTabSheet> implements T
                     if (appUI.isTestMode()) {
                         context.addPostInitTask((localContext, localWindow) -> {
                             RootWindow appWindow = appUI.getTopLevelWindow();
-                            ((WebWindowManagerImpl) appWindow.getWindowManager()).initDebugIds(localWindow);
+                            ((WebWindowManagerImpl) appWindow.getWindowManagerImpl()).initDebugIds(localWindow);
                         });
                     }
                 }

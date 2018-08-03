@@ -47,7 +47,7 @@ public class UserList extends Screen {
         button.setAction(new BaseAction("onClick")
                 .withCaption("Demo")
                 .withHandler(e -> {
-                    UserList newScreen = windowManager.create(UserList.class, OpenMode.DIALOG);
+                    UserList newScreen = windowManager.create(UserList.class, OpenMode.THIS_TAB);
                     windowManager.show(newScreen);
                 })
         );

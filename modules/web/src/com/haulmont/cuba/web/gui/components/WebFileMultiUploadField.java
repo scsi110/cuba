@@ -171,12 +171,10 @@ public class WebFileMultiUploadField extends WebAbstractUploadComponent<CubaFile
     public void setIcon(String icon) {
         this.icon = icon;
 
-        if (component instanceof CubaFileUpload) {
-            if (!StringUtils.isEmpty(icon)) {
-                component.setIcon(AppBeans.get(IconResolver.class).getIconResource(icon));
-            } else {
-                component.setIcon(null);
-            }
+        if (!StringUtils.isEmpty(icon)) {
+            component.setIcon(AppBeans.get(IconResolver.class).getIconResource(icon)); // todo replace with beanLocator
+        } else {
+            component.setIcon(null);
         }
     }
 

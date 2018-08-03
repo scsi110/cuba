@@ -40,7 +40,6 @@ public class ChangeSubstUserAction extends AbstractAction {
                 new Runnable() {
                     @Override
                     public void run() {
-                        app.closeAllWindows();
                         try {
                             app.getConnection().substituteUser(user);
                             doAfterChangeUser();

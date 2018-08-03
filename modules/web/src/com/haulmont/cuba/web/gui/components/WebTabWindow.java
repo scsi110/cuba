@@ -16,12 +16,53 @@
 
 package com.haulmont.cuba.web.gui.components;
 
+import com.haulmont.cuba.core.global.BeanLocator;
 import com.haulmont.cuba.gui.components.TabWindow;
 import com.haulmont.cuba.web.gui.WebWindow;
+import com.haulmont.cuba.web.gui.icons.IconResolver;
+import com.vaadin.ui.TabSheet;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 public class WebTabWindow extends WebWindow implements TabWindow {
 
+    protected BeanLocator beanLocator;
+
     public WebTabWindow() {
         setSizeFull();
+    }
+
+    @Inject
+    public void setBeanLocator(BeanLocator beanLocator) {
+        this.beanLocator = beanLocator;
+    }
+
+    @Override
+    public void setIcon(String icon) {
+        super.setIcon(icon);
+
+        if (component.isAttached()) {
+            TabSheet.Tab tabWindow = findTab();
+            if (tabWindow != null) {
+                IconResolver iconResolver = beanLocator.get(IconResolver.NAME);
+                tabWindow.setIcon(iconResolver.getIconResource(icon));
+            }
+        }
+    }
+
+    @Nullable
+    protected TabSheet.Tab findTab() {
+        if (component.isAttached()) {
+            com.vaadin.ui.Component parent = component;
+            while (parent != null) {
+                if (parent.getParent() instanceof TabSheet) {
+                    return ((TabSheet) parent.getParent()).getTab(parent);
+                }
+
+                parent = parent.getParent();
+            }
+        }
+        return null;
     }
 }

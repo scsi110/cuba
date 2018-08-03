@@ -60,6 +60,7 @@ public interface Frame
     /**
      * @return {@link DsContext} of the current frame or window
      */
+    // todo move to LegacyScreen
     DsContext getDsContext();
 
     /** INTERNAL. Don't call from application code. */
@@ -115,7 +116,7 @@ public interface Frame
     /**
      * JavaDoc
      */
-    WindowManagerImpl getWindowManager();
+    WindowManagerImpl getWindowManagerImpl();
 
     /**
      * Open a simple screen.
@@ -129,7 +130,7 @@ public interface Frame
     default AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractWindow) getWindowManager().openWindow(windowInfo, openType, params);
+        return (AbstractWindow) getWindowManagerImpl().openWindow(windowInfo, openType, params);
     }
 
     /**
@@ -143,7 +144,7 @@ public interface Frame
     default AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractWindow) getWindowManager().openWindow(windowInfo, openType);
+        return (AbstractWindow) getWindowManagerImpl().openWindow(windowInfo, openType);
     }
 
     /**
@@ -157,7 +158,7 @@ public interface Frame
     default AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
-        return (AbstractEditor) getWindowManager().openEditor(editorScreen, item, openType);
+        return (AbstractEditor) getWindowManagerImpl().openEditor(editorScreen, item, openType);
     }
 
     /**
@@ -173,7 +174,7 @@ public interface Frame
                                      Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
-        return (AbstractEditor) getWindowManager().openEditor(editorScreen, item, openType, params);
+        return (AbstractEditor) getWindowManagerImpl().openEditor(editorScreen, item, openType, params);
     }
 
     /**
@@ -191,7 +192,7 @@ public interface Frame
                              Map<String, Object> params, Datasource parentDs) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
-        return (AbstractEditor) getWindowManager().openEditor(editorScreen, item, openType, params, parentDs);
+        return (AbstractEditor) getWindowManagerImpl().openEditor(editorScreen, item, openType, params, parentDs);
     }
 
     /**
@@ -210,7 +211,7 @@ public interface Frame
                              Map<String, Object> params, Datasource parentDs) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType, params, parentDs);
+        return (AbstractEditor) getWindowManagerImpl().openEditor(windowInfo, item, openType, params, parentDs);
     }
 
     /**
@@ -227,7 +228,7 @@ public interface Frame
                                      Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType, params);
+        return (AbstractEditor) getWindowManagerImpl().openEditor(windowInfo, item, openType, params);
     }
 
     /**
@@ -245,7 +246,7 @@ public interface Frame
                                      Datasource parentDs) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType, parentDs);
+        return (AbstractEditor) getWindowManagerImpl().openEditor(windowInfo, item, openType, parentDs);
     }
 
     /**
@@ -260,7 +261,7 @@ public interface Frame
     default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractEditor) getWindowManager().openEditor(windowInfo, item, openType);
+        return (AbstractEditor) getWindowManagerImpl().openEditor(windowInfo, item, openType);
     }
 
     /**
@@ -276,7 +277,7 @@ public interface Frame
                                      WindowManagerImpl.OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
-        return (AbstractLookup) getWindowManager().openLookup(lookupScreen, handler, openType);
+        return (AbstractLookup) getWindowManagerImpl().openLookup(lookupScreen, handler, openType);
     }
 
     /**
@@ -292,7 +293,7 @@ public interface Frame
                                      WindowManagerImpl.OpenType openType, Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
-        return (AbstractLookup) getWindowManager().openLookup(lookupScreen, handler, openType, params);
+        return (AbstractLookup) getWindowManagerImpl().openLookup(lookupScreen, handler, openType, params);
     }
 
     /**
@@ -308,7 +309,7 @@ public interface Frame
                                      WindowManagerImpl.OpenType openType, Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractLookup) getWindowManager().openLookup(windowInfo, handler, openType, params);
+        return (AbstractLookup) getWindowManagerImpl().openLookup(windowInfo, handler, openType, params);
     }
 
     /**
@@ -323,7 +324,7 @@ public interface Frame
                                      WindowManagerImpl.OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractLookup) getWindowManager().openLookup(windowInfo, handler, openType);
+        return (AbstractLookup) getWindowManagerImpl().openLookup(windowInfo, handler, openType);
     }
 
     /**
@@ -336,7 +337,7 @@ public interface Frame
     default AbstractFrame openFrame(@Nullable Component parent, String windowAlias) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractFrame) getWindowManager().openFrame(this, parent, windowInfo);
+        return (AbstractFrame) getWindowManagerImpl().openFrame(this, parent, windowInfo);
     }
 
     /**
@@ -350,7 +351,7 @@ public interface Frame
     default AbstractFrame openFrame(@Nullable Component parent, String windowAlias, Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
-        return (AbstractFrame) getWindowManager().openFrame(this, parent, windowInfo, params);
+        return (AbstractFrame) getWindowManagerImpl().openFrame(this, parent, windowInfo, params);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -599,7 +600,7 @@ public interface Frame
      */
     @Deprecated
     default void showMessageDialog(String title, String message, MessageType messageType) {
-        getWindowManager().showMessageDialog(title, message, messageType);
+        getWindowManagerImpl().showMessageDialog(title, message, messageType);
     }
 
     /**
@@ -615,7 +616,7 @@ public interface Frame
      */
     @Deprecated
     default void showOptionDialog(String title, String message, MessageType messageType, Action[] actions) {
-        getWindowManager().showOptionDialog(title, message, messageType, actions);
+        getWindowManagerImpl().showOptionDialog(title, message, messageType, actions);
     }
 
     /**
@@ -631,7 +632,7 @@ public interface Frame
      */
     @Deprecated
     default void showOptionDialog(String title, String message, MessageType messageType, List<Action> actions) {
-        getWindowManager().showOptionDialog(title, message, messageType, actions.toArray(new Action[0]));
+        getWindowManagerImpl().showOptionDialog(title, message, messageType, actions.toArray(new Action[0]));
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -670,7 +671,7 @@ public interface Frame
      */
     @Deprecated
     default void showNotification(String caption) {
-        getWindowManager().showNotification(caption);
+        getWindowManagerImpl().showNotification(caption);
     }
 
     /**
@@ -683,7 +684,7 @@ public interface Frame
      */
     @Deprecated
     default void showNotification(String caption, NotificationType type) {
-        getWindowManager().showNotification(caption, type);
+        getWindowManagerImpl().showNotification(caption, type);
     }
 
     /**
@@ -697,7 +698,7 @@ public interface Frame
      */
     @Deprecated
     default void showNotification(String caption, String description, NotificationType type) {
-        getWindowManager().showNotification(caption, description, type);
+        getWindowManagerImpl().showNotification(caption, description, type);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -720,7 +721,7 @@ public interface Frame
      */
     @Deprecated
     default void showWebPage(String url, @Nullable Map<String, Object> params) {
-        getWindowManager().showWebPage(url, params);
+        getWindowManagerImpl().showWebPage(url, params);
     }
 
     interface Wrapper extends FrameOwner {

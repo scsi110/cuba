@@ -71,7 +71,7 @@ public class LinkCellClickListener implements Table.CellClickListener {
         if (window == null) {
             throw new IllegalStateException("Please specify Frame for Table");
         } else {
-            wm = window.getWindowManager();
+            wm = window.getWindowManagerImpl();
         }
 
         Messages messages = applicationContext.getBean(Messages.NAME, Messages.class);
