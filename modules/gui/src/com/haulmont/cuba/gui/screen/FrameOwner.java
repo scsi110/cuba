@@ -16,10 +16,26 @@
 
 package com.haulmont.cuba.gui.screen;
 
+import com.haulmont.cuba.gui.components.Window;
+
 /**
  * JavaDoc
- *
+ * <p>
  * Marker interface for UI controllers.
  */
 public interface FrameOwner {
+
+    CloseAction WINDOW_CLOSE_ACTION = new CloseAction() {
+        @Override
+        public String toString() {
+            return Window.CLOSE_ACTION_ID;
+        }
+    };
+
+    ScreenOptions NO_OPTIONS = new ScreenOptions() {
+        @Override
+        public String toString() {
+            return "{NO OPTIONS}";
+        }
+    };
 }

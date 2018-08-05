@@ -19,6 +19,7 @@ package com.haulmont.cuba.web.sys;
 import com.google.common.base.Strings;
 import com.haulmont.bali.events.EventHub;
 import com.haulmont.cuba.client.ClientConfig;
+import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
 import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.app.core.dev.LayoutAnalyzer;
@@ -34,6 +35,7 @@ import com.haulmont.cuba.gui.components.mainwindow.UserIndicator;
 import com.haulmont.cuba.gui.components.sys.WindowImplementation;
 import com.haulmont.cuba.gui.config.WindowConfig;
 import com.haulmont.cuba.gui.config.WindowInfo;
+import com.haulmont.cuba.gui.data.Datasource;
 import com.haulmont.cuba.gui.screen.*;
 import com.haulmont.cuba.gui.sys.ScreenDependencyInjector;
 import com.haulmont.cuba.gui.sys.ScreenViewsLoader;
@@ -66,6 +68,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -78,12 +81,6 @@ import static com.haulmont.cuba.gui.components.Window.CLOSE_ACTION_ID;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 @Component(WindowManager.NAME)
 public class WebWindowManager implements WindowManager {
-
-    /**
-     * Constant that is passed to {@link Window#close(String)} and {@link Window#close(String, boolean)} methods when
-     * the screen is closed by window manager. Propagated to {@link Window.CloseListener#windowClosed}.
-     */
-    public static final String MAIN_MENU_ACTION_ID = "mainMenu";
 
     @Inject
     protected WindowConfig windowConfig;
@@ -407,6 +404,176 @@ public class WebWindowManager implements WindowManager {
     public boolean hasUnsavedChanges() {
         // todo
         return false;
+    }
+
+    @Override
+    public Collection<Window> getOpenWindows() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void selectWindowTab(Window window) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setWindowCaption(Window window, String caption, String description) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean windowExist(WindowInfo windowInfo, Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window openWindow(WindowInfo windowInfo, OpenType openType, Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window openWindow(WindowInfo windowInfo, OpenType openType) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window.Editor openEditor(WindowInfo windowInfo, Entity item, OpenType openType, Datasource parentDs) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window.Editor openEditor(WindowInfo windowInfo, Entity item, OpenType openType) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window.Editor openEditor(WindowInfo windowInfo, Entity item, OpenType openType, Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window.Editor openEditor(WindowInfo windowInfo, Entity item, OpenType openType, Map<String, Object> params, Datasource parentDs) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window.Lookup openLookup(WindowInfo windowInfo, Window.Lookup.Handler handler, OpenType openType, Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Window.Lookup openLookup(WindowInfo windowInfo, Window.Lookup.Handler handler, OpenType openType) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Frame openFrame(Frame parentFrame, com.haulmont.cuba.gui.components.Component parent, WindowInfo windowInfo) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Frame openFrame(Frame parentFrame, com.haulmont.cuba.gui.components.Component parent, WindowInfo windowInfo, Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Frame openFrame(Frame parentFrame, com.haulmont.cuba.gui.components.Component parent, @Nullable String id, WindowInfo windowInfo, Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void close(Window window) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void openDefaultScreen() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showNotification(String caption) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showNotification(String caption, Frame.NotificationType type) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showNotification(String caption, String description, Frame.NotificationType type) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showMessageDialog(String title, String message, Frame.MessageType messageType) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showOptionDialog(String title, String message, Frame.MessageType messageType, com.haulmont.cuba.gui.components.Action[] actions) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showExceptionDialog(Throwable throwable) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showExceptionDialog(Throwable throwable, @Nullable String caption, @Nullable String message) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void showWebPage(String url, @Nullable Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Check modifications and close all screens in all main windows.
+     *
+     * todo rework with OperationResult
+     *
+     * @param runIfOk a closure to run after all screens are closed
+     */
+    public void checkModificationsAndCloseAll(Runnable runIfOk) {
+        checkModificationsAndCloseAll(runIfOk, null);
+    }
+
+    /**
+     * Check modifications and close all screens in all main windows.
+     *
+     * todo rework with OperationResult
+     *
+     * @param runIfOk     a closure to run after all screens are closed
+     * @param runIfCancel a closure to run if there were modifications and a user canceled the operation
+     */
+    public void checkModificationsAndCloseAll(Runnable runIfOk, @Nullable Runnable runIfCancel) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void closeAllTabbedWindows() {
+        closeAllTabbedWindowsExcept(null);
+    }
+
+    public void closeAllTabbedWindowsExcept(@Nullable com.vaadin.ui.ComponentContainer keepOpened) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Close all screens in all main windows (browser tabs).
+     */
+    public void closeAllWindows() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Close all screens in the main window (browser tab) this WindowManagerImpl belongs to.
+     */
+    public void closeAll() {
+        throw new UnsupportedOperationException();
     }
 
     protected <T extends Screen> T createController(WindowInfo windowInfo, Window window,

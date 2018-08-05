@@ -31,20 +31,6 @@ import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
  */
 public abstract class Screen implements FrameOwner {
 
-    public static final CloseAction WINDOW_CLOSE_ACTION = new CloseAction() {
-        @Override
-        public String toString() {
-            return Window.CLOSE_ACTION_ID;
-        }
-    };
-
-    public static final ScreenOptions NO_OPTIONS = new ScreenOptions() {
-        @Override
-        public String toString() {
-            return "{NO OPTIONS}";
-        }
-    };
-
     private String id;
 
     private WindowInfo windowInfo;
