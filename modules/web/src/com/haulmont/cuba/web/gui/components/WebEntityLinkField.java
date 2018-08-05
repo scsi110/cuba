@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.haulmont.cuba.gui.WindowManager.OpenType;
+
 public class WebEntityLinkField<V> extends WebAbstractField<CubaButtonField, V> implements EntityLinkField<V> {
 
     protected static final String EMPTY_VALUE_STYLENAME = "empty-value";
@@ -52,7 +54,7 @@ public class WebEntityLinkField<V> extends WebAbstractField<CubaButtonField, V> 
     protected EntityLinkClickHandler clickHandler;
 
     protected String screen;
-    protected WindowManagerImpl.OpenType screenOpenType = WindowManagerImpl.OpenType.THIS_TAB;
+    protected OpenType screenOpenType = OpenType.THIS_TAB;
     protected ScreenCloseListener screenCloseListener;
     protected Map<String, Object> screenParams;
 
@@ -196,12 +198,12 @@ public class WebEntityLinkField<V> extends WebAbstractField<CubaButtonField, V> 
     }
 
     @Override
-    public WindowManagerImpl.OpenType getScreenOpenType() {
+    public OpenType getScreenOpenType() {
         return screenOpenType;
     }
 
     @Override
-    public void setScreenOpenType(WindowManagerImpl.OpenType screenOpenType) {
+    public void setScreenOpenType(OpenType screenOpenType) {
         this.screenOpenType = screenOpenType;
     }
 

@@ -32,7 +32,7 @@ public class DesktopBulkEditor extends DesktopButton implements BulkEditor {
 
     protected String exclude;
     protected List<String> includeProperties = Collections.emptyList();
-    protected WindowManagerImpl.OpenType openType = WindowManagerImpl.OpenType.DIALOG;
+    protected WindowManager.OpenType openType = WindowManager.OpenType.DIALOG;
     protected BulkEditAction bulkEditAction;
     protected ListComponent listComponent;
     protected Map<String, Field.Validator> fieldValidators;
@@ -46,12 +46,12 @@ public class DesktopBulkEditor extends DesktopButton implements BulkEditor {
     }
 
     @Override
-    public WindowManagerImpl.OpenType getOpenType() {
+    public WindowManager.OpenType getOpenType() {
         return openType;
     }
 
     @Override
-    public void setOpenType(WindowManagerImpl.OpenType openType) {
+    public void setOpenType(WindowManager.OpenType openType) {
         this.openType = openType;
         if (bulkEditAction != null) {
             bulkEditAction.setOpenType(openType);

@@ -21,6 +21,7 @@ import com.haulmont.cuba.core.app.SchedulingService;
 import com.haulmont.cuba.core.entity.ScheduledTask;
 import com.haulmont.cuba.core.global.RunTaskOnceException;
 import com.haulmont.cuba.gui.ComponentsHelper;
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.components.actions.EditAction;
@@ -138,7 +139,7 @@ public class ScheduledTaskBrowser extends AbstractWindow {
             if (task != null) {
                 Map<String, Object> params = new HashMap<>();
                 params.put("task", task);
-                openWindow("sys$ScheduledExecution.browse", WindowManagerImpl.OpenType.THIS_TAB, params);
+                openWindow("sys$ScheduledExecution.browse", WindowManager.OpenType.THIS_TAB, params);
             }
         }
 

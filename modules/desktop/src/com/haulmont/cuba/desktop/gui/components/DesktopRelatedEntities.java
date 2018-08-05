@@ -39,7 +39,7 @@ import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
 public class DesktopRelatedEntities extends DesktopPopupButton implements RelatedEntities {
 
     protected ListComponent listComponent;
-    protected WindowManagerImpl.OpenType openType = WindowManagerImpl.OpenType.THIS_TAB;
+    protected WindowManager.OpenType openType = WindowManager.OpenType.THIS_TAB;
     protected Map<String, PropertyOption> propertyOptions = new HashMap<>();
 
     protected String excludeRegex;
@@ -52,12 +52,12 @@ public class DesktopRelatedEntities extends DesktopPopupButton implements Relate
     }
 
     @Override
-    public WindowManagerImpl.OpenType getOpenType() {
+    public WindowManager.OpenType getOpenType() {
         return openType;
     }
 
     @Override
-    public void setOpenType(WindowManagerImpl.OpenType openType) {
+    public void setOpenType(WindowManager.OpenType openType) {
         checkNotNullArgument(openType);
 
         this.openType = openType;

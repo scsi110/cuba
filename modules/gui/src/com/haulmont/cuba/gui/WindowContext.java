@@ -17,6 +17,8 @@
 
 package com.haulmont.cuba.gui;
 
+import static com.haulmont.cuba.gui.WindowManager.OpenType;
+
 /**
  * Provides access to window parameters and component values.
  *
@@ -26,5 +28,5 @@ public interface WindowContext extends FrameContext {
     /**
      * How the window is opened.
      */
-    WindowManagerImpl.OpenType getOpenType();
+    OpenType getOpenType();
 }

@@ -17,6 +17,7 @@
 
 package com.haulmont.cuba.gui.components;
 
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 
 import javax.annotation.Nullable;
@@ -26,8 +27,8 @@ public interface RelatedEntities extends Component, Component.HasCaption, Compon
 
     String NAME = "relatedEntities";
 
-    WindowManagerImpl.OpenType getOpenType();
-    void setOpenType(WindowManagerImpl.OpenType openType);
+    WindowManager.OpenType getOpenType();
+    void setOpenType(WindowManager.OpenType openType);
 
     String getExcludePropertiesRegex();
     void setExcludePropertiesRegex(String excludeRegex);

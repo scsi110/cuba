@@ -21,7 +21,7 @@ import com.haulmont.chile.core.model.MetaProperty;
 import com.haulmont.cuba.client.ClientConfig;
 import com.haulmont.cuba.core.entity.Entity;
 import com.haulmont.cuba.core.global.*;
-import com.haulmont.cuba.gui.WindowManagerImpl;
+import com.haulmont.cuba.gui.WindowManager.OpenType;
 import com.haulmont.cuba.gui.components.Action;
 import com.haulmont.cuba.gui.components.Component;
 import com.haulmont.cuba.gui.components.ListComponent;
@@ -62,7 +62,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
     public static final String ACTION_ID = ListActionType.ADD.getId();
 
     protected Window.Lookup.Handler handler;
-    protected WindowManagerImpl.OpenType openType;
+    protected OpenType openType;
     protected AfterAddHandler afterAddHandler;
 
     protected String windowId;
@@ -98,7 +98,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @param openType  how to open the editor screen
      */
     public static AddAction create(ListComponent target, @Nullable Window.Lookup.Handler handler,
-                                   WindowManagerImpl.OpenType openType) {
+                                   OpenType openType) {
         return AppBeans.getPrototype("cuba_AddAction", target, handler, openType);
     }
 
@@ -110,7 +110,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @param id        action's name
      */
     public static AddAction create(ListComponent target, @Nullable Window.Lookup.Handler handler,
-                                   WindowManagerImpl.OpenType openType, String id) {
+                                   OpenType openType, String id) {
         return AppBeans.getPrototype("cuba_AddAction", target, handler, openType, id);
     }
 
@@ -122,7 +122,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @param target    component containing this action
      */
     public AddAction(ListComponent target) {
-        this(target, null, WindowManagerImpl.OpenType.THIS_TAB, ACTION_ID);
+        this(target, null, OpenType.THIS_TAB, ACTION_ID);
     }
 
     /**
@@ -131,7 +131,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @param handler   lookup handler. If null, an instance of {@link DefaultHandler} will be used.
      */
     public AddAction(ListComponent target, @Nullable Window.Lookup.Handler handler) {
-        this(target, handler, WindowManagerImpl.OpenType.THIS_TAB, ACTION_ID);
+        this(target, handler, OpenType.THIS_TAB, ACTION_ID);
     }
 
     /**
@@ -140,7 +140,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @param handler   lookup handler. If null, an instance of {@link DefaultHandler} will be used.
      * @param openType  how to open the editor screen
      */
-    public AddAction(ListComponent target, @Nullable Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType) {
+    public AddAction(ListComponent target, @Nullable Window.Lookup.Handler handler, OpenType openType) {
         this(target, handler, openType, ACTION_ID);
     }
 
@@ -152,7 +152,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @param id        action's name
      */
     public AddAction(ListComponent target, @Nullable Window.Lookup.Handler handler,
-                     WindowManagerImpl.OpenType openType, String id) {
+                     OpenType openType, String id) {
         super(id, null);
 
         this.target = target;
@@ -258,7 +258,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @return  lookup screen open type
      */
     @Override
-    public WindowManagerImpl.OpenType getOpenType() {
+    public OpenType getOpenType() {
         return openType;
     }
 
@@ -266,7 +266,7 @@ public class AddAction extends BaseAction implements Action.HasOpenType, Action.
      * @param openType  lookup screen open type
      */
     @Override
-    public void setOpenType(WindowManagerImpl.OpenType openType) {
+    public void setOpenType(OpenType openType) {
         this.openType = openType;
     }
 

@@ -86,6 +86,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.*;
 
+import static com.haulmont.cuba.gui.WindowManager.OpenType;
 import static com.haulmont.cuba.gui.components.Component.AUTO_SIZE_PX;
 import static com.haulmont.cuba.gui.components.Frame.MessageType;
 import static com.haulmont.cuba.gui.components.Frame.NotificationType;

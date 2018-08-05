@@ -20,7 +20,7 @@ package com.haulmont.cuba.web.app.folders;
 import com.haulmont.cuba.core.entity.AbstractSearchFolder;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.core.global.Metadata;
-import com.haulmont.cuba.gui.WindowManagerImpl.OpenType;
+import com.haulmont.cuba.gui.WindowManager.OpenType;
 import com.haulmont.cuba.gui.WindowParams;
 import com.haulmont.cuba.gui.components.Filter;
 import com.haulmont.cuba.gui.components.HasPresentations;

@@ -706,7 +706,7 @@ public class WebWindowManager implements WindowManager {
                     Window oldWindow = oldBreadCrumbs.getCurrentWindow();
                     oldWindow.closeAndRun(MAIN_MENU_ACTION_ID, () -> {
                         // todo implement
-//                            showWindow(window, caption, description, WindowManagerImpl.OpenType.NEW_TAB, false)
+//                            showWindow(window, caption, description, WindowManager.OpenType.NEW_TAB, false)
                     });
                     return;
                 }
@@ -737,7 +737,7 @@ public class WebWindowManager implements WindowManager {
 
                 final int finalTabPosition = tabPosition;
                 oldWindow.closeAndRun(MAIN_MENU_ACTION_ID, () -> {
-                    showWindow(window, caption, description, WindowManagerImpl.OpenType.NEW_TAB, false);
+                    showWindow(window, caption, description, WindowManager.OpenType.NEW_TAB, false);
 
                     Window wrappedWindow = window;
                     if (window instanceof Window.Wrapper) {
@@ -1162,7 +1162,7 @@ public class WebWindowManager implements WindowManager {
                     /*if (tipsList.isEmpty()) {
                         window.showNotification("No layout problems found", Frame.NotificationType.HUMANIZED);
                     } else {
-                        window.openWindow("layoutAnalyzer", WindowManagerImpl.OpenType.DIALOG, ParamsMap.of("tipsList", tipsList));
+                        window.openWindow("layoutAnalyzer", WindowManager.OpenType.DIALOG, ParamsMap.of("tipsList", tipsList));
                     }*/
                 }
             }

@@ -18,6 +18,7 @@
 package com.haulmont.cuba.gui.xml.layout.loaders;
 
 import com.haulmont.cuba.gui.GuiDevelopmentException;
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.components.Action;
 import com.haulmont.cuba.gui.components.ActionsHolder;
@@ -96,9 +97,9 @@ public abstract class ActionsHolderLoader<T extends ActionsHolder> extends Abstr
         if (action instanceof Action.HasOpenType) {
             String openTypeString = element.attributeValue("openType");
             if (StringUtils.isNotEmpty(openTypeString)) {
-                WindowManagerImpl.OpenType openType;
+                WindowManager.OpenType openType;
                 try {
-                    openType = WindowManagerImpl.OpenType.valueOf(openTypeString);
+                    openType = WindowManager.OpenType.valueOf(openTypeString);
                 } catch (IllegalArgumentException e) {
                     throw new GuiDevelopmentException(
                             String.format("Unknown open type: '%s' for action: '%s'", openTypeString, action.getId()),

@@ -31,6 +31,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
+import static com.haulmont.cuba.gui.WindowManager.OpenType;
+
 /**
  * Represents a reusable part of a screen.
  * <br> Has its own XML descriptor, but can be instantiated only inside a {@link Window}.
@@ -127,7 +129,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+    default AbstractWindow openWindow(String windowAlias, OpenType openType, Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return (AbstractWindow) getWindowManagerImpl().openWindow(windowInfo, openType, params);
@@ -141,7 +143,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractWindow openWindow(String windowAlias, WindowManagerImpl.OpenType openType) {
+    default AbstractWindow openWindow(String windowAlias, OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return (AbstractWindow) getWindowManagerImpl().openWindow(windowInfo, openType);
@@ -155,7 +157,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType) {
+    default AbstractEditor openEditor(Entity item, OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
         return (AbstractEditor) getWindowManagerImpl().openEditor(editorScreen, item, openType);
@@ -170,7 +172,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType,
+    default AbstractEditor openEditor(Entity item, OpenType openType,
                                      Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
@@ -188,7 +190,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractEditor openEditor(Entity item, WindowManagerImpl.OpenType openType,
+    default AbstractEditor openEditor(Entity item, OpenType openType,
                              Map<String, Object> params, Datasource parentDs) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
@@ -207,7 +209,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
+    default AbstractEditor openEditor(String windowAlias, Entity item, OpenType openType,
                              Map<String, Object> params, Datasource parentDs) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
@@ -224,7 +226,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
+    default AbstractEditor openEditor(String windowAlias, Entity item, OpenType openType,
                                      Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
@@ -242,7 +244,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType,
+    default AbstractEditor openEditor(String windowAlias, Entity item, OpenType openType,
                                      Datasource parentDs) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
@@ -258,7 +260,7 @@ public interface Frame
      * @return created window
      */
     @Deprecated
-    default AbstractEditor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType) {
+    default AbstractEditor openEditor(String windowAlias, Entity item, OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return (AbstractEditor) getWindowManagerImpl().openEditor(windowInfo, item, openType);
@@ -274,7 +276,7 @@ public interface Frame
      */
     @Deprecated
     default AbstractLookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler,
-                                     WindowManagerImpl.OpenType openType) {
+                                     OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
         return (AbstractLookup) getWindowManagerImpl().openLookup(lookupScreen, handler, openType);
@@ -290,7 +292,7 @@ public interface Frame
      * @return created window
      */
     default AbstractLookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler,
-                                     WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+                                     OpenType openType, Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
         return (AbstractLookup) getWindowManagerImpl().openLookup(lookupScreen, handler, openType, params);
@@ -306,7 +308,7 @@ public interface Frame
      * @return created window
      */
     default AbstractLookup openLookup(String windowAlias, Window.Lookup.Handler handler,
-                                     WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+                                      OpenType openType, Map<String, Object> params) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return (AbstractLookup) getWindowManagerImpl().openLookup(windowInfo, handler, openType, params);
@@ -321,7 +323,7 @@ public interface Frame
      * @return created window
      */
     default AbstractLookup openLookup(String windowAlias, Window.Lookup.Handler handler,
-                                     WindowManagerImpl.OpenType openType) {
+                                      OpenType openType) {
         WindowConfig windowConfig = AppBeans.get(WindowConfig.NAME);
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return (AbstractLookup) getWindowManagerImpl().openLookup(windowInfo, handler, openType);

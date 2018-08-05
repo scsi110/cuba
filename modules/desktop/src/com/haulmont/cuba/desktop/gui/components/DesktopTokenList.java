@@ -85,7 +85,7 @@ public class DesktopTokenList extends DesktopAbstractField<JPanel> implements To
 
     protected String lookupScreen;
 
-    protected WindowManagerImpl.OpenType lookupOpenMode = WindowManagerImpl.OpenType.THIS_TAB;
+    protected WindowManager.OpenType lookupOpenMode = WindowManager.OpenType.THIS_TAB;
 
     protected Map<String, Object> lookupScreenParams;
 
@@ -452,12 +452,12 @@ public class DesktopTokenList extends DesktopAbstractField<JPanel> implements To
     }
 
     @Override
-    public WindowManagerImpl.OpenType getLookupOpenMode() {
+    public WindowManager.OpenType getLookupOpenMode() {
         return lookupOpenMode;
     }
 
     @Override
-    public void setLookupOpenMode(WindowManagerImpl.OpenType lookupOpenMode) {
+    public void setLookupOpenMode(WindowManager.OpenType lookupOpenMode) {
         this.lookupOpenMode = lookupOpenMode;
     }
 

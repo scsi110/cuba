@@ -18,6 +18,7 @@ package com.haulmont.cuba.gui.components.listeditor;
 
 import com.google.common.base.Joiner;
 import com.haulmont.bali.events.EventRouter;
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.WindowManagerProvider;
 import com.haulmont.cuba.gui.components.*;
@@ -118,7 +119,7 @@ public class ListEditorDelegateImpl implements ListEditorDelegate {
                 }
 
                 ListEditorWindowController listEditorPopup = (ListEditorWindowController) windowManager
-                        .openWindow(windowConfig.getWindowInfo(editorWindowId), WindowManagerImpl.OpenType.DIALOG, params);
+                        .openWindow(windowConfig.getWindowInfo(editorWindowId), WindowManager.OpenType.DIALOG, params);
                 listEditorPopup.addCloseListener(actionId -> {
                     if (Window.COMMIT_ACTION_ID.equals(actionId)) {
                         actualField.setValue(listEditorPopup.getValue());

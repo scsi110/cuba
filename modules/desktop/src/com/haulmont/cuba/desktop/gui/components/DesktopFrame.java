@@ -284,79 +284,79 @@ public class DesktopFrame
     }
 
     @Override
-    public Window openWindow(String windowAlias, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+    public Window openWindow(String windowAlias, WindowManager.OpenType openType, Map<String, Object> params) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openWindow(windowInfo, openType, params);
     }
 
     @Override
-    public Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType) {
+    public Window.Editor openEditor(Entity item, WindowManager.OpenType openType) {
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
         return getWindowManagerImpl().openEditor(editorScreen, item, openType);
     }
 
     @Override
-    public Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+    public Window.Editor openEditor(Entity item, WindowManager.OpenType openType, Map<String, Object> params) {
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
         return getWindowManagerImpl().openEditor(editorScreen, item, openType, params);
     }
 
     @Override
-    public Window.Editor openEditor(Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params, Datasource parentDs) {
+    public Window.Editor openEditor(Entity item, WindowManager.OpenType openType, Map<String, Object> params, Datasource parentDs) {
         WindowInfo editorScreen = windowConfig.getEditorScreen(item);
         return getWindowManagerImpl().openEditor(editorScreen, item, openType, params, parentDs);
     }
 
     @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params, Datasource parentDs) {
+    public Window.Editor openEditor(String windowAlias, Entity item, WindowManager.OpenType openType, Map<String, Object> params, Datasource parentDs) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openEditor(windowInfo, item, openType, params, parentDs);
     }
 
     @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+    public Window.Editor openEditor(String windowAlias, Entity item, WindowManager.OpenType openType, Map<String, Object> params) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openEditor(windowInfo, item, openType, params);
     }
 
     @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType, Datasource parentDs) {
+    public Window.Editor openEditor(String windowAlias, Entity item, WindowManager.OpenType openType, Datasource parentDs) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openEditor(windowInfo, item, openType, parentDs);
     }
 
     @Override
-    public Window.Editor openEditor(String windowAlias, Entity item, WindowManagerImpl.OpenType openType) {
+    public Window.Editor openEditor(String windowAlias, Entity item, WindowManager.OpenType openType) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openEditor(windowInfo, item, openType);
     }
 
     @Override
-    public Window openWindow(String windowAlias, WindowManagerImpl.OpenType openType) {
+    public Window openWindow(String windowAlias, WindowManager.OpenType openType) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openWindow(windowInfo, openType);
     }
 
     @Override
-    public Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType) {
+    public Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManager.OpenType openType) {
         WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
         return getWindowManagerImpl().openLookup(lookupScreen, handler, openType);
     }
 
     @Override
-    public Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+    public Window.Lookup openLookup(Class<? extends Entity> entityClass, Window.Lookup.Handler handler, WindowManager.OpenType openType, Map<String, Object> params) {
         WindowInfo lookupScreen = windowConfig.getLookupScreen(entityClass);
         return getWindowManagerImpl().openLookup(lookupScreen, handler, openType, params);
     }
 
     @Override
-    public Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType, Map<String, Object> params) {
+    public Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManager.OpenType openType, Map<String, Object> params) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openLookup(windowInfo, handler, openType, params);
     }
 
     @Override
-    public Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManagerImpl.OpenType openType) {
+    public Window.Lookup openLookup(String windowAlias, Window.Lookup.Handler handler, WindowManager.OpenType openType) {
         WindowInfo windowInfo = windowConfig.getWindowInfo(windowAlias);
         return getWindowManagerImpl().openLookup(windowInfo, handler, openType);
     }

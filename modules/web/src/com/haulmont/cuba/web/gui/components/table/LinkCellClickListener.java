@@ -22,6 +22,7 @@ import com.haulmont.cuba.core.entity.SoftDelete;
 import com.haulmont.cuba.core.global.Messages;
 import com.haulmont.cuba.core.global.View;
 import com.haulmont.cuba.gui.ComponentsHelper;
+import com.haulmont.cuba.gui.WindowManager;
 import com.haulmont.cuba.gui.WindowManagerImpl;
 import com.haulmont.cuba.gui.components.Frame;
 import com.haulmont.cuba.gui.components.Table;
@@ -34,6 +35,8 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Method;
+
+import static com.haulmont.cuba.gui.WindowManager.*;
 
 public class LinkCellClickListener implements Table.CellClickListener {
 
@@ -95,11 +98,11 @@ public class LinkCellClickListener implements Table.CellClickListener {
             windowAlias = windowConfig.getEditorScreenId(entity.getMetaClass());
         }
 
-        WindowManagerImpl.OpenType screenOpenType = WindowManagerImpl.OpenType.THIS_TAB;
+        OpenType screenOpenType = OpenType.THIS_TAB;
         if (column.getXmlDescriptor() != null) {
             String openTypeAttribute = column.getXmlDescriptor().attributeValue("linkScreenOpenType");
             if (StringUtils.isNotEmpty(openTypeAttribute)) {
-                screenOpenType = WindowManagerImpl.OpenType.valueOf(openTypeAttribute);
+                screenOpenType = OpenType.valueOf(openTypeAttribute);
             }
         }
 

@@ -125,7 +125,7 @@ public class RelatedEntitiesBean implements RelatedEntitiesAPI {
             }
 
 
-            WindowManagerImpl.OpenType openType = WindowManagerImpl.OpenType.THIS_TAB;
+            WindowManager.OpenType openType = WindowManager.OpenType.THIS_TAB;
             if (descriptor != null) {
                 openType = descriptor.getOpenType();
             }
