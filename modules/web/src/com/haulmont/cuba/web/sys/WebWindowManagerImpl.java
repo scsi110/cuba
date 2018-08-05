@@ -1030,7 +1030,6 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
             case DIALOG: {
                 final CubaWindow cubaDialogWindow = (CubaWindow) openInfo.getData();
                 cubaDialogWindow.forceClose();
-                fireListeners(window, tabs.size() != 0);
                 break;
             }
 
@@ -1058,7 +1057,6 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
 
                 tabs.remove(layout);
                 stacks.remove(windowBreadCrumbs);
-                fireListeners(window, !tabs.isEmpty());
                 if (tabs.isEmpty() && app.getConnection().isConnected()) {
                     workArea.switchTo(AppWorkArea.State.INITIAL_LAYOUT);
                 }
@@ -1107,7 +1105,6 @@ public class WebWindowManagerImpl extends WindowManagerImpl {
                         tabSheet.setContentSwitchMode(tabId, contentSwitchMode);
                     }
                 }
-                fireListeners(window, !tabs.isEmpty());
                 if (tabs.isEmpty() && app.getConnection().isConnected()) {
                     workArea.switchTo(AppWorkArea.State.INITIAL_LAYOUT);
                 }

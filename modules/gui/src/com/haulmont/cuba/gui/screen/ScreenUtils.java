@@ -17,7 +17,6 @@
 package com.haulmont.cuba.gui.screen;
 
 import com.haulmont.bali.events.EventHub;
-import com.haulmont.cuba.gui.WindowManager.ScreenOptions;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowInfo;
 

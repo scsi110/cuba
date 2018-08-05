@@ -18,9 +18,9 @@ package com.haulmont.cuba.gui.screen;
 
 import com.haulmont.bali.events.EventHub;
 import com.haulmont.bali.events.Subscription;
-import com.haulmont.cuba.gui.WindowManager.ScreenOptions;
 import com.haulmont.cuba.gui.components.Window;
 import com.haulmont.cuba.gui.config.WindowInfo;
+import com.haulmont.cuba.gui.util.OperationResult;
 
 import java.util.function.Consumer;
 
@@ -30,6 +30,21 @@ import static com.haulmont.bali.util.Preconditions.checkNotNullArgument;
  * JavaDoc
  */
 public abstract class Screen implements FrameOwner {
+
+    public static final CloseAction WINDOW_CLOSE_ACTION = new CloseAction() {
+        @Override
+        public String toString() {
+            return Window.CLOSE_ACTION_ID;
+        }
+    };
+
+    public static final ScreenOptions NO_OPTIONS = new ScreenOptions() {
+        @Override
+        public String toString() {
+            return "{NO OPTIONS}";
+        }
+    };
+
     private String id;
 
     private WindowInfo windowInfo;
@@ -95,5 +110,22 @@ public abstract class Screen implements FrameOwner {
 
     protected Subscription addAfterInitListener(Consumer<AfterInitEvent> listener) {
         return eventHub.subscribe(AfterInitEvent.class, listener);
+    }
+
+    /**
+     * JavaDoc
+     *
+     * @param action
+     * @return
+     */
+    public OperationResult close(CloseAction action) {
+        return OperationResult.fail();
+    }
+
+    /**
+     * @return
+     */
+    public OperationResult close() {
+        return close(WINDOW_CLOSE_ACTION);
     }
 }

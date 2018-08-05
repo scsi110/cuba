@@ -495,8 +495,6 @@ public abstract class WindowManagerImpl {
 
     protected BeanLocator beanLocator = AppBeans.get(BeanLocator.NAME);
 
-    protected List<WindowCloseListener> listeners = new ArrayList<>();
-
     protected WindowManagerImpl() {
         defaultDataSupplier = new GenericDataSupplier();
     }
@@ -1029,12 +1027,6 @@ public abstract class WindowManagerImpl {
         map.putAll(params);
 
         return map;
-    }
-
-    protected void fireListeners(Window window, boolean anyOpenWindowExist) {
-        for (WindowCloseListener wcl : listeners) {
-            wcl.onWindowClose(window, anyOpenWindowExist);
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

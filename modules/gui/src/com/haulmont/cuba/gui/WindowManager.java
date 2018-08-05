@@ -17,6 +17,7 @@
 package com.haulmont.cuba.gui;
 
 import com.haulmont.cuba.gui.screen.Screen;
+import com.haulmont.cuba.gui.screen.ScreenOptions;
 
 /**
  * JavaDoc
@@ -26,7 +27,7 @@ public interface WindowManager {
     String NAME = "cuba_WindowManager";
 
     default <T extends Screen> T create(Class<T> screenClass, LaunchMode launchMode) {
-        return create(screenClass, launchMode, NO_OPTIONS);
+        return create(screenClass, launchMode, Screen.NO_OPTIONS);
     }
 
     /**
@@ -51,13 +52,12 @@ public interface WindowManager {
      */
     void removeAll();
 
-    boolean hasUnsavedChanges();
-
     /**
      * JavaDoc
+     *
+     * @return true if there are windows with unsaved changes
      */
-    interface ScreenOptions {
-    }
+    boolean hasUnsavedChanges();
 
     /**
      * JavaDoc
@@ -91,11 +91,4 @@ public interface WindowManager {
          */
         ROOT
     }
-
-    ScreenOptions NO_OPTIONS = new ScreenOptions() {
-        @Override
-        public String toString() {
-            return "{NO OPTIONS}";
-        }
-    };
 }
