@@ -61,6 +61,8 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
+ * todo Unit tests
+ *
  * Wires {@link Inject}, {@link Named}, {@link WindowParam} fields/setters and {@link EventListener} methods.
  */
 @org.springframework.stereotype.Component(ScreenDependencyInjector.NAME)
